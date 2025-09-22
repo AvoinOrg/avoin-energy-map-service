@@ -1,0 +1,50 @@
+services:
+  db:
+    image: postgis/postgis:15-3.4
+    container_name: energy_postgis
+    environment:
+      POSTGRES_DB: ${PGDATABASE:-avoin_energy_map_db}
+      POSTGRES_USER: ${PGUSER:-postgres}
+      POSTGRES_PASSWORD: ${PGPASSWORD:-postgres}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${PGUSER:-postgres} -d ${PGDATABASE:-avoin_energy_map_db}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: energy_app
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      # DB (app reads these in db/database.py and alembic.ini)
+      PGHOST: db
+      PGPORT: 5432
+      PGDATABASE: ${PGDATABASE:-avoin_energy_map_db}
+      PGUSER: ${PGUSER:-postgres}
+      PGPASSWORD: ${PGPASSWORD:-postgres}
+
+      # Upstream endpoints (fill these!)
+      RYHTI_BUILDINGS_URL: ${RYHTI_BUILDINGS_URL:-}
+      RYHTI_ADDRESSES_URL: ${RYHTI_ADDRESSES_URL:-}
+
+      # ETL run mode
+      ETL_MODE: ${ETL_MODE:-init}
+      UPDATED_SINCE: ${UPDATED_SINCE:-}
+
+    # For live dev, mount the code (optional)
+    volumes:
+      - ./:/app
+    command: []
+    # entrypoint is /entrypoint.sh from Dockerfile
+
+volumes:
+  pgdata:
