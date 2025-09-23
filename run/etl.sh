@@ -1,0 +1,1 @@
+docker exec -it energy_app bash | python3 src/etl

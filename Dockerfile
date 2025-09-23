@@ -6,7 +6,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential libpq-dev curl ca-certificates \
  && rm -rf /var/lib/apt/lists/*
 
-
 # install poetry using pip
 RUN pip install --no-cache-dir poetry
 

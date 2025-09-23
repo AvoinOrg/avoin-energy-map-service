@@ -10,6 +10,7 @@ services:
       - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+      - ./docker/db-init:/docker-entrypoint-initdb.d
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ${PGUSER:-postgres} -d ${PGDATABASE:-avoin_energy_map_db}"]
       interval: 10s
@@ -25,6 +26,7 @@ services:
       db:
         condition: service_healthy
     environment:
+      PYTHONPATH: /app/src
       # DB (app reads these in db/database.py and alembic.ini)
       PGHOST: db
       PGPORT: 5432
