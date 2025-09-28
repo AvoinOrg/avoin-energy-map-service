@@ -12,10 +12,17 @@ migration_create:
 # upgrade database to the latest migration
 migration_upgrade:
 	docker compose exec app alembic upgrade head
+# revert the latest migration from the database
+migration_revert:
+	docker compose exec app alembic downgrade -1
+
 # access the bash shell of the running container
 shell:
 	docker exec -it energy_app bash
-
 # access the shell of the local database container
 db:
 	docker compose exec db psql -U postgres -d avoin_energy_map_db
+
+# ETL tasks
+etl_load_codes:
+	docker compose exec app python3 -m src.etl.load_codes

@@ -7,11 +7,12 @@ class Base(DeclarativeBase):
 
 class CodeMap(Base):
     __tablename__ = "code_maps"
-    scheme: Mapped[str] = mapped_column(String, primary_key=True)  # url / path of reference e.g. 'rytj/lammitystapa'
+    type: Mapped[str] = mapped_column(String, primary_key=True)  # type of code, e.g. 'heating_method'
     code:   Mapped[str] = mapped_column(String, primary_key=True)  # e.g. '07'
     label_fi: Mapped[str | None] = mapped_column(String)
     label_sv: Mapped[str | None] = mapped_column(String)
     label_en: Mapped[str | None] = mapped_column(String)
+    src_last_modified: Mapped[str | None] = mapped_column(String)
 
 class Building(Base):
     __tablename__ = "buildings"

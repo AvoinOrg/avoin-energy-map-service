@@ -25,7 +25,11 @@ def upgrade() -> None:
     sa.Column('id', sa.String(), nullable=False),
     sa.Column('building_key', sa.String(), nullable=True),
     sa.Column('permanent_building_identifier', sa.String(), nullable=True),
+    sa.Column('main_purpose', sa.String(), nullable=True),
+    sa.Column('usage_status', sa.String(), nullable=True),
     sa.Column('heating_method', sa.String(), nullable=True),
+    sa.Column('heating_energy_source', sa.String(), nullable=True),
+    sa.Column('material_of_load_bearing_structures', sa.String(), nullable=True),
     sa.Column('point', geoalchemy2.types.Geometry(geometry_type='POINT', srid=4326, dimension=2, from_text='ST_GeomFromEWKT', name='geometry'), nullable=True),
     sa.Column('created_at', sa.TIMESTAMP(timezone=True), server_default=sa.text('now()'), nullable=True),
     sa.Column('updated_at', sa.TIMESTAMP(timezone=True), server_default=sa.text('now()'), nullable=True),
@@ -36,12 +40,13 @@ def upgrade() -> None:
     op.create_index('idx_buildings_point', 'buildings', ['point'], unique=False, postgresql_using='gist', if_not_exists=True)
     op.create_index(op.f('ix_buildings_permanent_building_identifier'), 'buildings', ['permanent_building_identifier'], unique=True, if_not_exists=True)
     op.create_table('code_maps',
-    sa.Column('scheme', sa.String(), nullable=False),
+    sa.Column('type', sa.String(), nullable=False),
     sa.Column('code', sa.String(), nullable=False),
     sa.Column('label_fi', sa.String(), nullable=True),
     sa.Column('label_sv', sa.String(), nullable=True),
     sa.Column('label_en', sa.String(), nullable=True),
-    sa.PrimaryKeyConstraint('scheme', 'code'),
+    sa.Column('src_last_modified', sa.String(), nullable=True), # just for display / checking purpose, no need to parse as datetime
+    sa.PrimaryKeyConstraint('type', 'code'),
     if_not_exists=True
     )
     # ### end Alembic commands ###
