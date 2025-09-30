@@ -8,9 +8,11 @@ from db.models import CodeMap
 TYPES = {
     "main_purpose": "https://koodistot.suomi.fi/codelist-api/api/v1/coderegistries/rytj/codeschemes/avoin_rakennusluokitus/",
     "usage_status": "https://koodistot.suomi.fi/codelist-api/api/v1/coderegistries/vtj/codeschemes/rake_kaytossaolotilanne/",
+    "facade_material": "https://koodistot.suomi.fi/codelist-api/api/v1/coderegistries/rytj/codeschemes/julkisivunrakennusaine/",
     "heating_method": "https://koodistot.suomi.fi/codelist-api/api/v1/coderegistries/rytj/codeschemes/lammitystapa/",
     "heating_energy_source": "https://koodistot.suomi.fi/codelist-api/api/v1/coderegistries/rytj/codeschemes/lammitysenergianlahde/",
     "material_of_load_bearing_structures": "https://koodistot.suomi.fi/codelist-api/api/v1/coderegistries/rytj/codeschemes/kantavanrakenteenrakennusaine/",
+    "construction_method": "https://koodistot.suomi.fi/codelist-api/api/v1/coderegistries/vtj/codeschemes/Rake_runkotapa/",
 }
 
 # params pass to the code list endpoint

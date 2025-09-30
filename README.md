@@ -18,8 +18,18 @@ This project consist of two parts
 ```
 cp .env.template .env
 ```
-2. Run the project
+2. Run the container
 ```
 make start
 ```
+3. Apply latest migration to local database
+```
+make migration_upgrade
+```
+4. Import codes and labels
+```
+make etl_load_codes
+```
+
+
 Other commands can be found in the `makefile`
