@@ -35,12 +35,8 @@ services:
       PGPASSWORD: ${PGPASSWORD:-postgres}
 
       # Upstream endpoints (fill these!)
-      RYHTI_BUILDINGS_URL: ${RYHTI_BUILDINGS_URL:-}
-      RYHTI_ADDRESSES_URL: ${RYHTI_ADDRESSES_URL:-}
-
-      # ETL run mode
-      ETL_MODE: ${ETL_MODE:-init}
-      UPDATED_SINCE: ${UPDATED_SINCE:-}
+      BUILDINGS_API_URL: ${BUILDINGS_API_URL:-}
+      ADDRESSES_API_URL: ${ADDRESSES_API_URL:-}
 
     # For live dev, mount the code (optional)
     volumes:
