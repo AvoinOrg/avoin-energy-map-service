@@ -30,6 +30,8 @@ make migration_upgrade
 ```
 make etl_load_codes
 ```
-
-
+5. Load buildings. As there are ~4 million records in the original dataset, let's just test with a limited amount, before we figure out a way to optimize the data extraction mechanism. The limit number is the amount of records to pull to local DB.
+```
+make etl_load_codes_test limit=1000
+```
 Other commands can be found in the `makefile`
