@@ -11,6 +11,7 @@ from tenacity import retry, stop_after_attempt, wait_exponential
 
 from db.session import SessionLocal
 from db.models import Building
+from utils.regions import build_region_municipality_param
 
 BUILDINGS_API_URL = os.getenv("BUILDINGS_API_URL", "").strip()
 
@@ -76,6 +77,8 @@ def iterate_buildings(
     """
     params = dict(base_params)
     url = base_url
+
+    logger.info("Extract buildings from URL %s with params %s", url, params)
 
     if "limit" not in params:
         params["limit"] = 10000  # maximum page size supported by the API
@@ -198,8 +201,14 @@ def load_buildings(max_local_records: Optional[int] = None) -> int:
 
     query_parameters: Dict[str, Any] = {
         "limit": API_PAGE_SIZE,  # API page size
-        "filter": "municipality_number='091'",  # example: Helsinki
     }
+
+    municipality_codes = build_region_municipality_param(
+        "Uusimaa"
+    )  # Scope: buildings from Uusimaa
+
+    if municipality_codes is not None:
+        query_parameters["filter"] = "municipality_number IN (%s)" % municipality_codes
 
     total_seen = 0
     total_written = 0
