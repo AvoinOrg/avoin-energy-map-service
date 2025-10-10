@@ -17,8 +17,7 @@ class CodeMap(Base):
 
 class Building(Base):
     __tablename__ = "buildings"
-    id: Mapped[str] = mapped_column(String, primary_key=True)
-    building_key: Mapped[str | None] = mapped_column(String, unique=True)
+    building_key: Mapped[str | None] = mapped_column(String, primary_key=True)
     permanent_building_identifier: Mapped[str | None] = mapped_column(String, unique=True)
     property_identifier: Mapped[str | None] = mapped_column(String, unique=True)
     completion_date: Mapped[date | None] = mapped_column(Date)

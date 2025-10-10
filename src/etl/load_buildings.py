@@ -78,12 +78,13 @@ def iterate_buildings(
     params = dict(base_params)
     url = base_url
 
-    logger.info("Extract buildings from URL %s with params %s", url, params)
+    page = 1
 
     if "limit" not in params:
         params["limit"] = 10000  # maximum page size supported by the API
 
     while True:
+        logger.info("Extract building, page %s", page)
         data = http_get_json(url, params)
         features = data.get("features", [])
         for feature in features:
@@ -127,7 +128,6 @@ def upsert_building(database_session: Session, feature: Dict[str, Any]) -> bool:
 
     # Prepare row fields
     building_record = {
-        "id": feature.get("id"),
         "building_key": properties.get("building_key"),
         "permanent_building_identifier": properties.get(
             "permanent_building_identifier"
@@ -159,7 +159,7 @@ def upsert_building(database_session: Session, feature: Dict[str, Any]) -> bool:
         "modified_timestamp_utc": properties.get("modified_timestamp_utc"),
     }
 
-    if not building_record["id"]:
+    if not building_record["building_key"]:
         # skip features with no usable identifier
         return False
 
@@ -168,11 +168,11 @@ def upsert_building(database_session: Session, feature: Dict[str, Any]) -> bool:
         insert(Building)
         .values(**building_record)
         .on_conflict_do_update(
-            index_elements=[Building.id],
+            index_elements=[Building.building_key],
             set_={
                 column: building_record[column]
                 for column in building_record
-                if column != "id"
+                if column != "building_key"
             },
         )
     )
@@ -206,6 +206,8 @@ def load_buildings(max_local_records: Optional[int] = None) -> int:
     municipality_codes = build_region_municipality_param(
         "Uusimaa"
     )  # Scope: buildings from Uusimaa
+    
+    municipality_codes = '616'  # Pukkila 2k records only for testing
 
     if municipality_codes is not None:
         query_parameters["filter"] = "municipality_number IN (%s)" % municipality_codes

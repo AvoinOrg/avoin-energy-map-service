@@ -3,6 +3,7 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 def db_url():
+    # fallback to local postgres if env vars not set
     user = os.getenv("PGUSER", "postgres")
     pwd  = os.getenv("PGPASSWORD", "postgres")
     host = os.getenv("PGHOST", "localhost")

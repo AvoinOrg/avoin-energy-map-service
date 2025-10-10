@@ -28,8 +28,8 @@ services:
     environment:
       PYTHONPATH: /app/src
       # DB (app reads these in db/database.py and alembic.ini)
-      PGHOST: db
-      PGPORT: 5432
+      PGHOST: ${PGHOST:-db}
+      PGPORT: ${PGPORT:-5432}
       PGDATABASE: ${PGDATABASE:-avoin_energy_map_db}
       PGUSER: ${PGUSER:-postgres}
       PGPASSWORD: ${PGPASSWORD:-postgres}
