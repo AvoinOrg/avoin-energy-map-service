@@ -1,9 +1,9 @@
 # Dockerfile
 FROM python:3.12-slim
 
-# System deps for psycopg2 and friends
+# System deps
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential libpq-dev curl ca-certificates \
+    build-essential libpq-dev curl ca-certificates gdal-bin libgdal-dev proj-bin \
  && rm -rf /var/lib/apt/lists/*
 
 # install poetry using pip

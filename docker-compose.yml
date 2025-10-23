@@ -37,6 +37,7 @@ services:
       # Upstream endpoints (fill these!)
       BUILDINGS_API_URL: ${BUILDINGS_API_URL:-}
       ADDRESSES_API_URL: ${ADDRESSES_API_URL:-}
+      POLYGON_WFS_URL: ${POLYGON_WFS_URL:-}
 
     # For live dev, mount the code (optional)
     volumes:
