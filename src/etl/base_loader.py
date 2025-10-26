@@ -18,7 +18,7 @@ from utils.regions import build_region_municipality_param
 # ----------------------------
 logging.basicConfig(
     level=os.getenv("LOG_LEVEL", "INFO"),
-    format="%(asctime)s [%(levelname)s] %(message)s",
+    format="%(asctime)s [%(name)s] [%(levelname)s] %(message)s",
 )
 logger = logging.getLogger("etl.api_loader")
 
@@ -100,9 +100,11 @@ class BaseLoader:
             params.update(base_params)
         url = self.base_url
         page = 1
+        
+        self.logger.info(params)
 
         # Ensure 'limit' present
-        params.setdefault("limit", self.API_PAGE_SIZE)
+        params.setdefault("limit", self.API_PAGE_SIZE)        
 
         while True:
             self.logger.info("Extract page %s", page)

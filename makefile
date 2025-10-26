@@ -28,7 +28,12 @@ etl_load_codes:
 	docker compose exec app python3 -m src.etl.load_codes
 etl_load_buildings:
 	docker compose exec app python3 -m src.etl.load_buildings
-# usage: make etl_load_buildings_test limit="number of buildings to load"
-.PHONY: etl_load_buildings_test
-etl_load_buildings_test:
-	docker compose exec app python3 -m src.etl.load_buildings --limit $(limit)
+etl_load_addresses:
+	docker compose exec app python3 -m src.etl.load_addresses
+etl_load_test_municipality:
+	docker compose exec app python3 -m src.etl --test=municipality
+etl_load_test_region:
+	docker compose exec app python3 -m src.etl --test=region
+etl_load: # load all data
+	docker compose exec app python3 -m src.etl
+

@@ -1,7 +1,7 @@
 import os, argparse
 from typing import Any, Dict, Optional
 
-from base_loader import BaseLoader
+from etl.base_loader import BaseLoader
 from db.models import Address
 
 class AddressLoader(BaseLoader):
@@ -9,11 +9,11 @@ class AddressLoader(BaseLoader):
     Load address to database
     """
     API_URL = os.getenv("ADDRESSES_API_URL", "").strip()
-    API_PAGE_SIZE = 2999 # for some reason address API failed for page size > 3000
+    API_PAGE_SIZE = 2999 # for some reasons API failed for page size > 3000
     
-    def __init__(self, base_url: str = API_URL, **kwargs):
+    def __init__(self, **kwargs):
         super().__init__(
-            base_url or "",
+            self.API_URL,
             model_class=Address,
             index_columns=(Address.address_key,),
             api_page_size=kwargs.pop("api_page_size", self.API_PAGE_SIZE),
@@ -25,24 +25,23 @@ class AddressLoader(BaseLoader):
         return params
     
     def map_feature_to_row(self, feature: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-        props = feature.get("properties") or {}
-        geom = feature.get("geometry") or {}
-        coords = geom.get("coordinates") or None
+        properties = feature.get("properties") or {}
+        geometry = feature.get("geometry") or {}
+        coordinates = geometry.get("coordinates") or None
 
         coordinates_str = None
         # Expect a point geometry [x, y]
-        if isinstance(coords, (list, tuple)) and len(coords) == 2:
-            coordinates_str = f"POINT({coords[0]} {coords[1]})"
+        if isinstance(coordinates, (list, tuple)) and len(coordinates) == 2:
+            coordinates_str = f"POINT({coordinates[0]} {coordinates[1]})"
 
         row = {
-            "address_key": props.get("address_key"),
-            "building_key": props.get("building_key"),
-            "address_fin": props.get("address_fin"),
-            "property_identifier": props.get("property_identifier"),
-            "postal_office_fin": props.get("postal_office_fin"),
-            "municipality_number": props.get("municipality_number"),
-            "postal_code": props.get("postal_code"),
-            "modified_timestamp_utc": props.get("modified_timestamp_utc"),
+            "address_key": properties.get("address_key"),
+            "building_key": properties.get("building_key"),
+            "address_fin": properties.get("address_fin"),
+            "postal_office_fin": properties.get("postal_office_fin"),
+            "municipality_number": properties.get("municipality_number"),
+            "postal_code": properties.get("postal_code"),
+            "modified_timestamp_utc": properties.get("modified_timestamp_utc"),
             "point": coordinates_str,
         }
         return row

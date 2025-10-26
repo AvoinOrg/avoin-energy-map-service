@@ -1,3 +1,5 @@
+from typing import Any
+from datetime import datetime
 
 def code_from_uri(uri: str | None) -> str | None:
     """
@@ -12,6 +14,24 @@ def code_from_uri(uri: str | None) -> str | None:
         return parts[-1]
     return None
 
+
+def parse_date(date_str: str | None) -> Any:
+    """
+    In APIs, date-only fields in the data set end with 'Z'
+    Replace 'Z' with '+00:00' for UTC
+    """
+    if not date_str:
+        return None
+    try:
+        if not date_str.endswith("Z"):
+            return None
+
+        date_str = date_str[:-1] + "+00:00"
+        dt = datetime.fromisoformat(date_str)
+        return dt.date()
+    except Exception:
+        return None
+    
 
 if __name__ == "__main__":
     # Example usage
