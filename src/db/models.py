@@ -17,9 +17,9 @@ class CodeMap(Base):
 
 class Building(Base):
     __tablename__ = "buildings"
-    building_key: Mapped[str | None] = mapped_column(String, primary_key=True)
-    permanent_building_identifier: Mapped[str | None] = mapped_column(String, unique=True)
-    property_identifier: Mapped[str | None] = mapped_column(String, unique=True)
+    building_key: Mapped[str] = mapped_column(String, primary_key=True, unique=True)
+    permanent_building_identifier: Mapped[str | None] = mapped_column(String)
+    property_identifier: Mapped[str | None] = mapped_column(String)
     completion_date: Mapped[date | None] = mapped_column(Date)
     main_purpose: Mapped[str | None] = mapped_column(String)  # store code only
     municipality_number: Mapped[str | None] = mapped_column(String)
@@ -42,3 +42,17 @@ class Building(Base):
     point: Mapped[str | None] = mapped_column(Geometry("POINT", srid=4326, spatial_index=True)) #  SRID 4326 / WGS84 coordinates
     created_at: Mapped[str | None] = mapped_column(TIMESTAMP(timezone=True), server_default=text("now()"))
     updated_at: Mapped[str | None] = mapped_column(TIMESTAMP(timezone=True), server_default=text("now()"))
+
+class Address(Base):
+    __tablename__ = "addresses"
+    address_key: Mapped[str | None] = mapped_column(String, primary_key=True) # primary address key
+    building_key: Mapped[str | None] = mapped_column(String) # building key, used to map with buildings table
+    address_fin: Mapped[str | None] = mapped_column(String) # street name and number
+    postal_office_fin: Mapped[str | None] = mapped_column(String)
+    municipality_number: Mapped[str | None] = mapped_column(String)
+    postal_code: Mapped[str | None] = mapped_column(String)
+    modified_timestamp_utc: Mapped[str | None] = mapped_column(String)  # source system's last modified timestamp in UTC
+    point: Mapped[str | None] = mapped_column(Geometry("POINT", srid=4326, spatial_index=True)) #  SRID 4326 / WGS84 coordinates
+    created_at: Mapped[str | None] = mapped_column(TIMESTAMP(timezone=True), server_default=text("now()"))
+    updated_at: Mapped[str | None] = mapped_column(TIMESTAMP(timezone=True), server_default=text("now()"))
+    

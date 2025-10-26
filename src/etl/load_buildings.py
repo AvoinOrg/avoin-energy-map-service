@@ -12,6 +12,7 @@ from tenacity import retry, stop_after_attempt, wait_exponential
 from db.session import SessionLocal
 from db.models import Building
 from utils.regions import build_region_municipality_param
+from utils.common import code_from_uri
 
 BUILDINGS_API_URL = os.getenv("BUILDINGS_API_URL", "").strip()
 
@@ -42,18 +43,6 @@ def _parse_date(date_str: str | None) -> Any:
         return dt.date()
     except Exception:
         return None
-
-
-def _code_from_uri(uri: str | None) -> str | None:
-    """
-    Extract the code from the URI. Only keep two last characters as the code
-    """
-    if not uri:
-        return None
-    parts = uri.rstrip("/").split("/")
-    if len(parts) >= 2 and parts[-2] == "codes":
-        return parts[-1]
-    return None
 
 
 # Retry connections after 4 failed attempts, the waiting time for each retry is 1,2,4,8 seconds respectively
@@ -135,18 +124,18 @@ def upsert_building(database_session: Session, feature: Dict[str, Any]) -> bool:
         "property_identifier": properties.get("property_identifier"),
         "completion_date": _parse_date(properties.get("completion_date")),
         "demolition_date": _parse_date(properties.get("demolition_date")),
-        "main_purpose": _code_from_uri(properties.get("main_purpose")),
+        "main_purpose": code_from_uri(properties.get("main_purpose")),
         "municipality_number": properties.get("municipality_number"),
-        "usage_status": _code_from_uri(properties.get("usage_status")),
-        "facade_material": _code_from_uri(properties.get("facade_material")),
-        "heating_method": _code_from_uri(properties.get("heating_method")),
-        "heating_energy_source": _code_from_uri(
+        "usage_status": code_from_uri(properties.get("usage_status")),
+        "facade_material": code_from_uri(properties.get("facade_material")),
+        "heating_method": code_from_uri(properties.get("heating_method")),
+        "heating_energy_source": code_from_uri(
             properties.get("heating_energy_source")
         ),
-        "material_of_load_bearing_structures": _code_from_uri(
+        "material_of_load_bearing_structures": code_from_uri(
             properties.get("material_of_load_bearing_structures")
         ),
-        "construction_method": _code_from_uri(properties.get("construction_method")),
+        "construction_method": code_from_uri(properties.get("construction_method")),
         "voting_district_number": properties.get("voting_district_number"),
         "volume": properties.get("volume"),
         "number_of_storeys": properties.get("number_of_storeys"),
