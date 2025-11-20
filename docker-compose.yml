@@ -1,6 +1,7 @@
 services:
   db:
-    image: postgis/postgis:15-3.4
+    platform: linux/amd64
+    image: postgis/postgis:17-3.5
     container_name: energy_postgis
     environment:
       POSTGRES_DB: ${PGDATABASE:-avoin_energy_map_db}

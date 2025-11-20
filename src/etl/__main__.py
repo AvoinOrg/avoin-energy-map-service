@@ -23,7 +23,8 @@ if __name__ == "__main__":
     if args.test == "municipality":
         test_municipality_codes = "'616'"  # Pukkila 2k records only for testing
     elif args.test == "region":
-        test_municipality_codes = build_region_municipality_param('Ahvenanmaa')  # 30k records
+        test_municipality_codes = build_region_municipality_param('Uusimaa')  # ~500k records
+        # test_municipality_codes = build_region_municipality_param('Ahvenanmaa')  # 30k records
        
     if (test_municipality_codes):
         test_params = {

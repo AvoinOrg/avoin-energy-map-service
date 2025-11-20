@@ -9,7 +9,7 @@ This project consist of two parts
 - Language: Python
 - Package manager: Poetry
 - Framework: Fast API
-- Database: PostgreSQL with PostGIS for spatial data storage.
+- Database: PostgreSQL (17.7) with PostGIS for spatial data storage.
 - Database Migrations: Alembic
 - Containerization: Docker & Docker Compose
 
@@ -35,3 +35,11 @@ make etl_load_codes
 make etl_load_buildings_test limit=1000
 ```
 Other commands can be found in the `makefile`
+
+## Sync data to remote (e.g. sandbox)
+Running ETL straight to remote DB will take huge amount of time due to connection latency. A workaround is running it in local, dump the local db, and run `pg_restore` it to remote
+- run `make etl_load_codes` to populate codes
+- run `make etl_load_test_region` to load buildings & addresses in Uusimaa for testing
+- clone `.env.example` to `.env.sandbox`, and fill in the remote database info
+- run `./run/db_dump.sh` to dump local DB
+- run `./run/db_sandbox_deploy` to sync remote DB with the dump file

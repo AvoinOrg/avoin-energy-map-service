@@ -1,17 +1,19 @@
 import os, logging, time
-from typing import Any, Dict, Iterable, Optional, List, Tuple, Callable
-from datetime import datetime
+from typing import Any, Dict, Iterable, Optional, List, Tuple
 from concurrent.futures import ThreadPoolExecutor, as_completed
+from contextlib import contextmanager
+
+import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 from sqlalchemy.orm import Session
 from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.exc import SQLAlchemyError
 
-import requests
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 from db.session import SessionLocal
-from utils.regions import build_region_municipality_param
 
 # ----------------------------
 # Logging
@@ -22,39 +24,70 @@ logging.basicConfig(
 )
 logger = logging.getLogger("etl.api_loader")
 
-# Retry connections after 4 failed attempts, the waiting time for each retry is 1,2,4,8s
+
+def _build_http_session(
+    max_pool: int = 64, retries: int = 2, backoff: float = 0.5
+) -> requests.Session:
+    """
+    One shared keep-alive session with connection pooling & light retry at TCP level.
+    Network-level retry here (connect/read), application-level retry via Tenacity below.
+    """
+    sess = requests.Session()
+    retry_cfg = Retry(
+        total=retries,
+        connect=retries,
+        read=retries,
+        backoff_factor=backoff,
+        status_forcelist=(502, 503, 504),
+        allowed_methods=frozenset(["GET"]),
+        raise_on_status=False,
+    )
+    adapter = HTTPAdapter(
+        pool_connections=max_pool, pool_maxsize=max_pool, max_retries=retry_cfg
+    )
+    sess.mount("https://", adapter)
+    sess.mount("http://", adapter)
+    sess.headers.update({"Accept": "application/json"})
+    return sess
+
+
+# Retry application-level (HTTP 4xx/5xx raised by raise_for_status or JSON decode issues)
 @retry(stop=stop_after_attempt(4), wait=wait_exponential(multiplier=1, min=1, max=8))
-def http_get_json(url: str, query_parameters: Dict[str, Any]) -> Dict[str, Any]:
-    response = requests.get(url, params=query_parameters, timeout=30)
-    response.raise_for_status()  # raise if status >= 400
-    return response.json()
+def http_get_json(
+    session: requests.Session, url: str, params: Dict[str, Any]
+) -> Dict[str, Any]:
+    resp = session.get(url, params=params, timeout=60)
+    resp.raise_for_status()
+    return resp.json()
 
 
 class BaseLoader:
     """
-    Common class to initialize loader for a certain type of data.
-    e.g. Buildings, Addresses
-    
+    Generic features → DB upsert loader.
+
     Customize by:
       - overriding map_feature_to_row()
-      - setting model_class and index_columns (find model classes in src/db/models)
-      - overriding initial_params() if the API needs specific query params
-      - optionally overriding feature_list_key / link traversal if API differs
-      - name for logging purpose
+      - passing model_class and index_columns (SQLAlchemy model + conflict keys)
+      - overriding initial_params() and/or iterate_features() if your API differs
     """
 
-    # Threading & batching defaults (override per subclass or via __init__)
-    MAX_WORKERS: int = 4
-    UPSERT_BATCH_SIZE: int = 10000
-    API_PAGE_SIZE: int = 10000
+    # Concurrency & batching defaults
+    MAX_WORKERS: int = 4  # DB worker threads
+    UPSERT_BATCH_SIZE: int = (
+        2000  # rows per DB batch (keep memory low, commits frequent)
+    )
+    API_PAGE_SIZE: int = 5000  # page size to request upstream (server may cap)
+    MAX_INFLIGHT_FUTURES: int = 8  # backpressure: limit queued DB batches
 
     # API paging keys
     features_key: str = "features"
     links_key: str = "links"
     next_rel_value: str = "next"
+    number_returned_key: str = "numberReturned"
 
-    model_class = None  # SQLAlchemy ORM model class
-    index_columns: Tuple = tuple()  # tuple of model columns used for ON CONFLICT
+    # ORM
+    model_class = None
+    index_columns: Tuple = tuple()
 
     def __init__(
         self,
@@ -65,78 +98,137 @@ class BaseLoader:
         max_workers: Optional[int] = None,
         upsert_batch_size: Optional[int] = None,
         api_page_size: Optional[int] = None,
+        max_inflight_futures: Optional[int] = None,
         name: str = "etl.loader",
+        select_properties: Optional[
+            List[str]
+        ] = None,  # e.g. ["id","municipality_number",...]
     ):
         self.base_url = base_url
         self.model_class = model_class
         self.index_columns = index_columns
-        if max_workers:
+        if max_workers is not None:
             self.MAX_WORKERS = max_workers
-        if upsert_batch_size:
+        if upsert_batch_size is not None:
             self.UPSERT_BATCH_SIZE = upsert_batch_size
-        if api_page_size:
+        if api_page_size is not None:
             self.API_PAGE_SIZE = api_page_size
+        if max_inflight_futures is not None:
+            self.MAX_INFLIGHT_FUTURES = max_inflight_futures
         self.logger = logging.getLogger(name)
+        self.select_properties = select_properties or []
+
+        # one shared HTTP session per loader
+        self._http = _build_http_session()
 
     # ---- Hook: per-source base params
     def initial_params(self) -> Dict[str, Any]:
-        """Default params for first request; override in subclass if needed."""
-        return {"limit": self.API_PAGE_SIZE}
+        params = {"limit": self.API_PAGE_SIZE}
+        if self.select_properties:
+            # many OGC APIs support property projection; harmless if ignored
+            params["properties"] = ",".join(self.select_properties)
+        return params
 
-    # ---- Hook: map a raw feature to DB row dict (return None to skip)
+    # ---- Hook: map raw feature → row dict
     def map_feature_to_row(self, feature: Dict[str, Any]) -> Optional[Dict[str, Any]]:
-        """Override in subclass to map one API feature to a row dict for model_class."""
         raise NotImplementedError
 
-    # ---- Hook: (optional) per-feature validation/filter
+    # ---- Hook: optional filter
     def should_skip_feature(self, row: Dict[str, Any]) -> bool:
-        """Return True to skip writing this row (e.g., missing unique key)."""
         return False
 
-    # ---- Paging generator (generic 'links' with rel='next')
-    def iterate_features(self, base_params: Optional[Dict[str, Any]] = None) -> Iterable[Dict[str, Any]]:
+    # ---- Paging generator: next-link or startIndex fallback
+    def iterate_features(
+        self, base_params: Optional[Dict[str, Any]] = None
+    ) -> Iterable[Dict[str, Any]]:
+        """
+        Handles two patterns:
+          1) Server returns links[rel=next] → follow it.
+          2) Server omits 'next' but returns exactly 'limit' items → advance via startIndex.
+        """
+        url = self.base_url
         params = dict(self.initial_params())
         if base_params:
             params.update(base_params)
-        url = self.base_url
+        params.setdefault("limit", self.API_PAGE_SIZE)
+
         page = 1
-        
+        start_index = 0
+        use_start_index = False
+
         self.logger.info(params)
 
-        # Ensure 'limit' present
-        params.setdefault("limit", self.API_PAGE_SIZE)        
-
         while True:
-            self.logger.info("Extract page %s", page)
-            data = http_get_json(url, params)
-            features = data.get(self.features_key, [])
-            for feature in features:
-                yield feature
+            if use_start_index:
+                # on fallback path, ensure we drive with startIndex
+                params = {
+                    "startIndex": start_index,
+                    "limit": params.get("limit", self.API_PAGE_SIZE),
+                }
+                # preserve filters/properties if present in base_params/initial_params
+                if base_params:
+                    for k, v in base_params.items():
+                        if k not in ("limit", "startIndex"):
+                            params[k] = v
 
+            self.logger.info(
+                "Extract page %s%s",
+                page,
+                " (startIndex=%d)" % start_index if use_start_index else "",
+            )
+
+            data = http_get_json(self._http, url, params)
+            feats = data.get(self.features_key, [])
+            returned = data.get(self.number_returned_key)
+            # Some services omit numberReturned; fall back to len(features)
+            number_returned = int(returned) if isinstance(returned, int) else len(feats)
+
+            for f in feats:
+                yield f
+
+            # Prefer rel=next if present
             next_href = None
             for link in data.get(self.links_key, []):
                 if link.get("rel") == self.next_rel_value:
                     next_href = link.get("href")
                     break
 
-            if not next_href:
-                break
+            if next_href:
+                url = next_href
+                params = {}
+                page += 1
+                continue
 
-            # move to next page
-            url = next_href
-            params = {}  # 'next' already includes all query params
-            page += 1
+            # No next link → fallback using startIndex if we exactly filled the page
+            limit = params.get("limit", self.API_PAGE_SIZE)
+            if number_returned and int(number_returned) == int(limit):
+                use_start_index = True
+                start_index += int(number_returned)
+                page += 1
+                # do not change URL on fallback
+                continue
 
-    # ---- Upsert one row
+            # done
+            break
+
+    # ---- Upsert helpers
+    def _conflict_field_names(self) -> set:
+        # Works for ORM columns or column expressions
+        names = set()
+        for col in self.index_columns:
+            names.add(getattr(col, "key", getattr(col, "name", str(col))))
+        return names
+
     def upsert_one(self, database_session: Session, row: Dict[str, Any]) -> bool:
-        """Insert or update a single row via ON CONFLICT DO UPDATE."""
         try:
             stmt = (
                 insert(self.model_class)
                 .values(**row)
                 .on_conflict_do_update(
                     index_elements=list(self.index_columns),
-                    set_={c: row[c] for c in row if c not in self._conflict_field_names()}
+                    set_={
+                        c: row[c] for c in row if c not in self._conflict_field_names()
+                    },
                 )
             )
             database_session.execute(stmt)
@@ -145,31 +237,37 @@ class BaseLoader:
             self.logger.exception("Upsert failed for %s: %s", row, e)
             return False
 
-    def _conflict_field_names(self) -> set:
-        return {getattr(col, "key", getattr(col, "name", str(col))) for col in self.index_columns}
-
-    # ---- Worker for a batch
+    # ---- Batch worker
     def _upsert_batch_worker(self, features_batch: List[Dict[str, Any]]) -> int:
         written = 0
         with SessionLocal() as worker_sess:
-            for feature in features_batch:
-                row = self.map_feature_to_row(feature)
-                if row is None:
-                    continue
-                if self.should_skip_feature(row):
-                    continue
-                if self.upsert_one(worker_sess, row):
-                    written += 1
-            worker_sess.commit()
+            try:
+                for feature in features_batch:
+                    row = self.map_feature_to_row(feature)
+                    if not row or self.should_skip_feature(row):
+                        continue
+                    if self.upsert_one(worker_sess, row):
+                        written += 1
+                worker_sess.commit()
+            except Exception as e:
+                worker_sess.rollback()
+                self.logger.exception(
+                    "Batch failed, rolled back (%d features): %s",
+                    len(features_batch),
+                    e,
+                )
         return written
 
     # ---- Run end-to-end
-    def run(self, *, base_params: Optional[Dict[str, Any]] = None, max_records: Optional[int] = None) -> int:
+    def run(
+        self,
+        *,
+        base_params: Optional[Dict[str, Any]] = None,
+        max_records: Optional[int] = None,
+    ) -> int:
         total_seen = 0
         total_written = 0
         start_time = time.perf_counter()
-        current_batch: List[Dict[str, Any]] = []
-        futures = []
 
         self.logger.info(
             "Extract started | page_size=%s | workers=%s | upsert_batch=%s | max_records=%s",
@@ -180,25 +278,44 @@ class BaseLoader:
         )
 
         try:
+            futures: List = []
+            submitted = 0
             with ThreadPoolExecutor(max_workers=self.MAX_WORKERS) as pool:
+                current_batch: List[Dict[str, Any]] = []
+
                 for feature in self.iterate_features(base_params=base_params):
                     current_batch.append(feature)
                     total_seen += 1
 
                     if len(current_batch) >= self.UPSERT_BATCH_SIZE:
-                        # hand over to a worker
-                        futures.append(pool.submit(self._upsert_batch_worker, current_batch))
+                        futures.append(
+                            pool.submit(self._upsert_batch_worker, current_batch)
+                        )
+                        submitted += 1
                         current_batch = []
+
+                        # backpressure: keep only N in-flight futures
+                        while len(futures) >= self.MAX_INFLIGHT_FUTURES:
+                            done_any = False
+                            for fut in as_completed(futures, timeout=0.1):
+                                written = fut.result()
+                                total_written += written
+                                futures.remove(fut)
+                                done_any = True
+                                break
+                            if not done_any:
+                                break  # no futures completed yet; give producer a chance
 
                     if max_records and total_seen >= max_records:
                         break
 
-                # flush tail
                 if current_batch:
-                    futures.append(pool.submit(self._upsert_batch_worker, current_batch))
-                    current_batch = []
+                    futures.append(
+                        pool.submit(self._upsert_batch_worker, current_batch)
+                    )
+                    submitted += 1
 
-                # collect results
+                # Drain
                 completed = 0
                 total_batches = len(futures)
                 for fut in as_completed(futures):
