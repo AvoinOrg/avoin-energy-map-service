@@ -10,7 +10,7 @@ class AddressLoader(BaseLoader):
     """
     API_URL = os.getenv("ADDRESSES_API_URL", "").strip()
     API_PAGE_SIZE = 2999 # for some reasons API failed for page size > 3000
-    
+
     def __init__(self, **kwargs):
         super().__init__(
             self.API_URL,
@@ -19,11 +19,11 @@ class AddressLoader(BaseLoader):
             api_page_size=kwargs.pop("api_page_size", self.API_PAGE_SIZE),
             name="etl.addresses",
         )
-    
+
     def initial_params(self) -> Dict[str, Any]:
         params = super().initial_params()
         return params
-    
+
     def map_feature_to_row(self, feature: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         properties = feature.get("properties") or {}
         geometry = feature.get("geometry") or {}
@@ -45,7 +45,7 @@ class AddressLoader(BaseLoader):
             "point": coordinates_str,
         }
         return row
-    
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Extract address data from original dataset API into local Postgres"
@@ -57,9 +57,10 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
-    
+
     loader = AddressLoader()
-    municipality_codes = '616'  # Pukkila 2k records only for testing        
+    municipality_codes = "'018','049','078','091','092','106','149','186','224','235','245','257','407','434','444','504','505','543','611','616','638','710','753','755','858','927'"  # Uusimaa municipalities
+    # municipality_codes = '616'  # Pukkila 2k records only for testing
     base_params = {
         "filter": "municipality_number IN (%s)" % municipality_codes
     }

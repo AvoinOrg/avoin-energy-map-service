@@ -1,7 +1,5 @@
-# etl/load_codes.py
 import requests
 from sqlalchemy.dialects.postgresql import insert
-from sqlalchemy.orm import Session
 from db.session import SessionLocal
 from db.models import CodeMap
 
@@ -29,7 +27,7 @@ def _extract_items(payload):
             code = code_obj.get("codeValue")
             labels = code_obj.get("prefLabel") or {}
             modified = code_obj.get("modified")
-            items.append((str(code), labels.get("fi"), labels.get("sv"), labels.get("en"), modified))        
+            items.append((str(code), labels.get("fi"), labels.get("sv"), labels.get("en"), modified))
     return items
 
 def load_all_code_types():
