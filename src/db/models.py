@@ -55,4 +55,12 @@ class Address(Base):
     point: Mapped[str | None] = mapped_column(Geometry("POINT", srid=4326, spatial_index=True)) #  SRID 4326 / WGS84 coordinates
     created_at: Mapped[str | None] = mapped_column(TIMESTAMP(timezone=True), server_default=text("now()"))
     updated_at: Mapped[str | None] = mapped_column(TIMESTAMP(timezone=True), server_default=text("now()"))
-    
+
+class Polygon(Base):
+    __tablename__ = "polygons"
+    polygon_key: Mapped[str | None] = mapped_column(String, primary_key=True) # primary polygon key
+    building_key: Mapped[str | None] = mapped_column(String) # building key, used to map with buildings table
+    modified_timestamp_utc: Mapped[str | None] = mapped_column(String)  # source system's last modified timestamp in UTC - corresponding to beginLifespanVersion column
+    polygon: Mapped[str | None] = mapped_column(Geometry("MULTIPOLYGON", srid=4326, spatial_index=True)) #  SRID 4326 / WGS84 coordinates
+    created_at: Mapped[str | None] = mapped_column(TIMESTAMP(timezone=True), server_default=text("now()"))
+    updated_at: Mapped[str | None] = mapped_column(TIMESTAMP(timezone=True), server_default=text("now()"))

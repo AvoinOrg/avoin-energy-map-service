@@ -34,6 +34,7 @@ etl_load_test_municipality:
 	docker compose exec app python3 -m src.etl --test=municipality
 etl_load_test_region:
 	docker compose exec app python3 -m src.etl --test=region
+etl_load_polygons:
+	docker compose exec app python3 -m src.etl.load_polygons
 etl_load: # load all data
 	docker compose exec app python3 -m src.etl
-

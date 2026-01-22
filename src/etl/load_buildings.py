@@ -1,6 +1,5 @@
 import os, argparse
 from typing import Any, Dict, Optional
-from datetime import datetime
 
 from etl.base_loader import BaseLoader
 from db.models import Building
@@ -12,7 +11,7 @@ class BuildingLoader(BaseLoader):
     """
     API_URL = os.getenv("BUILDINGS_API_URL", "").strip()
     API_PAGE_SIZE = 2999 # for some reasons API failed for page size > 3000
-    
+
     def __init__(self, **kwargs):
         super().__init__(
             self.API_URL,
@@ -21,7 +20,7 @@ class BuildingLoader(BaseLoader):
             api_page_size=kwargs.pop("api_page_size", self.API_PAGE_SIZE),
             name="etl.bulidings",
         )
-    
+
     def initial_params(self) -> Dict[str, Any]:
         params = super().initial_params()
         return params
@@ -68,7 +67,7 @@ class BuildingLoader(BaseLoader):
             "modified_timestamp_utc": properties.get("modified_timestamp_utc"),
         }
         return row
-    
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(
         description="Extract building data from original dataset API into local Postgres"
@@ -80,11 +79,11 @@ if __name__ == "__main__":
     )
 
     args = parser.parse_args()
-    
+
     loader = BuildingLoader()
-    municipality_codes = '616'  # Pukkila 2k records only for testing        
+    municipality_codes = "'018','049','078','091','092','106','149','186','224','235','245','257','407','434','444','504','505','543','611','616','638','710','753','755','858','927'"  # Uusimaa municipalities
+    # municipality_codes = '616'  # Pukkila 2k records only for testing
     base_params = {
         "filter": "municipality_number IN (%s)" % municipality_codes
     }
     loader.run(base_params=base_params, max_records=args.limit)
-    
