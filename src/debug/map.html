@@ -1,0 +1,150 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Energy map debugger</title>
+    <meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+    <script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>
+    <link href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css" rel="stylesheet" />
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      #map {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 100%;
+      }
+
+      .mapboxgl-popup-content,
+      .maplibregl-popup-content {
+        padding: 8px 24px;
+        width: fit-content;
+      }
+
+      .maplibregl-popup-content.mapboxgl-popup-content li {
+        white-space: nowrap;
+      }
+
+      .mapboxgl-popup-close-button,
+      .maplibregl-popup-close-button {
+        font-size: 28px;
+        margin: 2px 2px 0 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="map"></div>
+    <script>
+      const params = new URLSearchParams(window.location.search);
+      const env = params.get("env") || "local";
+      const apiTitleEndpont = "http://127.0.0.1:8000/energy-data/tiles/{z}/{x}/{y}.pbf";
+      const getHeatingSourceColor = (source) => {
+        switch (source) {
+          case "04": // electricity
+            return "#812FA7";
+          case "01": // district heating
+            return "#DD0E8E";
+          case "09": // geothermal
+            return "#BD68FF";
+          case "10": // solar
+            return "#E979C3";
+          default: // others
+            return "#FDD4FF";
+        }
+      };
+
+      const map = new maplibregl.Map({
+        container: "map",
+        style: "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json",
+        center: [24.9627074, 60.206048],
+        zoom: 15,
+        // hash: true, // debug: add x / y / z to URL
+        showTileBoundaries: false,
+      });
+
+      map.on("load", function () {
+        map.addSource("api-tiles", {
+          type: "vector",
+          tiles: [`${apiTitleEndpont}?env=${env}`],
+          minzoom: 10,
+          maxzoom: 24,
+        });
+
+        map.addLayer({
+          id: "api-data-points",
+          type: "circle",
+          source: "api-tiles",
+          "source-layer": "default_layer",
+          paint: {
+            "circle-radius": 5,
+            "circle-opacity": 0.8,
+            "circle-color": [
+              "match",
+              ["get", "heating_energy_source"],
+              "04",
+              "#812FA7", // electricity
+              "01",
+              "#DD0E8E", // district heating
+              "09",
+              "#BD68FF", // geothermal
+              "10",
+              "#E979C3", // solar
+              "#FDD4FF", // others
+            ],
+          },
+        });
+
+        map.on("click", "api-data-points", (e) => {
+          const coordinates = e.features[0].geometry.coordinates.slice();
+          const props = e.features[0].properties;
+          const {
+            address_fin,
+            postal_code,
+            postal_office_fin,
+            heating_method,
+            heating_energy_source,
+            heating_method_label_en,
+            heating_energy_source_label_en,
+            completion_date,
+            floor_area,
+            gross_floor_area,
+            total_area,
+            volume,
+          } = props;
+
+          const heatingSourceColor = getHeatingSourceColor(heating_energy_source);
+
+          const popupContent = `
+                <h3>${address_fin}, ${postal_code} ${postal_office_fin}</h3>
+                <ul style="padding: 0; list-style: none;">
+                    <li><strong>Completion date:</strong> ${completion_date}</li>
+                    <li><strong>Heating method:</strong> ${heating_method} - ${heating_method_label_en}</li>
+                    <li style="color: ${heatingSourceColor}"><strong>Heating source:</strong> ${heating_energy_source} - ${heating_energy_source_label_en}</li>
+                    <li><strong>Floor area:</strong> ${floor_area} m²</li>
+                    <li><strong>Gross floor area:</strong> ${gross_floor_area} m²</li>
+                    <li><strong>Total area:</strong> ${total_area} m²</li>
+                    <li><strong>Volume:</strong> ${volume} m³</li>
+                </ul>
+            `;
+
+          while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+            coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+          }
+
+          new maplibregl.Popup().setLngLat(coordinates).setHTML(popupContent).addTo(map);
+        });
+
+        map.on("mouseenter", "api-data-points", () => {
+          map.getCanvas().style.cursor = "pointer";
+        });
+
+        map.on("mouseleave", "api-data-points", () => {
+          map.getCanvas().style.cursor = "";
+        });
+      });
+    </script>
+  </body>
+</html>
