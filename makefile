@@ -38,3 +38,5 @@ etl_load_polygons:
 	docker compose exec app python3 -m src.etl.load_polygons
 etl_load: # load all data
 	docker compose exec app python3 -m src.etl
+etl_merge: # merge buildings, addresses, polygons into one main table. Process geometries, prioritize polygon, then point
+	docker compose exec app python3 -m src.etl.merge

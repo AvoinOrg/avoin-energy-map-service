@@ -74,10 +74,34 @@
         });
 
         map.addLayer({
-          id: "api-data-points",
+          id: "polygon-data-points",
+          type: "fill",
+          source: "api-tiles",
+          "source-layer": "layer_polygons",
+          paint: {
+            "fill-opacity": 0.6,
+
+            "fill-color": [
+              "match",
+              ["get", "heating_energy_source"],
+              "04",
+              "#812FA7", // electricity
+              "01",
+              "#DD0E8E", // district heating
+              "09",
+              "#BD68FF", // geothermal
+              "10",
+              "#E979C3", // solar
+              "#FDD4FF", // others
+            ],
+          },
+        });
+
+        map.addLayer({
+          id: "circle-data-points",
           type: "circle",
           source: "api-tiles",
-          "source-layer": "default_layer",
+          "source-layer": "layer_points",
           paint: {
             "circle-radius": 5,
             "circle-opacity": 0.8,
@@ -97,17 +121,19 @@
           },
         });
 
-        map.on("click", "api-data-points", (e) => {
-          const coordinates = e.features[0].geometry.coordinates.slice();
-          const props = e.features[0].properties;
+        const showPopup = (event) => {
+          const props = event.features[0].properties;
           const {
             address_fin,
+            building_key,
+            permanent_building_identifier,
             postal_code,
             postal_office_fin,
             heating_method,
             heating_energy_source,
             heating_method_label_en,
             heating_energy_source_label_en,
+            main_purpose_label_en,
             completion_date,
             floor_area,
             gross_floor_area,
@@ -120,9 +146,12 @@
           const popupContent = `
                 <h3>${address_fin}, ${postal_code} ${postal_office_fin}</h3>
                 <ul style="padding: 0; list-style: none;">
+                    <li><strong>Building key:</strong> ${building_key}</li>
+                    <li><strong>Permanent building identifier:</strong> ${permanent_building_identifier}</li>
                     <li><strong>Completion date:</strong> ${completion_date}</li>
                     <li><strong>Heating method:</strong> ${heating_method} - ${heating_method_label_en}</li>
                     <li style="color: ${heatingSourceColor}"><strong>Heating source:</strong> ${heating_energy_source} - ${heating_energy_source_label_en}</li>
+                    <li><strong>Main purpose:</strong> ${main_purpose_label_en}</li>
                     <li><strong>Floor area:</strong> ${floor_area} m²</li>
                     <li><strong>Gross floor area:</strong> ${gross_floor_area} m²</li>
                     <li><strong>Total area:</strong> ${total_area} m²</li>
@@ -130,19 +159,34 @@
                 </ul>
             `;
 
-          while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
-            coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+          new maplibregl.Popup().setLngLat(event.lngLat).setHTML(popupContent).addTo(map);
+        };
+
+        map.on("click", "circle-data-points", showPopup);
+        map.on("click", "polygon-data-points", showPopup);
+
+        map.on("mouseenter", "polygon-data-points", () => (map.getCanvas().style.cursor = "pointer"));
+        map.on("mouseleave", "polygon-data-points", () => (map.getCanvas().style.cursor = ""));
+
+        map.on("mouseenter", "circle-data-points", () => (map.getCanvas().style.cursor = "pointer"));
+        map.on("mouseleave", "circle-data-points", () => (map.getCanvas().style.cursor = ""));
+
+        map.on("click", function (e) {
+          // get ALL features under the mouse (from any layer)
+          const features = map.queryRenderedFeatures(e.point);
+
+          if (features.length > 0) {
+            console.log("--- CLICKED FEATURES ---");
+            features.forEach((f) => {
+              console.log("Layer ID:", f.layer.id);
+              console.log("Source Layer:", f.sourceLayer);
+              console.log("Properties:", f.properties);
+              console.log("Geometry Type:", f.geometry.type);
+              console.log("------------------------");
+            });
+          } else {
+            console.log("No features found here.");
           }
-
-          new maplibregl.Popup().setLngLat(coordinates).setHTML(popupContent).addTo(map);
-        });
-
-        map.on("mouseenter", "api-data-points", () => {
-          map.getCanvas().style.cursor = "pointer";
-        });
-
-        map.on("mouseleave", "api-data-points", () => {
-          map.getCanvas().style.cursor = "";
         });
       });
     </script>

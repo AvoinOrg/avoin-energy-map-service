@@ -59,9 +59,4 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     loader = AddressLoader()
-    municipality_codes = "'018','049','078','091','092','106','149','186','224','235','245','257','407','434','444','504','505','543','611','616','638','710','753','755','858','927'"  # Uusimaa municipalities
-    # municipality_codes = '616'  # Pukkila 2k records only for testing
-    base_params = {
-        "filter": "municipality_number IN (%s)" % municipality_codes
-    }
-    loader.run(base_params=base_params, max_records=args.limit)
+    loader.run(base_params={}, max_records=args.limit)

@@ -5,6 +5,7 @@ from typing import Any, Dict, Optional
 import geopandas as gpd
 import pandas as pd
 
+from sqlalchemy import text, func
 from sqlalchemy.dialects.postgresql import insert
 from db.session import SessionLocal
 from db.models import Polygon
@@ -21,7 +22,7 @@ DEFAULT_PARAMS = {
     "typenames": "bu-core2d:Building",
     "srsname": "EPSG:4326",
     # "bbox": "24.9454703,60.1697815,24.9511014,60.1678721,EPSG:4326"
-    "bbox": "22.659,59.611,26.656,60.840,EPSG:4326" # Uusimaa bounding box for MVP
+    # "bbox": "22.659,59.611,26.656,60.840,EPSG:4326" # Uusimaa bounding box for MVP
 }
 BATCH_SIZE = 1000
 LIMIT = None # limit record to fetch. for testing purposes
@@ -91,6 +92,7 @@ def load_polygons():
                                 "building_key": row["building_key"],
                                 "modified_timestamp_utc": row["modified_timestamp_utc"],
                                 "polygon": row["geometry"],
+                                "updated_at": func.now(),
                             },
                         )
                         session.execute(stmt)
@@ -116,5 +118,61 @@ def load_polygons():
     elapsed = time.perf_counter() - start_time
     logger.info(f"Completed in {elapsed:.2f} seconds")
 
+
+def link_buildings_to_polygons():
+    print("Add building_key to polygons")
+    start_time = time.time()
+
+    with SessionLocal() as db:
+        print("Run Spatial UPDATE to link polygons to buildings...")
+
+        sql = text("""
+            UPDATE polygons p
+            SET building_key = b.building_key, updated_at = now()
+            FROM buildings b
+            WHERE ST_Intersects(p.polygon, b.point)
+            AND p.building_key IS NULL
+            AND p.updated_at = current_date;
+        """)
+
+        result = db.execute(sql)
+        db.commit()
+
+    elapsed = time.time() - start_time
+    print(f"Linked {result.rowcount} polygons in {elapsed:.2f} seconds.")
+
+def save_unlinked_polygons():
+    print("Find bulidings without polygon match and try fuzzy matching based on proximity...")
+    start_time = time.time()
+
+    with SessionLocal() as db:
+        sql = text("""
+            WITH fallback_matches AS (
+                SELECT p.polygon_key, b.building_key
+                FROM polygons p
+                CROSS JOIN LATERAL (
+                    SELECT b.building_key
+                    FROM buildings b
+                    -- search within 25 meters (approx 0.00025 degrees if using 4326,
+                    WHERE ST_DWithin(p.polygon, b.point, 25)
+                    ORDER BY p.polygon <-> b.point ASC
+                    LIMIT 1
+                ) b
+                WHERE p.building_key IS NULL -- only target unlinked polygons
+            )
+            UPDATE polygons p
+            SET building_key = fm.building_key
+            FROM fallback_matches fm
+            WHERE p.polygon_key = fm.polygon_key;
+        """)
+        result = db.execute(sql)
+        db.commit()
+
+    elapsed = time.time() - start_time
+    print(f"Added {result.rowcount} building keys to unlinked polygons in {elapsed:.2f} seconds.")
+
+
 if __name__ == "__main__":
     load_polygons()
+    link_buildings_to_polygons()
+    save_unlinked_polygons()

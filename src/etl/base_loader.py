@@ -1,6 +1,6 @@
 import os, logging, time
 from typing import Any, Dict, Iterable, Optional, List, Tuple
-from concurrent.futures import ThreadPoolExecutor, as_completed
+from concurrent.futures import ThreadPoolExecutor, as_completed, wait, FIRST_COMPLETED
 from contextlib import contextmanager
 
 import requests
@@ -237,28 +237,57 @@ class BaseLoader:
             self.logger.exception("Upsert failed for %s: %s", row, e)
             return False
 
-    # ---- Batch worker
     def _upsert_batch_worker(self, features_batch: List[Dict[str, Any]]) -> int:
-        written = 0
+        """
+        Performance Op: Transforms data in memory, then sends ONE massive SQL
+        statement to the DB instead of 2000 small ones.
+        """
+        valid_rows = []
+
+        # 1. CPU Bound: Map all features to rows first
+        for feature in features_batch:
+            try:
+                row = self.map_feature_to_row(feature)
+                if row and not self.should_skip_feature(row):
+                    valid_rows.append(row)
+            except Exception as e:
+                self.logger.error(f"Mapping failed for feature: {e}")
+                continue
+
+        if not valid_rows:
+            return 0
+
+        # 2. IO Bound: Execute single Batch Upsert
         with SessionLocal() as worker_sess:
             try:
-                for feature in features_batch:
-                    row = self.map_feature_to_row(feature)
-                    if not row or self.should_skip_feature(row):
-                        continue
-                    if self.upsert_one(worker_sess, row):
-                        written += 1
+                # Prepare the INSERT statement with the list of dictionaries
+                stmt = insert(self.model_class).values(valid_rows)
+
+                # Dynamically build the SET clause for ON CONFLICT update.
+                # We update every column in the model that isn't part of the unique index/conflict key.
+                # 'stmt.excluded' represents the row we were trying to insert.
+                update_dict = {
+                    col.name: getattr(stmt.excluded, col.name)
+                    for col in self.model_class.__table__.columns
+                    if col.name not in self._conflict_field_names()
+                }
+
+                # Attach the ON CONFLICT clause
+                stmt = stmt.on_conflict_do_update(
+                    index_elements=list(self.index_columns), set_=update_dict
+                )
+
+                worker_sess.execute(stmt)
                 worker_sess.commit()
+                return len(valid_rows)
+
             except Exception as e:
                 worker_sess.rollback()
                 self.logger.exception(
-                    "Batch failed, rolled back (%d features): %s",
-                    len(features_batch),
-                    e,
+                    "Batch failed, rolled back (%d rows): %s", len(valid_rows), e
                 )
-        return written
+                return 0
 
-    # ---- Run end-to-end
     def run(
         self,
         *,
@@ -270,16 +299,15 @@ class BaseLoader:
         start_time = time.perf_counter()
 
         self.logger.info(
-            "Extract started | page_size=%s | workers=%s | upsert_batch=%s | max_records=%s",
+            "Extract started | page_size=%s | workers=%s | upsert_batch=%s",
             self.API_PAGE_SIZE,
             self.MAX_WORKERS,
             self.UPSERT_BATCH_SIZE,
-            max_records,
         )
 
+        futures: List = []
+
         try:
-            futures: List = []
-            submitted = 0
             with ThreadPoolExecutor(max_workers=self.MAX_WORKERS) as pool:
                 current_batch: List[Dict[str, Any]] = []
 
@@ -287,61 +315,39 @@ class BaseLoader:
                     current_batch.append(feature)
                     total_seen += 1
 
+                    # If batch is full, submit it
                     if len(current_batch) >= self.UPSERT_BATCH_SIZE:
                         futures.append(
                             pool.submit(self._upsert_batch_worker, current_batch)
                         )
-                        submitted += 1
                         current_batch = []
 
-                        # backpressure: keep only N in-flight futures
+                        # BACKPRESSURE CONTROL
+                        # If we have too many active tasks, PAUSE here until at least one finishes.
                         while len(futures) >= self.MAX_INFLIGHT_FUTURES:
-                            done_any = False
-                            for fut in as_completed(futures, timeout=0.1):
-                                written = fut.result()
-                                total_written += written
+                            # wait() blocks efficiently. No timeout needed.
+                            done, _ = wait(futures, return_when=FIRST_COMPLETED)
+
+                            # Clean up finished futures and tally results
+                            for fut in done:
+                                total_written += fut.result()
                                 futures.remove(fut)
-                                done_any = True
-                                break
-                            if not done_any:
-                                break  # no futures completed yet; give producer a chance
 
                     if max_records and total_seen >= max_records:
                         break
 
+                # Submit final partial batch
                 if current_batch:
                     futures.append(
                         pool.submit(self._upsert_batch_worker, current_batch)
                     )
-                    submitted += 1
 
-                # Drain
-                completed = 0
-                total_batches = len(futures)
+                # Drain remaining futures
                 for fut in as_completed(futures):
-                    written = fut.result()
-                    completed += 1
-                    total_written += written
-                    elapsed = time.perf_counter() - start_time
-                    self.logger.info(
-                        "Batch %d/%d finished | batch_written=%d | cumulative_seen=%d | cumulative_written=%d | elapsed=%.2fs",
-                        completed,
-                        total_batches,
-                        written,
-                        total_seen,
-                        total_written,
-                        elapsed,
-                    )
+                    total_written += fut.result()
 
         except Exception as exc:
-            elapsed = time.perf_counter() - start_time
-            self.logger.exception(
-                "Extract failed after %.2fs | seen=%d | written=%d | error=%s",
-                elapsed,
-                total_seen,
-                total_written,
-                exc,
-            )
+            self.logger.exception("Extract failed: %s", exc)
             raise
 
         elapsed = time.perf_counter() - start_time
