@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 import time
+from sqlalchemy import text
 from db.session import SessionLocal
 
 def get_unique_column_names():
@@ -79,10 +80,11 @@ def get_lookup_data(calculation_cols):
             for idx in df.index:
                 col_name = idx[3:] # remove ab_ or dh_
                 if col_name in row_data:
-                    row_data[col_name] = df.loc[idx, age_col]
+                    val = df.loc[idx, age_col]
+                    # Convert numpy types to standard python types for DB compatibility
+                    row_data[col_name] = float(val) if pd.notnull(val) else None
 
             lookup_rows.append(row_data)
-
     return lookup_rows
 
 def run_update(calculation_cols, lookup_data):
@@ -107,8 +109,13 @@ def run_update(calculation_cols, lookup_data):
         placeholders_str = ", ".join([f":{k}" for k in all_keys])
         insert_stmt = f"INSERT INTO temp_energy_lookup ({cols_str}) VALUES ({placeholders_str})"
 
+        print(f"Inserting {len(lookup_data)} rows into temp_energy_lookup...")
         for row in lookup_data:
             session.execute(text(insert_stmt), row)
+
+        # Debug: Check if temp table has data
+        debug_res = session.execute(text("SELECT count(*), main_purpose FROM temp_energy_lookup GROUP BY main_purpose")).fetchall()
+        print(f"Temp table counts: {debug_res}")
 
         # 3. Perform the mass update
         set_clause = ", ".join([f"\"{col}\" = l.\"{col}\"" for col in calculation_cols])
@@ -136,7 +143,8 @@ def run_update(calculation_cols, lookup_data):
         """
 
         print("Executing mass update on main table...")
-        session.execute(text(update_stmt))
+        res = session.execute(text(update_stmt))
+        print(f"Update completed. Rows affected: {res.rowcount}")
 
         # 4. Nullify columns for buildings that don't match criteria
         null_clause = ", ".join([f"\"{col}\" = NULL" for col in calculation_cols])
@@ -149,6 +157,65 @@ def run_update(calculation_cols, lookup_data):
         session.execute(text(reset_stmt))
 
         session.commit()
+
+def verify_random_rows(calculation_cols, lookup_data, count=50):
+    """Selects random rows and prints their calculation data for verification against lookup_data."""
+    # Pick a few sample columns to show
+    sample_cols = [c for c in ['wood_default_heat', 'oil_default_heat', 'gshp_windows_total', 'distr_solar_total'] if c in calculation_cols]
+    cols_str = ", ".join([f"\"{c}\"" for c in sample_cols])
+
+    query = f"""
+        SELECT main_purpose, completion_date, {cols_str}
+        FROM main
+        WHERE main_purpose IN ('05', '06') AND completion_date IS NOT NULL
+        ORDER BY RANDOM()
+        LIMIT :count
+    """
+
+    # Helper to map date to age group name
+    def get_age_group(d):
+        if d <= date(1975, 12, 31): return 'agegroup_1'
+        if d <= date(1977, 12, 31): return 'agegroup_2'
+        if d <= date(1984, 12, 31): return 'agegroup_3'
+        if d <= date(2002, 12, 31): return 'agegroup_4'
+        if d <= date(2007, 12, 31): return 'agegroup_5'
+        if d <= date(2009, 12, 31): return 'agegroup_6'
+        if d <= date(2011, 12, 31): return 'agegroup_7'
+        if d <= date(2017, 12, 31): return 'agegroup_8'
+        return 'agegroup_9'
+
+    from datetime import date
+
+    print(f"\n--- Verifying {count} Random Rows Against CSV Data ---")
+    print(f"{'Purpose':<8} | {'Date':<11} | {'Age Group':<12} | {'Column':<20} | {'DB Value':<12} | {'CSV Value':<12} | {'Status'}")
+    print("-" * 105)
+
+    with SessionLocal() as session:
+        results = session.execute(text(query), {"count": count}).fetchall()
+        for row in results:
+            m_purpose = row[0]
+            c_date = row[1]
+            age_group = get_age_group(c_date)
+
+            # Find expected row in lookup_data
+            expected_row = next((r for r in lookup_data if r['main_purpose'] == m_purpose and r['age_group'] == age_group), None)
+
+            for i, col in enumerate(sample_cols):
+                db_val = row[i+2]
+                csv_val = expected_row.get(col) if expected_row else "N/A"
+
+                status = "OK"
+                if db_val is None and csv_val is None:
+                    status = "OK (Both NULL)"
+                elif db_val is None or csv_val is None:
+                    status = "MISMATCH"
+                elif abs(float(db_val) - float(csv_val)) > 1e-5:
+                    status = "MISMATCH"
+
+                # Print only first sample col per row for brevity, or all? Let's do first one that exists
+                if csv_val is not None:
+                    print(f"{m_purpose:<8} | {str(c_date):<11} | {age_group:<12} | {col:<20} | {str(db_val):<12} | {str(csv_val):<12} | {status}")
+                    break # Show one column per random building for a clean summary
 
 if __name__ == "__main__":
     print("Start adding calculation to main table")
@@ -167,4 +234,7 @@ if __name__ == "__main__":
     # 4. Run the high-performance update
     run_update(calculation_cols, lookup_data)
 
-    print(f"Calculations added in {time.time() - start_time:.2f}s")
+    # 5. Verify random rows
+    verify_random_rows(calculation_cols, lookup_data)
+
+    print(f"\nCalculations added and verified in {time.time() - start_time:.2f}s")
