@@ -1,6 +1,28 @@
 from sqlalchemy import text
 from src.db.session import SessionLocal
+from src.etl.augment_modeled_energy_classes import augment_main as augment_modeled_energy_classes
 import time
+
+def validate_energy_certificate_join(db):
+    duplicate_sql = text("""
+        SELECT permanent_building_identifier, COUNT(*) AS building_count
+        FROM buildings
+        WHERE permanent_building_identifier IS NOT NULL
+        GROUP BY permanent_building_identifier
+        HAVING COUNT(*) > 1
+        LIMIT 10;
+    """)
+    duplicates = db.execute(duplicate_sql).mappings().all()
+
+    if duplicates:
+        sample = ", ".join(
+            f"{row['permanent_building_identifier']} ({row['building_count']})"
+            for row in duplicates
+        )
+        raise RuntimeError(
+            "Cannot cleanly join energy certificates: duplicate "
+            f"buildings.permanent_building_identifier values found: {sample}"
+        )
 
 def merge_table():
     print("Start merging table into one")
@@ -11,7 +33,16 @@ def merge_table():
         # populate main table with merged data & processed geometries
         """
         CREATE TABLE main AS
-        WITH processed_buildings AS (
+        WITH latest_energy_certificates AS (
+            SELECT DISTINCT ON (building_identifier)
+                building_identifier,
+                e_class,
+                version
+            FROM energy_certificates
+            WHERE building_identifier IS NOT NULL
+            ORDER BY building_identifier, signed_at DESC NULLS LAST, certificate_id DESC
+        ),
+        processed_buildings AS (
             -- join buildings, addresses & polygons
             -- set final geometry data for building
             SELECT
@@ -25,6 +56,7 @@ def merge_table():
                 b.gross_floor_area,
                 b.total_area,
                 b.volume,
+                b.number_of_storeys,
 
                 -- keep the raw 4326 geometries for polygon overlapping check later
                 b.point as raw_point_4326,
@@ -63,6 +95,25 @@ def merge_table():
             pb.gross_floor_area,
             pb.total_area,
             pb.volume,
+            pb.number_of_storeys,
+            ec.e_class as energy_certificate_class,
+            CASE
+                WHEN NULLIF(TRIM(ec.e_class), '') IS NOT NULL THEN ec.version
+                ELSE NULL
+            END as energy_certificate_class_year,
+            NULL::text as modeled_energy_class,
+            NULL::double precision as modeled_energy_e_value,
+            NULL::text as modeled_energy_class_reason,
+            NULL::text as modeled_energy_class_area_source,
+            NULLIF(UPPER(TRIM(ec.e_class)), '') as energy_class,
+            CASE
+                WHEN NULLIF(TRIM(ec.e_class), '') IS NOT NULL THEN false
+                ELSE NULL
+            END as is_energy_class_modeled,
+            CASE
+                WHEN NULLIF(TRIM(ec.e_class), '') IS NOT NULL THEN ec.version
+                ELSE NULL
+            END as energy_class_year,
             pb.polygon,
 
             -- remove point if polygon exist to avoid duplicates in MVT tiles
@@ -81,7 +132,9 @@ def merge_table():
             END as point
 
         FROM processed_buildings pb
-        LEFT JOIN addresses a ON pb.building_key = a.building_key;
+        LEFT JOIN addresses a ON pb.building_key = a.building_key
+        LEFT JOIN latest_energy_certificates ec
+            ON pb.permanent_building_identifier = ec.building_identifier;
         """,
 
         # add spatial index for MVT queries
@@ -90,11 +143,14 @@ def merge_table():
     ]
 
     with SessionLocal() as db:
+        validate_energy_certificate_join(db)
         for cmd in sql_commands:
             print(f"  - Executing: {cmd[:50]}...")
             db.execute(text(cmd))
+        modeled_rows = augment_modeled_energy_classes(db)
         db.commit()
 
+    print(f"Modeled energy classes evaluated for {modeled_rows} main rows")
     print(f"Table merging completed in {time.time() - start:.2f}s")
 
 if __name__ == "__main__":

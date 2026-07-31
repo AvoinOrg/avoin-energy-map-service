@@ -21,9 +21,9 @@ COPY pyproject.toml poetry.lock* /app/
 # Install deps (no root package install)
 RUN poetry install --no-root
 
-# Now copy the actual source code
-COPY src/db /app/db
-COPY src/etl /app/etl
+# Now copy the actual source code and versioned ETL reference assets
+COPY src /app/src
+COPY assets /app/assets
 COPY db_migrations /app/db_migrations
 COPY alembic.ini /app/alembic.ini
 

@@ -38,6 +38,8 @@ services:
       # Upstream endpoints (fill these!)
       BUILDINGS_API_URL: ${BUILDINGS_API_URL:-}
       ADDRESSES_API_URL: ${ADDRESSES_API_URL:-}
+      ENERGY_CERTIFICATES_CSV_URL: ${ENERGY_CERTIFICATES_CSV_URL:-https://www.energiatodistusrekisteri.fi/api/public/energiatodistukset/csv/energiatodistukset.csv}
+      ENERGY_CERTIFICATES_CSV_PATH: ${ENERGY_CERTIFICATES_CSV_PATH:-data/energiatodistukset.csv}
 
     # For live dev, mount the code (optional)
     volumes:
