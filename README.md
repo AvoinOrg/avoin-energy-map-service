@@ -41,7 +41,7 @@ make etl_load_buildings_test limit=1000
 make etl_download_energy_certificates
 make etl_load_energy_certificates
 ```
-7. Merge buildings, addresses, polygons, and the latest energy certificate class into the map table when the source tables are loaded
+7. Merge buildings, addresses, polygons, and the latest energy-certificate details into the map table when the source tables are loaded
 ```
 make etl_merge
 ```
@@ -72,9 +72,23 @@ The clean join key is:
 - CSV `Perustiedot / Rakennustunnus`
 - Ryhti building API / `buildings.permanent_building_identifier`
 
-All certificate rows are stored in `energy_certificates` with `certificate_id` from CSV `Id` as the primary key. A building may have several certificates, so `etl_merge` adds the latest signed certificate's class to `main.energy_certificate_class`. The official class-scale year in `main.energy_certificate_class_year` comes from CSV `Versio`, whose current values are 2013 and 2018. Buildings without a matching certificate, or with a certificate that has no class, get `NULL`. The full source row is preserved as JSONB in `energy_certificates.source_row`.
+All certificate rows are stored in `energy_certificates` with `certificate_id` from CSV `Id` as the primary key. A building may have several certificates, so `etl_merge` selects the latest certificate by `signed_at DESC NULLS LAST, certificate_id DESC`. The immediately preceding row in that same order supplies `energy_certificate_previous_class`. Buildings without a matching certificate get `NULL` certificate fields. The full source row is preserved as JSONB in `energy_certificates.source_row`.
 
-`etl_merge` stops if loaded buildings contain duplicate `permanent_building_identifier` values, because that would make the certificate join ambiguous. `etl_augment_main_energy_certificates` performs the same safety check against an existing `main` table by ensuring a `permanent_building_identifier` does not point to multiple `building_key` values before it updates rows in place. The in-place command also removes older multi-field `energy_certificate_*` columns from `main` unless run with `--keep-old-columns`.
+The merged table and the building polygon/point GeoServer layers expose:
+
+| Column | Meaning |
+| --- | --- |
+| `property_identifier` | Finnish property identifier from the building source. |
+| `energy_certificate_valid_until` | Latest certificate validity end timestamp. |
+| `energy_certificate_previous_class` | Class on the immediately preceding certificate, if one exists. |
+| `energy_certificate_recommendations_fi` / `_sv` | Latest certificate recommendations in Finnish and Swedish. |
+| `energy_certificate_heated_net_area` | Latest certificate heated net area. |
+| `energy_certificate_ventilation_type_id` | Latest certificate ventilation type code. |
+| `energy_certificate_ventilation_description_fi` / `_sv` | Latest certificate ventilation descriptions in Finnish and Swedish. |
+
+The latest certificate's current class is in `main.energy_certificate_class`. The official class-scale year in `main.energy_certificate_class_year` comes from CSV `Versio`, whose current values are 2013 and 2018. A certificate with no current class gets a `NULL` current class and class year while its other latest-certificate fields remain available.
+
+`etl_merge` stops if loaded buildings contain duplicate `permanent_building_identifier` values, because that would make the certificate join ambiguous. `etl_augment_main_energy_certificates` performs the same safety check against an existing `main` table by ensuring a `permanent_building_identifier` does not point to multiple `building_key` values before it updates rows in place. It also copies `property_identifier` from a populated `buildings` staging table. The in-place command removes obsolete certificate columns that are not in the published list unless run with `--keep-old-columns`.
 
 ## Modeled energy classes
 
@@ -110,20 +124,21 @@ make etl_augment_main_energy_certificates
 make etl_augment_main_modeled_energy_classes
 ```
 
-## GeoServer energy certificate tiles
+## GeoServer building tiles
 The sandbox GeoServer layers `sandbox_energiakartta:energymap_building_polygons`
 and `sandbox_energiakartta:energymap_building_points` are SQL-view-backed
 feature types. They keep their own virtual-table SQL and explicit attribute
 lists, so adding a database column is not enough for WMTS/MVT clients.
 
-Run this after the `main` energy class columns have been added or refreshed:
+Run this after the published `main` columns have been added or refreshed:
 ```
 make geoserver_update_energy_classes
 ```
 
-The command reads `GEOSERVER_*` values from `.env.sandbox`, sets the datastore
-startup SQL to `SET jit = off`, adds the official, modeled, and effective energy
-class properties to both GeoServer layer schemas, reloads GeoServer, and keeps
+The command reads `GEOSERVER_*` values from `.env.sandbox`, checks that the datastore
+startup SQL is already `SET jit = off`, adds the property identifier, certificate details,
+and official, modeled, and effective energy-class properties to both GeoServer
+layer schemas, reloads GeoServer, and keeps
 the GeoWebCache layers MVT-only. It also sets the polygon GWC layer to serve
 zooms 12-17, cache zooms 12-14, and use 1x1 metatiles. It truncates the MVT cache
 when `GEOSERVER_TRUNCATE_GWC=true`. The older

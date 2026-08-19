@@ -33,14 +33,33 @@ def merge_table():
         # populate main table with merged data & processed geometries
         """
         CREATE TABLE main AS
-        WITH latest_energy_certificates AS (
-            SELECT DISTINCT ON (building_identifier)
+        WITH ranked_energy_certificates AS (
+            SELECT
                 building_identifier,
                 e_class,
-                version
+                version,
+                valid_until,
+                recommendations_fi,
+                recommendations_sv,
+                heated_net_area,
+                ventilation_type_id,
+                ventilation_description_fi,
+                ventilation_description_sv,
+                LEAD(e_class) OVER (
+                    PARTITION BY building_identifier
+                    ORDER BY signed_at DESC NULLS LAST, certificate_id DESC
+                ) AS previous_class,
+                ROW_NUMBER() OVER (
+                    PARTITION BY building_identifier
+                    ORDER BY signed_at DESC NULLS LAST, certificate_id DESC
+                ) AS history_position
             FROM energy_certificates
             WHERE building_identifier IS NOT NULL
-            ORDER BY building_identifier, signed_at DESC NULLS LAST, certificate_id DESC
+        ),
+        latest_energy_certificates AS (
+            SELECT *
+            FROM ranked_energy_certificates
+            WHERE history_position = 1
         ),
         processed_buildings AS (
             -- join buildings, addresses & polygons
@@ -48,6 +67,7 @@ def merge_table():
             SELECT
                 b.building_key,
                 b.permanent_building_identifier,
+                b.property_identifier,
                 b.heating_method,
                 b.heating_energy_source,
                 b.main_purpose,
@@ -87,6 +107,7 @@ def merge_table():
 
             pb.building_key,
             pb.permanent_building_identifier,
+            pb.property_identifier,
             pb.heating_method,
             pb.heating_energy_source,
             pb.main_purpose,
@@ -101,6 +122,14 @@ def merge_table():
                 WHEN NULLIF(TRIM(ec.e_class), '') IS NOT NULL THEN ec.version
                 ELSE NULL
             END as energy_certificate_class_year,
+            ec.valid_until as energy_certificate_valid_until,
+            ec.previous_class as energy_certificate_previous_class,
+            ec.recommendations_fi as energy_certificate_recommendations_fi,
+            ec.recommendations_sv as energy_certificate_recommendations_sv,
+            ec.heated_net_area as energy_certificate_heated_net_area,
+            ec.ventilation_type_id as energy_certificate_ventilation_type_id,
+            ec.ventilation_description_fi as energy_certificate_ventilation_description_fi,
+            ec.ventilation_description_sv as energy_certificate_ventilation_description_sv,
             NULL::text as modeled_energy_class,
             NULL::double precision as modeled_energy_e_value,
             NULL::text as modeled_energy_class_reason,

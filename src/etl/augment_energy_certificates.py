@@ -12,9 +12,18 @@ BUILDING_IDENTIFIER_COLUMN = "permanent_building_identifier"
 BUILDING_KEY_COLUMN = "building_key"
 CERTIFICATE_CLASS_COLUMN = "energy_certificate_class"
 CERTIFICATE_CLASS_YEAR_COLUMN = "energy_certificate_class_year"
-ENERGY_CLASS_COLUMNS = {
+MAIN_COLUMNS = {
+    "property_identifier": "text",
     CERTIFICATE_CLASS_COLUMN: "text",
     CERTIFICATE_CLASS_YEAR_COLUMN: "integer",
+    "energy_certificate_valid_until": "timestamp without time zone",
+    "energy_certificate_previous_class": "text",
+    "energy_certificate_recommendations_fi": "text",
+    "energy_certificate_recommendations_sv": "text",
+    "energy_certificate_heated_net_area": "double precision",
+    "energy_certificate_ventilation_type_id": "text",
+    "energy_certificate_ventilation_description_fi": "text",
+    "energy_certificate_ventilation_description_sv": "text",
     "modeled_energy_class": "text",
     "modeled_energy_e_value": "double precision",
     "modeled_energy_class_reason": "text",
@@ -28,15 +37,11 @@ OLD_MAIN_CERTIFICATE_COLUMNS = [
     "energy_certificate_id",
     "energy_certificate_version",
     "energy_certificate_signed_at",
-    "energy_certificate_valid_until",
     "energy_certificate_e_value",
     "energy_certificate_e_class",
     "energy_certificate_e_class_limit_2018",
-    "energy_certificate_heated_net_area",
     "energy_certificate_use_purpose",
     "energy_certificate_sub_use_purpose_fi",
-    "energy_certificate_ventilation_type_id",
-    "energy_certificate_ventilation_description_fi",
     "energy_certificate_heating_form_1_id",
     "energy_certificate_heating_form_2_id",
     "energy_certificate_heating_form_1_description_fi",
@@ -44,6 +49,19 @@ OLD_MAIN_CERTIFICATE_COLUMNS = [
     "energy_certificate_heat_distribution_id",
     "energy_certificate_heat_distribution_description_fi",
 ]
+
+PUBLISHED_CERTIFICATE_COLUMNS = (
+    CERTIFICATE_CLASS_COLUMN,
+    CERTIFICATE_CLASS_YEAR_COLUMN,
+    "energy_certificate_valid_until",
+    "energy_certificate_previous_class",
+    "energy_certificate_recommendations_fi",
+    "energy_certificate_recommendations_sv",
+    "energy_certificate_heated_net_area",
+    "energy_certificate_ventilation_type_id",
+    "energy_certificate_ventilation_description_fi",
+    "energy_certificate_ventilation_description_sv",
+)
 
 logging.basicConfig(
     level=os.getenv("LOG_LEVEL", "INFO"),
@@ -89,6 +107,10 @@ def assert_main_join_is_clean(skip_join_check: bool = False) -> None:
                 "Cannot augment energy certificates: main.permanent_building_identifier "
                 "is missing."
             )
+        if BUILDING_KEY_COLUMN not in columns:
+            raise RuntimeError(
+                "Cannot augment property identifiers: main.building_key is missing."
+            )
 
         if not skip_join_check and BUILDING_KEY_COLUMN in columns:
             ambiguous = session.execute(
@@ -125,7 +147,7 @@ def assert_main_join_is_clean(skip_join_check: bool = False) -> None:
 
 def ensure_main_columns() -> None:
     with SessionLocal() as session:
-        for column_name, column_type in ENERGY_CLASS_COLUMNS.items():
+        for column_name, column_type in MAIN_COLUMNS.items():
             session.execute(
                 text(
                     f"ALTER TABLE {MAIN_TABLE} "
@@ -141,23 +163,65 @@ def ensure_main_columns() -> None:
         session.commit()
 
 
+def augment_property_identifiers() -> int:
+    with SessionLocal() as session:
+        result = session.execute(
+            text("""
+                UPDATE main m
+                SET property_identifier = b.property_identifier
+                FROM buildings b
+                WHERE m.building_key = b.building_key
+                  AND m.property_identifier IS DISTINCT FROM b.property_identifier;
+            """)
+        )
+        session.commit()
+        return result.rowcount or 0
+
+
 def augment_main(clear_stale: bool = True) -> int:
     update_sql = text(f"""
-        WITH latest_energy_certificates AS (
-            SELECT DISTINCT ON (building_identifier)
+        WITH ranked_energy_certificates AS (
+            SELECT
                 building_identifier,
                 e_class,
-                version
+                version,
+                valid_until,
+                recommendations_fi,
+                recommendations_sv,
+                heated_net_area,
+                ventilation_type_id,
+                ventilation_description_fi,
+                ventilation_description_sv,
+                LEAD(e_class) OVER (
+                    PARTITION BY building_identifier
+                    ORDER BY signed_at DESC NULLS LAST, certificate_id DESC
+                ) AS previous_class,
+                ROW_NUMBER() OVER (
+                    PARTITION BY building_identifier
+                    ORDER BY signed_at DESC NULLS LAST, certificate_id DESC
+                ) AS history_position
             FROM energy_certificates
             WHERE building_identifier IS NOT NULL
-            ORDER BY building_identifier, signed_at DESC NULLS LAST, certificate_id DESC
+        ),
+        latest_energy_certificates AS (
+            SELECT *
+            FROM ranked_energy_certificates
+            WHERE history_position = 1
         )
         UPDATE main m
         SET {CERTIFICATE_CLASS_COLUMN} = ec.e_class,
             {CERTIFICATE_CLASS_YEAR_COLUMN} = CASE
                 WHEN NULLIF(TRIM(ec.e_class), '') IS NOT NULL THEN ec.version
                 ELSE NULL
-            END
+            END,
+            energy_certificate_valid_until = ec.valid_until,
+            energy_certificate_previous_class = ec.previous_class,
+            energy_certificate_recommendations_fi = ec.recommendations_fi,
+            energy_certificate_recommendations_sv = ec.recommendations_sv,
+            energy_certificate_heated_net_area = ec.heated_net_area,
+            energy_certificate_ventilation_type_id = ec.ventilation_type_id,
+            energy_certificate_ventilation_description_fi = ec.ventilation_description_fi,
+            energy_certificate_ventilation_description_sv = ec.ventilation_description_sv
         FROM latest_energy_certificates ec
         WHERE m.permanent_building_identifier = ec.building_identifier;
     """)
@@ -167,12 +231,19 @@ def augment_main(clear_stale: bool = True) -> int:
         updated_rows = result.rowcount or 0
 
         if clear_stale:
+            clear_assignments = ",\n                        ".join(
+                f"{column_name} = NULL"
+                for column_name in PUBLISHED_CERTIFICATE_COLUMNS
+            )
+            any_value_present = " OR\n                          ".join(
+                f"m.{column_name} IS NOT NULL"
+                for column_name in PUBLISHED_CERTIFICATE_COLUMNS
+            )
             session.execute(
                 text(f"""
                     UPDATE main m
-                    SET {CERTIFICATE_CLASS_COLUMN} = NULL,
-                        {CERTIFICATE_CLASS_YEAR_COLUMN} = NULL
-                    WHERE m.{CERTIFICATE_CLASS_COLUMN} IS NOT NULL
+                    SET {clear_assignments}
+                    WHERE ({any_value_present})
                       AND NOT EXISTS (
                           SELECT 1
                           FROM energy_certificates ec
@@ -188,7 +259,13 @@ def augment_main(clear_stale: bool = True) -> int:
                     modeled_energy_e_value = NULL,
                     modeled_energy_class_reason = NULL,
                     modeled_energy_class_area_source = NULL
-                WHERE NULLIF(TRIM({CERTIFICATE_CLASS_COLUMN}), '') IS NOT NULL;
+                WHERE NULLIF(TRIM({CERTIFICATE_CLASS_COLUMN}), '') IS NOT NULL
+                  AND (
+                      modeled_energy_class IS NOT NULL
+                      OR modeled_energy_e_value IS NOT NULL
+                      OR modeled_energy_class_reason IS NOT NULL
+                      OR modeled_energy_class_area_source IS NOT NULL
+                  );
             """)
         )
         session.execute(
@@ -209,7 +286,29 @@ def augment_main(clear_stale: bool = True) -> int:
                             THEN {CERTIFICATE_CLASS_YEAR_COLUMN}
                         WHEN modeled_energy_class IS NOT NULL THEN 2018
                         ELSE NULL
-                    END;
+                    END
+                WHERE ROW(
+                    energy_class,
+                    is_energy_class_modeled,
+                    energy_class_year
+                ) IS DISTINCT FROM ROW(
+                    COALESCE(
+                        NULLIF(UPPER(TRIM({CERTIFICATE_CLASS_COLUMN})), ''),
+                        modeled_energy_class
+                    ),
+                    CASE
+                        WHEN NULLIF(TRIM({CERTIFICATE_CLASS_COLUMN}), '') IS NOT NULL
+                            THEN false
+                        WHEN modeled_energy_class IS NOT NULL THEN true
+                        ELSE NULL
+                    END,
+                    CASE
+                        WHEN NULLIF(TRIM({CERTIFICATE_CLASS_COLUMN}), '') IS NOT NULL
+                            THEN {CERTIFICATE_CLASS_YEAR_COLUMN}
+                        WHEN modeled_energy_class IS NOT NULL THEN 2018
+                        ELSE NULL
+                    END
+                );
             """)
         )
 
@@ -220,10 +319,9 @@ def augment_main(clear_stale: bool = True) -> int:
 def print_report(updated_rows: int) -> None:
     logger.info(
         "Energy certificate main augmentation completed | updated_main_rows=%s | "
-        "columns=%s,%s",
+        "columns=%s",
         updated_rows,
-        CERTIFICATE_CLASS_COLUMN,
-        CERTIFICATE_CLASS_YEAR_COLUMN,
+        ",".join(PUBLISHED_CERTIFICATE_COLUMNS),
     )
 
 
@@ -260,8 +358,10 @@ if __name__ == "__main__":
 
     assert_main_join_is_clean(skip_join_check=args.skip_join_check)
     ensure_main_columns()
+    property_rows = augment_property_identifiers()
     updated = augment_main(clear_stale=not args.keep_stale)
     if not args.keep_old_columns:
         drop_old_main_certificate_columns()
     logger.info("Updated %s main rows from latest energy certificates", updated)
+    logger.info("Updated %s main rows with property identifiers", property_rows)
     print_report(updated)

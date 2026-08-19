@@ -14,8 +14,17 @@ from urllib.request import Request, urlopen
 logger = logging.getLogger("geoserver.energy_classes")
 
 ENERGY_CLASS_ATTRIBUTES = {
+    "property_identifier": "java.lang.String",
     "energy_certificate_class": "java.lang.String",
     "energy_certificate_class_year": "java.lang.Integer",
+    "energy_certificate_valid_until": "java.sql.Timestamp",
+    "energy_certificate_previous_class": "java.lang.String",
+    "energy_certificate_recommendations_fi": "java.lang.String",
+    "energy_certificate_recommendations_sv": "java.lang.String",
+    "energy_certificate_heated_net_area": "java.lang.Double",
+    "energy_certificate_ventilation_type_id": "java.lang.String",
+    "energy_certificate_ventilation_description_fi": "java.lang.String",
+    "energy_certificate_ventilation_description_sv": "java.lang.String",
     "modeled_energy_class": "java.lang.String",
     "modeled_energy_e_value": "java.lang.Double",
     "energy_class": "java.lang.String",
@@ -33,15 +42,11 @@ OLD_CERTIFICATE_COLUMNS = {
     "energy_certificate_id",
     "energy_certificate_version",
     "energy_certificate_signed_at",
-    "energy_certificate_valid_until",
     "energy_certificate_e_value",
     "energy_certificate_e_class",
     "energy_certificate_e_class_limit_2018",
-    "energy_certificate_heated_net_area",
     "energy_certificate_use_purpose",
     "energy_certificate_sub_use_purpose_fi",
-    "energy_certificate_ventilation_type_id",
-    "energy_certificate_ventilation_description_fi",
     "energy_certificate_heating_form_1_id",
     "energy_certificate_heating_form_2_id",
     "energy_certificate_heating_form_1_description_fi",
@@ -259,7 +264,7 @@ def reload_geoserver(config: dict[str, str]) -> None:
     logger.info("Reloaded GeoServer catalog: HTTP %s", status)
 
 
-def set_datastore_jit_off(config: dict[str, str]) -> None:
+def check_datastore_jit_off(config: dict[str, str]) -> None:
     path = (
         f"/rest/workspaces/{config['workspace']}"
         f"/datastores/{config['datastore']}.xml"
@@ -277,12 +282,15 @@ def set_datastore_jit_off(config: dict[str, str]) -> None:
         ),
         None,
     )
-    if entry is None:
-        entry = ET.SubElement(params, "entry", {"key": "Session startup SQL"})
-    entry.text = "SET jit = off"
+    if entry is not None and (entry.text or "").strip() == "SET jit = off":
+        logger.info("Datastore Session startup SQL already disables JIT")
+        return
 
-    status = put_xml(config, path, root)
-    logger.info("Set datastore Session startup SQL to disable JIT: HTTP %s", status)
+    logger.warning(
+        "Datastore Session startup SQL does not disable JIT; leaving the datastore "
+        "unchanged because REST responses contain an encrypted password that must "
+        "not be written back as if it were plaintext"
+    )
 
 
 def get_gwc_layer(config: dict[str, str], qualified_layer: str) -> dict[str, Any]:
@@ -389,7 +397,7 @@ def main() -> None:
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
     config = geoserver_config()
 
-    set_datastore_jit_off(config)
+    check_datastore_jit_off(config)
 
     for layer, layer_config in LAYERS.items():
         update_feature_type(config, layer, layer_config)

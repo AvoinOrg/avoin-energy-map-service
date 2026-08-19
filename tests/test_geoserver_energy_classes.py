@@ -1,8 +1,12 @@
 import re
 import unittest
+import xml.etree.ElementTree as ET
+from unittest.mock import patch
 
+from src.geoserver import update_energy_certificate_class as geoserver_update
 from src.geoserver.update_energy_certificate_class import (
     ENERGY_CLASS_ATTRIBUTES,
+    check_datastore_jit_off,
     ensure_certificate_class_sql,
     ensure_energy_class_attributes,
 )
@@ -54,6 +58,29 @@ class GeoServerEnergyClassTest(unittest.TestCase):
                 sum(attribute.get("name") == column for attribute in attrs),
                 1,
             )
+
+    def test_datastore_jit_check_never_rewrites_encrypted_credentials(self) -> None:
+        root = ET.fromstring("""
+            <dataStore>
+              <connectionParameters>
+                <entry key="passwd">crypt2:already-encrypted</entry>
+              </connectionParameters>
+            </dataStore>
+        """)
+        config = {
+            "workspace": "workspace",
+            "datastore": "datastore",
+        }
+
+        with (
+            patch.object(geoserver_update, "get_xml", return_value=root),
+            patch.object(geoserver_update, "put_xml") as put_xml,
+        ):
+            check_datastore_jit_off(config)
+
+        put_xml.assert_not_called()
+        password = root.find("./connectionParameters/entry[@key='passwd']")
+        self.assertEqual(password.text, "crypt2:already-encrypted")
 
 
 if __name__ == "__main__":
