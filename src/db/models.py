@@ -165,3 +165,7 @@ class Polygon(Base):
     polygon: Mapped[str | None] = mapped_column(Geometry("MULTIPOLYGON", srid=4326, spatial_index=True)) #  SRID 4326 / WGS84 coordinates
     created_at: Mapped[str | None] = mapped_column(TIMESTAMP(timezone=True), server_default=text("now()"))
     updated_at: Mapped[str | None] = mapped_column(TIMESTAMP(timezone=True), server_default=text("now()"))
+
+# Register analytical tables in the same Alembic metadata.
+from . import area_models  # noqa: E402,F401
+from . import user_building_models  # noqa: E402,F401

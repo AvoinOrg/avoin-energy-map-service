@@ -1,0 +1,12 @@
+{
+  "publisher": "Statistics Finland",
+  "source_url": "https://media.stat.fi/A7H6ohk0S8qafyCM4bfDaz/cmn7jwto7r8ce07w32ioglau4",
+  "retrieved_at": "2026-10-01",
+  "vintage": 2026,
+  "source_sha256": "f96fafa478178c92cd140295d738aed191ff0c645f5a33dc24a5c687522ab2b1",
+  "csv_sha256": "2925214a2bb92957950b0a84d8324a0f646f6f73c6de6ccedb1c9d59795b2fb3",
+  "municipalities": 308,
+  "regions": 19,
+  "license": "CC BY 4.0",
+  "description": "Columns B,E,A,C,D,F,G,H of the official 2026 regional classification workbook."
+}

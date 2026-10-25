@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# Run Alembic migrations
-echo "Running Alembic migrations..."
-alembic upgrade head
+# Migration is an explicit operator step; serving containers may be read-only.
+if [[ "${MIGRATE_ON_START:-false}" == "true" ]]; then
+  alembic upgrade head
+fi
 
-# @todo: Run ETL scripts
-
-# Keep container alive
-tail -f /dev/null
+if [[ $# -gt 0 ]]; then
+  exec "$@"
+fi
+exec uvicorn src.api.main:app --log-config /app/src/api/logging.json --host 0.0.0.0 --port "${PORT:-8000}"

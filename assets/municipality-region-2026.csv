@@ -1,0 +1,309 @@
+municipality_code,region_code,name_fi,name_sv,name_en,region_name_fi,region_name_sv,region_name_en
+005,14,Alajärvi,Alajärvi,Alajärvi,Etelä-Pohjanmaa,Södra Österbotten,South Ostrobothnia
+009,17,Alavieska,Alavieska,Alavieska,Pohjois-Pohjanmaa,Norra Österbotten,North Ostrobothnia
+010,14,Alavus,Alavo,Alavus,Etelä-Pohjanmaa,Södra Österbotten,South Ostrobothnia
+016,07,Asikkala,Asikkala,Asikkala,Päijät-Häme,Päijänne-Tavastland,Päijät-Häme
+018,01,Askola,Askola,Askola,Uusimaa,Nyland,Uusimaa
+019,02,Aura,Aura,Aura,Varsinais-Suomi,Egentliga Finland,Southwest Finland
+020,06,Akaa,Ackas,Akaa,Pirkanmaa,Birkaland,Pirkanmaa
+035,21,Brändö,Brändö,Brändö,Ahvenanmaa,Åland,Åland
+043,21,Eckerö,Eckerö,Eckerö,Ahvenanmaa,Åland,Åland
+046,10,Enonkoski,Enonkoski,Enonkoski,Etelä-Savo,Södra Savolax,South Savo
+047,19,Enontekiö,Enontekis,Enontekiö,Lappi,Lappland,Lapland
+049,01,Espoo,Esbo,Espoo,Uusimaa,Nyland,Uusimaa
+050,04,Eura,Eura,Eura,Satakunta,Satakunta,Satakunta
+051,04,Eurajoki,Euraåminne,Eurajoki,Satakunta,Satakunta,Satakunta
+052,14,Evijärvi,Evijärvi,Evijärvi,Etelä-Pohjanmaa,Södra Österbotten,South Ostrobothnia
+060,21,Finström,Finström,Finström,Ahvenanmaa,Åland,Åland
+061,05,Forssa,Forssa,Forssa,Kanta-Häme,Egentliga Tavastland,Kanta-Häme
+062,21,Föglö,Föglö,Föglö,Ahvenanmaa,Åland,Åland
+065,21,Geta,Geta,Geta,Ahvenanmaa,Åland,Åland
+069,17,Haapajärvi,Haapajärvi,Haapajärvi,Pohjois-Pohjanmaa,Norra Österbotten,North Ostrobothnia
+071,17,Haapavesi,Haapavesi,Haapavesi,Pohjois-Pohjanmaa,Norra Österbotten,North Ostrobothnia
+072,17,Hailuoto,Karlö,Hailuoto,Pohjois-Pohjanmaa,Norra Österbotten,North Ostrobothnia
+074,16,Halsua,Halso,Halsua,Keski-Pohjanmaa,Mellersta Österbotten,Central Ostrobothnia
+075,08,Hamina,Fredrikshamn,Hamina,Kymenlaakso,Kymmenedalen,Kymenlaakso
+076,21,Hammarland,Hammarland,Hammarland,Ahvenanmaa,Åland,Åland
+077,13,Hankasalmi,Hankasalmi,Hankasalmi,Keski-Suomi,Mellersta Finland,Central Finland
+078,01,Hanko,Hangö,Hanko,Uusimaa,Nyland,Uusimaa
+079,04,Harjavalta,Harjavalta,Harjavalta,Satakunta,Satakunta,Satakunta
+081,07,Hartola,Gustav Adolfs  ,Hartola,Päijät-Häme,Päijänne-Tavastland,Päijät-Häme
+082,05,Hattula,Hattula,Hattula,Kanta-Häme,Egentliga Tavastland,Kanta-Häme
+086,05,Hausjärvi,Hausjärvi,Hausjärvi,Kanta-Häme,Egentliga Tavastland,Kanta-Häme
+090,12,Heinävesi,Heinävesi,Heinävesi,Pohjois-Karjala,Norra Karelen,North Karelia
+091,01,Helsinki,Helsingfors,Helsinki,Uusimaa,Nyland,Uusimaa
+092,01,Vantaa,Vanda,Vantaa,Uusimaa,Nyland,Uusimaa
+097,10,Hirvensalmi,Hirvensalmi,Hirvensalmi,Etelä-Savo,Södra Savolax,South Savo
+098,07,Hollola,Hollola,Hollola,Päijät-Häme,Päijänne-Tavastland,Päijät-Häme
+102,04,Huittinen,Vittis,Huittinen,Satakunta,Satakunta,Satakunta
+103,05,Humppila,Humppila,Humppila,Kanta-Häme,Egentliga Tavastland,Kanta-Häme
+105,18,Hyrynsalmi,Hyrynsalmi,Hyrynsalmi,Kainuu,Kajanaland,Kainuu
+106,01,Hyvinkää,Hyvinge,Hyvinkää,Uusimaa,Nyland,Uusimaa
+108,06,Hämeenkyrö,Tavastkyro,Hämeenkyrö,Pirkanmaa,Birkaland,Pirkanmaa
+109,05,Hämeenlinna,Tavastehus,Hämeenlinna,Kanta-Häme,Egentliga Tavastland,Kanta-Häme
+111,07,Heinola,Heinola,Heinola,Päijät-Häme,Päijänne-Tavastland,Päijät-Häme
+139,17,Ii,Ijo,Ii,Pohjois-Pohjanmaa,Norra Österbotten,North Ostrobothnia
+140,11,Iisalmi,Idensalmi,Iisalmi,Pohjois-Savo,Norra Savolax,North Savo
+142,07,Iitti,Itis,Iitti,Päijät-Häme,Päijänne-Tavastland,Päijät-Häme
+143,06,Ikaalinen,Ikalis,Ikaalinen,Pirkanmaa,Birkaland,Pirkanmaa
+145,14,Ilmajoki,Ilmola,Ilmajoki,Etelä-Pohjanmaa,Södra Österbotten,South Ostrobothnia
+146,12,Ilomantsi,Ilomants,Ilomantsi,Pohjois-Karjala,Norra Karelen,North Karelia
+148,19,Inari,Enare,Inari,Lappi,Lappland,Lapland
+149,01,Inkoo,Ingå,Ingå,Uusimaa,Nyland,Uusimaa
+151,14,Isojoki,Storå,Isojoki,Etelä-Pohjanmaa,Södra Österbotten,South Ostrobothnia
+152,14,Isokyrö,Storkyro,Isokyrö,Etelä-Pohjanmaa,Södra Österbotten,South Ostrobothnia
+153,09,Imatra,Imatra,Imatra,Etelä-Karjala,Södra Karelen,South Karelia
+165,05,Janakkala,Janakkala,Janakkala,Kanta-Häme,Egentliga Tavastland,Kanta-Häme
+167,12,Joensuu,Joensuu,Joensuu,Pohjois-Karjala,Norra Karelen,North Karelia
+169,05,Jokioinen,Jockis,Jokioinen,Kanta-Häme,Egentliga Tavastland,Kanta-Häme
+170,21,Jomala,Jomala,Jomala,Ahvenanmaa,Åland,Åland
+171,11,Joroinen,Jorois,Joroinen,Pohjois-Savo,Norra Savolax,North Savo
+172,13,Joutsa,Joutsa,Joutsa,Keski-Suomi,Mellersta Finland,Central Finland
+176,12,Juuka,Juga,Juuka,Pohjois-Karjala,Norra Karelen,North Karelia
+177,06,Juupajoki,Juupajoki,Juupajoki,Pirkanmaa,Birkaland,Pirkanmaa
+178,10,Juva,Juva,Juva,Etelä-Savo,Södra Savolax,South Savo
+179,13,Jyväskylä,Jyväskylä,Jyväskylä,Keski-Suomi,Mellersta Finland,Central Finland
+181,04,Jämijärvi,Jämijärvi,Jämijärvi,Satakunta,Satakunta,Satakunta
+182,13,Jämsä,Jämsä,Jämsä,Keski-Suomi,Mellersta Finland,Central Finland
+186,01,Järvenpää,Träskända,Järvenpää,Uusimaa,Nyland,Uusimaa
+202,02,Kaarina,S:t Karins,Kaarina,Varsinais-Suomi,Egentliga Finland,Southwest Finland
+204,11,Kaavi,Kaavi,Kaavi,Pohjois-Savo,Norra Savolax,North Savo
+205,18,Kajaani,Kajana,Kajaani,Kainuu,Kajanaland,Kainuu
+208,17,Kalajoki,Kalajoki,Kalajoki,Pohjois-Pohjanmaa,Norra Österbotten,North Ostrobothnia
+211,06,Kangasala,Kangasala,Kangasala,Pirkanmaa,Birkaland,Pirkanmaa
+213,10,Kangasniemi,Kangasniemi,Kangasniemi,Etelä-Savo,Södra Savolax,South Savo
+214,04,Kankaanpää,Kankaanpää,Kankaanpää,Satakunta,Satakunta,Satakunta
+216,13,Kannonkoski,Kannonkoski,Kannonkoski,Keski-Suomi,Mellersta Finland,Central Finland
+217,16,Kannus,Kannus,Kannus,Keski-Pohjanmaa,Mellersta Österbotten,Central Ostrobothnia
+218,14,Karijoki,Bötom,Karijoki,Etelä-Pohjanmaa,Södra Österbotten,South Ostrobothnia
+224,01,Karkkila,Högfors,Karkkila,Uusimaa,Nyland,Uusimaa
+226,13,Karstula,Karstula,Karstula,Keski-Suomi,Mellersta Finland,Central Finland
+230,04,Karvia,Karvia,Karvia,Satakunta,Satakunta,Satakunta
+231,15,Kaskinen,Kaskö,Kaskinen,Pohjanmaa,Österbotten,Ostrobothnia
+232,14,Kauhajoki,Kauhajoki,Kauhajoki,Etelä-Pohjanmaa,Södra Österbotten,South Ostrobothnia
+233,14,Kauhava,Kauhava,Kauhava,Etelä-Pohjanmaa,Södra Österbotten,South Ostrobothnia
+235,01,Kauniainen,Grankulla,Kauniainen,Uusimaa,Nyland,Uusimaa
+236,16,Kaustinen,Kaustby,Kaustinen,Keski-Pohjanmaa,Mellersta Österbotten,Central Ostrobothnia
+239,11,Keitele,Keitele,Keitele,Pohjois-Savo,Norra Savolax,North Savo
+240,19,Kemi,Kemi,Kemi,Lappi,Lappland,Lapland
+241,19,Keminmaa,Keminmaa,Keminmaa,Lappi,Lappland,Lapland
+244,17,Kempele,Kempele,Kempele,Pohjois-Pohjanmaa,Norra Österbotten,North Ostrobothnia
+245,01,Kerava,Kervo,Kerava,Uusimaa,Nyland,Uusimaa
+249,13,Keuruu,Keuru,Keuruu,Keski-Suomi,Mellersta Finland,Central Finland
+250,06,Kihniö,Kihniö,Kihniö,Pirkanmaa,Birkaland,Pirkanmaa
+256,13,Kinnula,Kinnula,Kinnula,Keski-Suomi,Mellersta Finland,Central Finland
+257,01,Kirkkonummi,Kyrkslätt,Kirkkonummi,Uusimaa,Nyland,Uusimaa
+260,12,Kitee,Kides,Kitee,Pohjois-Karjala,Norra Karelen,North Karelia
+261,19,Kittilä,Kittilä,Kittilä,Lappi,Lappland,Lapland
+263,11,Kiuruvesi,Kiuruvesi,Kiuruvesi,Pohjois-Savo,Norra Savolax,North Savo
+265,13,Kivijärvi,Kivijärvi,Kivijärvi,Keski-Suomi,Mellersta Finland,Central Finland
+271,04,Kokemäki,Kumo,Kokemäki,Satakunta,Satakunta,Satakunta
+272,16,Kokkola,Karleby,Kokkola,Keski-Pohjanmaa,Mellersta Österbotten,Central Ostrobothnia
+273,19,Kolari,Kolari,Kolari,Lappi,Lappland,Lapland
+275,13,Konnevesi,Konnevesi,Konnevesi,Keski-Suomi,Mellersta Finland,Central Finland
+276,12,Kontiolahti,Kontiolax,Kontiolahti,Pohjois-Karjala,Norra Karelen,North Karelia
+280,15,Korsnäs,Korsnäs,Korsnäs,Pohjanmaa,Österbotten,Ostrobothnia
+284,02,Koski Tl,Koskis,Koski Tl,Varsinais-Suomi,Egentliga Finland,Southwest Finland
+285,08,Kotka,Kotka,Kotka,Kymenlaakso,Kymmenedalen,Kymenlaakso
+286,08,Kouvola,Kouvola,Kouvola,Kymenlaakso,Kymmenedalen,Kymenlaakso
+287,15,Kristiinankaupunki,Kristinestad,Kristinestad,Pohjanmaa,Österbotten,Ostrobothnia
+288,15,Kruunupyy,Kronoby,Kronoby,Pohjanmaa,Österbotten,Ostrobothnia
+290,18,Kuhmo,Kuhmo,Kuhmo,Kainuu,Kajanaland,Kainuu
+291,06,Kuhmoinen,Kuhmois,Kuhmoinen,Pirkanmaa,Birkaland,Pirkanmaa
+295,21,Kumlinge,Kumlinge,Kumlinge,Ahvenanmaa,Åland,Åland
+297,11,Kuopio,Kuopio,Kuopio,Pohjois-Savo,Norra Savolax,North Savo
+300,14,Kuortane,Kuortane,Kuortane,Etelä-Pohjanmaa,Södra Österbotten,South Ostrobothnia
+301,14,Kurikka,Kurikka,Kurikka,Etelä-Pohjanmaa,Södra Österbotten,South Ostrobothnia
+304,02,Kustavi,Gustavs,Kustavi,Varsinais-Suomi,Egentliga Finland,Southwest Finland
+305,17,Kuusamo,Kuusamo,Kuusamo,Pohjois-Pohjanmaa,Norra Österbotten,North Ostrobothnia
+309,12,Outokumpu,Outokumpu,Outokumpu,Pohjois-Karjala,Norra Karelen,North Karelia
+312,13,Kyyjärvi,Kyyjärvi,Kyyjärvi,Keski-Suomi,Mellersta Finland,Central Finland
+316,07,Kärkölä,Kärkölä,Kärkölä,Päijät-Häme,Päijänne-Tavastland,Päijät-Häme
+317,17,Kärsämäki,Kärsämäki,Kärsämäki,Pohjois-Pohjanmaa,Norra Österbotten,North Ostrobothnia
+318,21,Kökar,Kökar,Kökar,Ahvenanmaa,Åland,Åland
+320,19,Kemijärvi,Kemijärvi,Kemijärvi,Lappi,Lappland,Lapland
+322,02,Kemiönsaari,Kimitoön,Kimitoön,Varsinais-Suomi,Egentliga Finland,Southwest Finland
+398,07,Lahti,Lahtis,Lahti,Päijät-Häme,Päijänne-Tavastland,Päijät-Häme
+399,15,Laihia,Laihela,Laihia,Pohjanmaa,Österbotten,Ostrobothnia
+400,02,Laitila,Letala,Laitila,Varsinais-Suomi,Egentliga Finland,Southwest Finland
+402,11,Lapinlahti,Lapinlahti,Lapinlahti,Pohjois-Savo,Norra Savolax,North Savo
+403,14,Lappajärvi,Lappajärvi,Lappajärvi,Etelä-Pohjanmaa,Södra Österbotten,South Ostrobothnia
+405,09,Lappeenranta,Villmanstrand,Lappeenranta,Etelä-Karjala,Södra Karelen,South Karelia
+407,01,Lapinjärvi,Lappträsk,Lapinjärvi,Uusimaa,Nyland,Uusimaa
+408,14,Lapua,Lappo,Lapua,Etelä-Pohjanmaa,Södra Österbotten,South Ostrobothnia
+410,13,Laukaa,Laukas,Laukaa,Keski-Suomi,Mellersta Finland,Central Finland
+416,09,Lemi,Lemi,Lemi,Etelä-Karjala,Södra Karelen,South Karelia
+417,21,Lemland,Lemland,Lemland,Ahvenanmaa,Åland,Åland
+418,06,Lempäälä,Lempäälä,Lempäälä,Pirkanmaa,Birkaland,Pirkanmaa
+420,11,Leppävirta,Leppävirta,Leppävirta,Pohjois-Savo,Norra Savolax,North Savo
+421,16,Lestijärvi,Lestijärvi,Lestijärvi,Keski-Pohjanmaa,Mellersta Österbotten,Central Ostrobothnia
+422,12,Lieksa,Lieksa,Lieksa,Pohjois-Karjala,Norra Karelen,North Karelia
+423,02,Lieto,Lundo,Lieto,Varsinais-Suomi,Egentliga Finland,Southwest Finland
+425,17,Liminka,Limingo,Liminka,Pohjois-Pohjanmaa,Norra Österbotten,North Ostrobothnia
+426,12,Liperi,Libelits,Liperi,Pohjois-Karjala,Norra Karelen,North Karelia
+430,02,Loimaa,Loimaa,Loimaa,Varsinais-Suomi,Egentliga Finland,Southwest Finland
+433,05,Loppi,Loppi,Loppi,Kanta-Häme,Egentliga Tavastland,Kanta-Häme
+434,01,Loviisa,Lovisa,Loviisa,Uusimaa,Nyland,Uusimaa
+435,13,Luhanka,Luhanka,Luhanka,Keski-Suomi,Mellersta Finland,Central Finland
+436,17,Lumijoki,Lumijoki,Lumijoki,Pohjois-Pohjanmaa,Norra Österbotten,North Ostrobothnia
+438,21,Lumparland,Lumparland,Lumparland,Ahvenanmaa,Åland,Åland
+440,15,Luoto,Larsmo,Larsmo,Pohjanmaa,Österbotten,Ostrobothnia
+441,09,Luumäki,Luumäki,Luumäki,Etelä-Karjala,Södra Karelen,South Karelia
+444,01,Lohja,Lojo,Lohja,Uusimaa,Nyland,Uusimaa
+445,02,Parainen,Pargas,Pargas,Varsinais-Suomi,Egentliga Finland,Southwest Finland
+475,15,Maalahti,Malax,Malax,Pohjanmaa,Österbotten,Ostrobothnia
+478,21,Maarianhamina - Mariehamn,Mariehamn,Mariehamn,Ahvenanmaa,Åland,Åland
+480,02,Marttila,S:t Mårtens  ,Marttila,Varsinais-Suomi,Egentliga Finland,Southwest Finland
+481,02,Masku,Masku,Masku,Varsinais-Suomi,Egentliga Finland,Southwest Finland
+483,17,Merijärvi,Merijärvi,Merijärvi,Pohjois-Pohjanmaa,Norra Österbotten,North Ostrobothnia
+484,04,Merikarvia,Sastmola,Merikarvia,Satakunta,Satakunta,Satakunta
+489,08,Miehikkälä,Miehikkälä,Miehikkälä,Kymenlaakso,Kymmenedalen,Kymenlaakso
+491,10,Mikkeli,S:t Michel,Mikkeli,Etelä-Savo,Södra Savolax,South Savo
+494,17,Muhos,Muhos,Muhos,Pohjois-Pohjanmaa,Norra Österbotten,North Ostrobothnia
+495,13,Multia,Multia,Multia,Keski-Suomi,Mellersta Finland,Central Finland
+498,19,Muonio,Muonio,Muonio,Lappi,Lappland,Lapland
+499,15,Mustasaari,Korsholm,Korsholm,Pohjanmaa,Österbotten,Ostrobothnia
+500,13,Muurame,Muurame,Muurame,Keski-Suomi,Mellersta Finland,Central Finland
+503,02,Mynämäki,Virmo,Mynämäki,Varsinais-Suomi,Egentliga Finland,Southwest Finland
+504,01,Myrskylä,Mörskom,Myrskylä,Uusimaa,Nyland,Uusimaa
+505,01,Mäntsälä,Mäntsälä,Mäntsälä,Uusimaa,Nyland,Uusimaa
+507,10,Mäntyharju,Mäntyharju,Mäntyharju,Etelä-Savo,Södra Savolax,South Savo
+508,06,Mänttä-Vilppula,Mänttä-Vilppula,Mänttä-Vilppula,Pirkanmaa,Birkaland,Pirkanmaa
+529,02,Naantali,Nådendal,Naantali,Varsinais-Suomi,Egentliga Finland,Southwest Finland
+531,04,Nakkila,Nakkila,Nakkila,Satakunta,Satakunta,Satakunta
+535,17,Nivala,Nivala,Nivala,Pohjois-Pohjanmaa,Norra Österbotten,North Ostrobothnia
+536,06,Nokia,Nokia,Nokia,Pirkanmaa,Birkaland,Pirkanmaa
+538,02,Nousiainen,Nousis,Nousiainen,Varsinais-Suomi,Egentliga Finland,Southwest Finland
+541,12,Nurmes,Nurmes,Nurmes,Pohjois-Karjala,Norra Karelen,North Karelia
+543,01,Nurmijärvi,Nurmijärvi,Nurmijärvi,Uusimaa,Nyland,Uusimaa
+545,15,Närpiö,Närpes,Närpes,Pohjanmaa,Österbotten,Ostrobothnia
+560,07,Orimattila,Orimattila,Orimattila,Päijät-Häme,Päijänne-Tavastland,Päijät-Häme
+561,02,Oripää,Oripää,Oripää,Varsinais-Suomi,Egentliga Finland,Southwest Finland
+562,06,Orivesi,Orivesi,Orivesi,Pirkanmaa,Birkaland,Pirkanmaa
+563,17,Oulainen,Oulainen,Oulainen,Pohjois-Pohjanmaa,Norra Österbotten,North Ostrobothnia
+564,17,Oulu,Uleåborg,Oulu,Pohjois-Pohjanmaa,Norra Österbotten,North Ostrobothnia
+576,07,Padasjoki,Padasjoki,Padasjoki,Päijät-Häme,Päijänne-Tavastland,Päijät-Häme
+577,02,Paimio,Pemar,Paimio,Varsinais-Suomi,Egentliga Finland,Southwest Finland
+578,18,Paltamo,Paltamo,Paltamo,Kainuu,Kajanaland,Kainuu
+580,09,Parikkala,Parikkala,Parikkala,Etelä-Karjala,Södra Karelen,South Karelia
+581,06,Parkano,Parkano,Parkano,Pirkanmaa,Birkaland,Pirkanmaa
+583,19,Pelkosenniemi,Pelkosenniemi,Pelkosenniemi,Lappi,Lappland,Lapland
+584,16,Perho,Perho,Perho,Keski-Pohjanmaa,Mellersta Österbotten,Central Ostrobothnia
+592,13,Petäjävesi,Petäjävesi,Petäjävesi,Keski-Suomi,Mellersta Finland,Central Finland
+593,10,Pieksämäki,Pieksämäki,Pieksämäki,Etelä-Savo,Södra Savolax,South Savo
+595,11,Pielavesi,Pielavesi,Pielavesi,Pohjois-Savo,Norra Savolax,North Savo
+598,15,Pietarsaari,Jakobstad,Jakobstad,Pohjanmaa,Österbotten,Ostrobothnia
+599,15,Pedersören kunta,Pedersöre,Pedersöre,Pohjanmaa,Österbotten,Ostrobothnia
+601,13,Pihtipudas,Pihtipudas,Pihtipudas,Keski-Suomi,Mellersta Finland,Central Finland
+604,06,Pirkkala,Birkala,Pirkkala,Pirkanmaa,Birkaland,Pirkanmaa
+607,12,Polvijärvi,Polvijärvi,Polvijärvi,Pohjois-Karjala,Norra Karelen,North Karelia
+608,04,Pomarkku,Påmark,Pomarkku,Satakunta,Satakunta,Satakunta
+609,04,Pori,Björneborg,Pori,Satakunta,Satakunta,Satakunta
+611,01,Pornainen,Borgnäs,Pornainen,Uusimaa,Nyland,Uusimaa
+614,19,Posio,Posio,Posio,Lappi,Lappland,Lapland
+615,17,Pudasjärvi,Pudasjärvi,Pudasjärvi,Pohjois-Pohjanmaa,Norra Österbotten,North Ostrobothnia
+616,01,Pukkila,Pukkila,Pukkila,Uusimaa,Nyland,Uusimaa
+619,06,Punkalaidun,Punkalaidun,Punkalaidun,Pirkanmaa,Birkaland,Pirkanmaa
+620,18,Puolanka,Puolanka,Puolanka,Kainuu,Kajanaland,Kainuu
+623,10,Puumala,Puumala,Puumala,Etelä-Savo,Södra Savolax,South Savo
+624,08,Pyhtää,Pyttis,Pyhtää,Kymenlaakso,Kymmenedalen,Kymenlaakso
+625,17,Pyhäjoki,Pyhäjoki,Pyhäjoki,Pohjois-Pohjanmaa,Norra Österbotten,North Ostrobothnia
+626,17,Pyhäjärvi,Pyhäjärvi,Pyhäjärvi,Pohjois-Pohjanmaa,Norra Österbotten,North Ostrobothnia
+630,17,Pyhäntä,Pyhäntä,Pyhäntä,Pohjois-Pohjanmaa,Norra Österbotten,North Ostrobothnia
+631,02,Pyhäranta,Pyhäranta,Pyhäranta,Varsinais-Suomi,Egentliga Finland,Southwest Finland
+635,06,Pälkäne,Pälkäne,Pälkäne,Pirkanmaa,Birkaland,Pirkanmaa
+636,02,Pöytyä,Pöytyä,Pöytyä,Varsinais-Suomi,Egentliga Finland,Southwest Finland
+638,01,Porvoo,Borgå,Porvoo,Uusimaa,Nyland,Uusimaa
+678,17,Raahe,Brahestad,Raahe,Pohjois-Pohjanmaa,Norra Österbotten,North Ostrobothnia
+680,02,Raisio,Reso,Raisio,Varsinais-Suomi,Egentliga Finland,Southwest Finland
+681,10,Rantasalmi,Rantasalmi,Rantasalmi,Etelä-Savo,Södra Savolax,South Savo
+683,19,Ranua,Ranua,Ranua,Lappi,Lappland,Lapland
+684,04,Rauma,Raumo,Rauma,Satakunta,Satakunta,Satakunta
+686,11,Rautalampi,Rautalampi,Rautalampi,Pohjois-Savo,Norra Savolax,North Savo
+687,11,Rautavaara,Rautavaara,Rautavaara,Pohjois-Savo,Norra Savolax,North Savo
+689,09,Rautjärvi,Rautjärvi,Rautjärvi,Etelä-Karjala,Södra Karelen,South Karelia
+691,17,Reisjärvi,Reisjärvi,Reisjärvi,Pohjois-Pohjanmaa,Norra Österbotten,North Ostrobothnia
+694,05,Riihimäki,Riihimäki,Riihimäki,Kanta-Häme,Egentliga Tavastland,Kanta-Häme
+697,18,Ristijärvi,Ristijärvi,Ristijärvi,Kainuu,Kajanaland,Kainuu
+698,19,Rovaniemi,Rovaniemi,Rovaniemi,Lappi,Lappland,Lapland
+700,09,Ruokolahti,Ruokolax,Ruokolahti,Etelä-Karjala,Södra Karelen,South Karelia
+702,06,Ruovesi,Ruovesi,Ruovesi,Pirkanmaa,Birkaland,Pirkanmaa
+704,02,Rusko,Rusko,Rusko,Varsinais-Suomi,Egentliga Finland,Southwest Finland
+707,12,Rääkkylä,Rääkkylä,Rääkkylä,Pohjois-Karjala,Norra Karelen,North Karelia
+710,01,Raasepori,Raseborg,Raseborg,Uusimaa,Nyland,Uusimaa
+729,13,Saarijärvi,Saarijärvi,Saarijärvi,Keski-Suomi,Mellersta Finland,Central Finland
+732,19,Salla,Salla,Salla,Lappi,Lappland,Lapland
+734,02,Salo,Salo,Salo,Varsinais-Suomi,Egentliga Finland,Southwest Finland
+736,21,Saltvik,Saltvik,Saltvik,Ahvenanmaa,Åland,Åland
+738,02,Sauvo,Sagu,Sauvo,Varsinais-Suomi,Egentliga Finland,Southwest Finland
+739,09,Savitaipale,Savitaipale,Savitaipale,Etelä-Karjala,Södra Karelen,South Karelia
+740,10,Savonlinna,Nyslott,Savonlinna,Etelä-Savo,Södra Savolax,South Savo
+742,19,Savukoski,Savukoski,Savukoski,Lappi,Lappland,Lapland
+743,14,Seinäjoki,Seinäjoki,Seinäjoki,Etelä-Pohjanmaa,Södra Österbotten,South Ostrobothnia
+746,17,Sievi,Sievi,Sievi,Pohjois-Pohjanmaa,Norra Österbotten,North Ostrobothnia
+747,04,Siikainen,Siikais,Siikainen,Satakunta,Satakunta,Satakunta
+748,17,Siikajoki,Siikajoki,Siikajoki,Pohjois-Pohjanmaa,Norra Österbotten,North Ostrobothnia
+749,11,Siilinjärvi,Siilinjärvi,Siilinjärvi,Pohjois-Savo,Norra Savolax,North Savo
+751,19,Simo,Simo,Simo,Lappi,Lappland,Lapland
+753,01,Sipoo,Sibbo,Sipoo,Uusimaa,Nyland,Uusimaa
+755,01,Siuntio,Sjundeå,Siuntio,Uusimaa,Nyland,Uusimaa
+758,19,Sodankylä,Sodankylä,Sodankylä,Lappi,Lappland,Lapland
+759,14,Soini,Soini,Soini,Etelä-Pohjanmaa,Södra Österbotten,South Ostrobothnia
+761,02,Somero,Somero,Somero,Varsinais-Suomi,Egentliga Finland,Southwest Finland
+762,11,Sonkajärvi,Sonkajärvi,Sonkajärvi,Pohjois-Savo,Norra Savolax,North Savo
+765,18,Sotkamo,Sotkamo,Sotkamo,Kainuu,Kajanaland,Kainuu
+766,21,Sottunga,Sottunga,Sottunga,Ahvenanmaa,Åland,Åland
+768,10,Sulkava,Sulkava,Sulkava,Etelä-Savo,Södra Savolax,South Savo
+771,21,Sund,Sund,Sund,Ahvenanmaa,Åland,Åland
+777,18,Suomussalmi,Suomussalmi,Suomussalmi,Kainuu,Kajanaland,Kainuu
+778,11,Suonenjoki,Suonenjoki,Suonenjoki,Pohjois-Savo,Norra Savolax,North Savo
+781,07,Sysmä,Sysmä,Sysmä,Päijät-Häme,Päijänne-Tavastland,Päijät-Häme
+783,04,Säkylä,Säkylä,Säkylä,Satakunta,Satakunta,Satakunta
+785,17,Vaala,Vaala,Vaala,Pohjois-Pohjanmaa,Norra Österbotten,North Ostrobothnia
+790,06,Sastamala,Sastamala,Sastamala,Pirkanmaa,Birkaland,Pirkanmaa
+791,17,Siikalatva,Siikalatva,Siikalatva,Pohjois-Pohjanmaa,Norra Österbotten,North Ostrobothnia
+831,09,Taipalsaari,Taipalsaari,Taipalsaari,Etelä-Karjala,Södra Karelen,South Karelia
+832,17,Taivalkoski,Taivalkoski,Taivalkoski,Pohjois-Pohjanmaa,Norra Österbotten,North Ostrobothnia
+833,02,Taivassalo,Tövsala,Taivassalo,Varsinais-Suomi,Egentliga Finland,Southwest Finland
+834,05,Tammela,Tammela,Tammela,Kanta-Häme,Egentliga Tavastland,Kanta-Häme
+837,06,Tampere,Tammerfors,Tampere,Pirkanmaa,Birkaland,Pirkanmaa
+844,11,Tervo,Tervo,Tervo,Pohjois-Savo,Norra Savolax,North Savo
+845,19,Tervola,Tervola,Tervola,Lappi,Lappland,Lapland
+846,14,Teuva,Östermark,Teuva,Etelä-Pohjanmaa,Södra Österbotten,South Ostrobothnia
+848,12,Tohmajärvi,Tohmajärvi,Tohmajärvi,Pohjois-Karjala,Norra Karelen,North Karelia
+849,16,Toholampi,Toholampi,Toholampi,Keski-Pohjanmaa,Mellersta Österbotten,Central Ostrobothnia
+850,13,Toivakka,Toivakka,Toivakka,Keski-Suomi,Mellersta Finland,Central Finland
+851,19,Tornio,Torneå,Tornio,Lappi,Lappland,Lapland
+853,02,Turku,Åbo,Turku,Varsinais-Suomi,Egentliga Finland,Southwest Finland
+854,19,Pello,Pello,Pello,Lappi,Lappland,Lapland
+857,11,Tuusniemi,Tuusniemi,Tuusniemi,Pohjois-Savo,Norra Savolax,North Savo
+858,01,Tuusula,Tusby,Tuusula,Uusimaa,Nyland,Uusimaa
+859,17,Tyrnävä,Tyrnävä,Tyrnävä,Pohjois-Pohjanmaa,Norra Österbotten,North Ostrobothnia
+886,04,Ulvila,Ulvsby,Ulvila,Satakunta,Satakunta,Satakunta
+887,06,Urjala,Urjala,Urjala,Pirkanmaa,Birkaland,Pirkanmaa
+889,17,Utajärvi,Utajärvi,Utajärvi,Pohjois-Pohjanmaa,Norra Österbotten,North Ostrobothnia
+890,19,Utsjoki,Utsjoki,Utsjoki,Lappi,Lappland,Lapland
+892,13,Uurainen,Uurainen,Uurainen,Keski-Suomi,Mellersta Finland,Central Finland
+893,15,Uusikaarlepyy,Nykarleby,Nykarleby,Pohjanmaa,Österbotten,Ostrobothnia
+895,02,Uusikaupunki,Nystad,Uusikaupunki,Varsinais-Suomi,Egentliga Finland,Southwest Finland
+905,15,Vaasa,Vasa,Vaasa,Pohjanmaa,Österbotten,Ostrobothnia
+908,06,Valkeakoski,Valkeakoski,Valkeakoski,Pirkanmaa,Birkaland,Pirkanmaa
+915,11,Varkaus,Varkaus,Varkaus,Pohjois-Savo,Norra Savolax,North Savo
+918,02,Vehmaa,Vemo,Vehmaa,Varsinais-Suomi,Egentliga Finland,Southwest Finland
+921,11,Vesanto,Vesanto,Vesanto,Pohjois-Savo,Norra Savolax,North Savo
+922,06,Vesilahti,Vesilahti,Vesilahti,Pirkanmaa,Birkaland,Pirkanmaa
+924,16,Veteli,Vetil,Veteli,Keski-Pohjanmaa,Mellersta Österbotten,Central Ostrobothnia
+925,11,Vieremä,Vieremä,Vieremä,Pohjois-Savo,Norra Savolax,North Savo
+927,01,Vihti,Vichtis,Vihti,Uusimaa,Nyland,Uusimaa
+931,13,Viitasaari,Viitasaari,Viitasaari,Keski-Suomi,Mellersta Finland,Central Finland
+934,14,Vimpeli,Vindala,Vimpeli,Etelä-Pohjanmaa,Södra Österbotten,South Ostrobothnia
+935,08,Virolahti,Vederlax,Virolahti,Kymenlaakso,Kymmenedalen,Kymenlaakso
+936,06,Virrat,Virdois,Virrat,Pirkanmaa,Birkaland,Pirkanmaa
+941,21,Vårdö,Vårdö,Vårdö,Ahvenanmaa,Åland,Åland
+946,15,Vöyri,Vörå,Vörå,Pohjanmaa,Österbotten,Ostrobothnia
+976,19,Ylitornio,Övertorneå,Ylitornio,Lappi,Lappland,Lapland
+977,17,Ylivieska,Ylivieska,Ylivieska,Pohjois-Pohjanmaa,Norra Österbotten,North Ostrobothnia
+980,06,Ylöjärvi,Ylöjärvi,Ylöjärvi,Pirkanmaa,Birkaland,Pirkanmaa
+981,05,Ypäjä,Ypäjä,Ypäjä,Kanta-Häme,Egentliga Tavastland,Kanta-Häme
+989,14,Ähtäri,Etseri,Ähtäri,Etelä-Pohjanmaa,Södra Österbotten,South Ostrobothnia
+992,13,Äänekoski,Äänekoski,Äänekoski,Keski-Suomi,Mellersta Finland,Central Finland

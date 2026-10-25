@@ -8,3 +8,6 @@
 *.sql
 
 data/*.csv
+data/ryhti-open-building.csv.gz
+data/publication-backups/
+data/areas/

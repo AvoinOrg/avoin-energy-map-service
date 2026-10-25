@@ -1,6 +1,8 @@
 from sqlalchemy import text
 from src.db.session import SessionLocal
 from src.etl.augment_modeled_energy_classes import augment_main as augment_modeled_energy_classes
+from src.etl.load_property_identifiers import apply_property_identifiers
+from src.etl.augment_certificate_consumption import augment_consumption
 import time
 
 def validate_energy_certificate_join(db):
@@ -130,6 +132,7 @@ def merge_table():
             ec.ventilation_type_id as energy_certificate_ventilation_type_id,
             ec.ventilation_description_fi as energy_certificate_ventilation_description_fi,
             ec.ventilation_description_sv as energy_certificate_ventilation_description_sv,
+            NULL::text as energy_certificate_consumption,
             NULL::text as modeled_energy_class,
             NULL::double precision as modeled_energy_e_value,
             NULL::text as modeled_energy_class_reason,
@@ -176,6 +179,9 @@ def merge_table():
         for cmd in sql_commands:
             print(f"  - Executing: {cmd[:50]}...")
             db.execute(text(cmd))
+        apply_property_identifiers(db)
+        if db.execute(text("SELECT EXISTS (SELECT 1 FROM energy_certificates)")).scalar_one():
+            augment_consumption(db)
         modeled_rows = augment_modeled_energy_classes(db)
         db.commit()
 

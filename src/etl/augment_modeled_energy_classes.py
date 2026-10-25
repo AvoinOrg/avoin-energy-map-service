@@ -79,6 +79,7 @@ def sync_number_of_storeys(session: Any) -> int:
             SET number_of_storeys = b.number_of_storeys
             FROM buildings b
             WHERE m.building_key = b.building_key
+              AND b.number_of_storeys > 0
               AND m.number_of_storeys IS DISTINCT FROM b.number_of_storeys;
         """)
     )
@@ -183,7 +184,28 @@ def augment_main(
             SET modeled_energy_class = NULL,
                 modeled_energy_e_value = NULL,
                 modeled_energy_class_reason = NULL,
-                modeled_energy_class_area_source = NULL;
+                modeled_energy_class_area_source = NULL,
+                energy_class = UPPER(TRIM(energy_certificate_class)),
+                is_energy_class_modeled = false,
+                energy_class_year = energy_certificate_class_year
+            WHERE NULLIF(TRIM(energy_certificate_class), '') IS NOT NULL
+              AND ROW(
+                    modeled_energy_class,
+                    modeled_energy_e_value,
+                    modeled_energy_class_reason,
+                    modeled_energy_class_area_source,
+                    energy_class,
+                    is_energy_class_modeled,
+                    energy_class_year
+                  ) IS DISTINCT FROM ROW(
+                    NULL,
+                    NULL,
+                    NULL,
+                    NULL,
+                    UPPER(TRIM(energy_certificate_class)),
+                    false,
+                    energy_certificate_class_year
+                  );
         """)
     )
 
@@ -303,32 +325,51 @@ def augment_main(
                     WHEN classified.building_type = 'detached'
                     THEN classified.area_source
                     ELSE NULL
-                END
-            FROM classified
-            WHERE m.ctid = classified.row_id;
-        """),
-        params,
-    )
-
-    session.execute(
-        text("""
-            UPDATE main
-            SET energy_class = COALESCE(
-                    NULLIF(UPPER(TRIM(energy_certificate_class)), ''),
-                    modeled_energy_class
-                ),
+                END,
+                energy_class = classified.modeled_class,
                 is_energy_class_modeled = CASE
-                    WHEN NULLIF(TRIM(energy_certificate_class), '') IS NOT NULL THEN false
-                    WHEN modeled_energy_class IS NOT NULL THEN true
+                    WHEN classified.modeled_class IS NOT NULL THEN true
                     ELSE NULL
                 END,
                 energy_class_year = CASE
-                    WHEN NULLIF(TRIM(energy_certificate_class), '') IS NOT NULL
-                        THEN energy_certificate_class_year
-                    WHEN modeled_energy_class IS NOT NULL THEN 2018
+                    WHEN classified.modeled_class IS NOT NULL THEN 2018
                     ELSE NULL
-                END;
-        """)
+                END
+            FROM classified
+            WHERE m.ctid = classified.row_id
+              AND ROW(
+                    m.modeled_energy_class,
+                    m.modeled_energy_e_value,
+                    m.modeled_energy_class_reason,
+                    m.modeled_energy_class_area_source,
+                    m.energy_class,
+                    m.is_energy_class_modeled,
+                    m.energy_class_year
+                  ) IS DISTINCT FROM ROW(
+                    classified.modeled_class,
+                    CASE
+                        WHEN classified.model_reason IS NULL
+                        THEN classified.e_value
+                        ELSE NULL
+                    END,
+                    classified.model_reason,
+                    CASE
+                        WHEN classified.building_type = 'detached'
+                        THEN classified.area_source
+                        ELSE NULL
+                    END,
+                    classified.modeled_class,
+                    CASE
+                        WHEN classified.modeled_class IS NOT NULL THEN true
+                        ELSE NULL
+                    END,
+                    CASE
+                        WHEN classified.modeled_class IS NOT NULL THEN 2018
+                        ELSE NULL
+                    END
+                  );
+        """),
+        params,
     )
     return result.rowcount or 0
 

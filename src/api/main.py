@@ -1,14 +1,49 @@
+from src.api.log_redaction import install_log_redaction
 from fastapi import FastAPI, Response
 from fastapi.middleware.cors import CORSMiddleware
+import os
 
 from sqlalchemy import text
 
 from src.db.session import SessionLocal, SessionSandbox
+from src.api.building_shares import router as share_router
+from src.api.areas import router as area_router
+from src.api.buildings import router as building_router
+from src.api.user_buildings import router as user_building_router, PrivateBoundary, readiness as state_readiness
 
-app = FastAPI()
+install_log_redaction()
+
+app = FastAPI(title="Energy Map API", description="Canonical building details, building tiles and latest published area statistics.")
+app.include_router(area_router)
+app.include_router(building_router)
+app.include_router(user_building_router)
+app.include_router(share_router)
+app.add_api_route('/readyz/state', state_readiness, methods=['GET'], tags=['Readiness'])
+
+
+@app.get("/healthz")
+def health():
+    return {"status": "ok"}
+
+
+@app.get("/readyz")
+def ready(response: Response):
+    from sqlalchemy.exc import SQLAlchemyError
+    try:
+        with SessionLocal() as session:
+            available = session.execute(text(
+                "SELECT EXISTS(SELECT 1 FROM energymap_area_releases WHERE active AND validated)"
+            )).scalar_one()
+    except SQLAlchemyError:
+        available = False
+    if not available:
+        response.status_code = 503
+    return {"status": "ready" if available else "area_data_unavailable"}
 
 # CORS settings
-origins = ["http://127.0.0.1:8080", "null"]  # local  # local html debug file
+origins = [value.strip() for value in os.getenv(
+    "ENERGY_MAP_API_ORIGINS", "http://127.0.0.1:8080,null"
+).split(",") if value.strip()]
 
 app.add_middleware(
     CORSMiddleware,
@@ -16,7 +51,11 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["ETag"],
 )
+
+# Wrap CORS too, so its preflight/denial responses also carry no-store.
+app.add_middleware(PrivateBoundary)
 
 
 @app.get("/energy-data/tiles/{z}/{x}/{y}.pbf")

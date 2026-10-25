@@ -28,6 +28,7 @@ services:
         condition: service_healthy
     environment:
       PYTHONPATH: /app/src
+      ENERGY_MAP_API_ORIGINS: ${ENERGY_MAP_API_ORIGINS:-http://127.0.0.1:8080,null}
       # DB (app reads these in db/database.py and alembic.ini)
       PGHOST: ${PGHOST:-db}
       PGPORT: ${PGPORT:-5432}

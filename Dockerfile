@@ -32,5 +32,9 @@ COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 ENV PYTHONUNBUFFERED=1
+ENV PYTHONPATH=/app:/app/src
+EXPOSE 8000
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
+  CMD curl --fail --silent http://127.0.0.1:8000/healthz || exit 1
 
 ENTRYPOINT ["/entrypoint.sh"]

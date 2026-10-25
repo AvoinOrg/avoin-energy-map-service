@@ -10,10 +10,13 @@ from urllib.error import HTTPError
 from urllib.parse import quote
 from urllib.request import Request, urlopen
 
+from src.geoserver.ventilation import ensure_ventilation_attributes, ensure_ventilation_sql
+
 
 logger = logging.getLogger("geoserver.energy_classes")
 
 ENERGY_CLASS_ATTRIBUTES = {
+    "energy_certificate_consumption": "java.lang.String",
     "property_identifier": "java.lang.String",
     "energy_certificate_class": "java.lang.String",
     "energy_certificate_class_year": "java.lang.Integer",
@@ -27,6 +30,8 @@ ENERGY_CLASS_ATTRIBUTES = {
     "energy_certificate_ventilation_description_sv": "java.lang.String",
     "modeled_energy_class": "java.lang.String",
     "modeled_energy_e_value": "java.lang.Double",
+    "modeled_energy_class_reason": "java.lang.String",
+    "modeled_energy_class_area_source": "java.lang.String",
     "energy_class": "java.lang.String",
     "is_energy_class_modeled": "java.lang.Boolean",
     "energy_class_year": "java.lang.Integer",
@@ -186,11 +191,9 @@ def ensure_certificate_class_sql(sql: str, geometry_column: str) -> str:
         for column in ENERGY_CLASS_ATTRIBUTES
         if re.search(rf"\b{re.escape(column)}\b", sql) is None
     ]
-    if not missing_columns:
-        return sql
-
     insertion = "".join(f", {column}" for column in missing_columns)
-    return sql.replace(needle, f"{insertion}{needle}", 1)
+    sql = sql.replace(needle, f"{insertion}{needle}", 1)
+    return ensure_ventilation_sql(sql, geometry_column)
 
 
 def ensure_energy_class_attributes(
@@ -227,6 +230,8 @@ def ensure_energy_class_attributes(
             continue
         attrs.insert(geom_index, attribute)
         geom_index += 1
+
+    ensure_ventilation_attributes(feature_type)
 
 
 def update_feature_type(config: dict[str, str], layer: str, layer_config: dict[str, str]) -> None:
@@ -357,40 +362,25 @@ def configure_polygon_gwc_layer(config: dict[str, str]) -> None:
 
 
 def truncate_gwc_layer(config: dict[str, str], qualified_layer: str) -> None:
-    layer = get_gwc_layer(config, qualified_layer)
-    subset = layer.get("gridSubsets", [{}])[0]
-    coords = subset.get("extent", {}).get("coords") or [
-        -20037508.342789244,
-        -20037508.342789244,
-        20037508.342789244,
-        20037508.342789244,
-    ]
-    zoom_stop = max(
-        int(subset.get("zoomStop", subset.get("maxCachedLevel", 24))),
-        24,
-    )
-    coord_xml = "".join(f"<double>{float(value)}</double>" for value in coords)
-    body = f"""<seedRequest>
-  <name>{escape(qualified_layer)}</name>
-  <bounds><coords>{coord_xml}</coords></bounds>
-  <gridSetId>EPSG:900913</gridSetId>
-  <zoomStart>0</zoomStart>
-  <zoomStop>{zoom_stop}</zoomStop>
-  <format>{MVT_FORMAT}</format>
-  <type>truncate</type>
-  <threadCount>1</threadCount>
-</seedRequest>""".encode()
-
-    encoded = quote(qualified_layer, safe="")
+    # Resolve the exact existing layer before requesting a recoverable cache
+    # clear. The old seed-based 0..24 request could return HTTP 200 then abort
+    # for the polygon layer restricted to 12..17, leaving stale tiles behind.
+    # truncateLayer covers all style/gridset variants without guessing zooms;
+    # it changes neither the layer definition nor any other layer's cache.
+    get_gwc_layer(config, qualified_layer)
+    body = (
+        f"<truncateLayer><layerName>{escape(qualified_layer)}</layerName>"
+        "</truncateLayer>"
+    ).encode()
     status, _ = request(
         config,
-        f"/gwc/rest/seed/{encoded}.xml",
+        "/gwc/rest/masstruncate",
         method="POST",
         body=body,
         content_type="text/xml",
         accept="text/plain",
     )
-    logger.info("Truncated GWC MVT cache for %s: HTTP %s", qualified_layer, status)
+    logger.info("Cleared GWC cache for %s: HTTP %s", qualified_layer, status)
 
 
 def main() -> None:

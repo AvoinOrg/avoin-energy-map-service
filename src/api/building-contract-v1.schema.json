@@ -1,0 +1,3199 @@
+{
+  "$defs": {
+    "AvailabilityV1": {
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "enum": [
+            "available",
+            "missing",
+            "invalid",
+            "unsupported",
+            "not_projected",
+            "source_unavailable",
+            "user_unknown"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reason"
+        }
+      },
+      "required": [
+        "status"
+      ],
+      "title": "AvailabilityV1",
+      "type": "object"
+    },
+    "BuildingOverridesV1": {
+      "additionalProperties": false,
+      "properties": {
+        "address_fin": {
+          "anyOf": [
+            {
+              "maxLength": 300,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Address Fin"
+        },
+        "postal_code": {
+          "anyOf": [
+            {
+              "pattern": "^[0-9]{5}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Postal Code"
+        },
+        "postal_office_fin": {
+          "anyOf": [
+            {
+              "maxLength": 150,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Postal Office Fin"
+        },
+        "construction_year": {
+          "anyOf": [
+            {
+              "maximum": 9999,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Construction Year"
+        },
+        "main_purpose": {
+          "anyOf": [
+            {
+              "maxLength": 16,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Main Purpose"
+        },
+        "heating_method": {
+          "anyOf": [
+            {
+              "maxLength": 16,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Heating Method"
+        },
+        "heating_energy_source": {
+          "anyOf": [
+            {
+              "maxLength": 16,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Heating Energy Source"
+        },
+        "number_of_storeys": {
+          "anyOf": [
+            {
+              "maximum": 1000,
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Number Of Storeys"
+        },
+        "apartment_count": {
+          "anyOf": [
+            {
+              "maximum": 1000000,
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Apartment Count"
+        },
+        "floor_area": {
+          "anyOf": [
+            {
+              "ge": 0,
+              "le": 10000000,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Floor Area"
+        },
+        "total_area": {
+          "anyOf": [
+            {
+              "ge": 0,
+              "le": 10000000,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Total Area"
+        },
+        "gross_floor_area": {
+          "anyOf": [
+            {
+              "ge": 0,
+              "le": 10000000,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Gross Floor Area"
+        },
+        "heated_net_area": {
+          "anyOf": [
+            {
+              "ge": 0,
+              "le": 10000000,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Heated Net Area"
+        },
+        "volume": {
+          "anyOf": [
+            {
+              "ge": 0,
+              "le": 1000000000,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Volume"
+        },
+        "ventilation_type_id": {
+          "anyOf": [
+            {
+              "enum": [
+                "0",
+                "1",
+                "2",
+                "3",
+                "4",
+                "5",
+                "6",
+                "7",
+                "8"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ventilation Type Id"
+        },
+        "ventilation_description": {
+          "anyOf": [
+            {
+              "maxLength": 4000,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ventilation Description"
+        }
+      },
+      "title": "BuildingOverridesV1",
+      "type": "object"
+    },
+    "BuildingSummaryV1": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "building_key": {
+          "title": "Building Key",
+          "type": "string"
+        },
+        "name": {
+          "default": null,
+          "title": "Name",
+          "type": "null"
+        },
+        "address_fin": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Address Fin"
+        },
+        "postal_code": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Postal Code"
+        },
+        "postal_office_fin": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Postal Office Fin"
+        },
+        "location": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LocationV1"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "source_observed_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source Observed At"
+        },
+        "source_availability": {
+          "additionalProperties": {
+            "$ref": "#/$defs/AvailabilityV1"
+          },
+          "title": "Source Availability",
+          "type": "object"
+        }
+      },
+      "required": [
+        "building_key",
+        "source_availability"
+      ],
+      "title": "BuildingSummaryV1",
+      "type": "object"
+    },
+    "CanonicalBuildingV1": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "building_key": {
+          "title": "Building Key",
+          "type": "string"
+        },
+        "base_status": {
+          "const": "available",
+          "default": "available",
+          "title": "Base Status",
+          "type": "string"
+        },
+        "identity": {
+          "$ref": "#/$defs/IdentityV1"
+        },
+        "code_labels": {
+          "$ref": "#/$defs/CodeLabelsV1"
+        },
+        "published_certificate": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PublishedCertificateV1"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "details": {
+          "$ref": "#/$defs/DetailsV1"
+        },
+        "geometry": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/GeometryV1"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "location": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LocationV1"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "selection": {
+          "$ref": "#/$defs/SelectionV1"
+        },
+        "certificate": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CertificateV1"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "model": {
+          "$ref": "#/$defs/ModelV1"
+        },
+        "sources": {
+          "$ref": "#/$defs/SourcesV1"
+        },
+        "source_observed_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source Observed At"
+        },
+        "timestamp_status": {
+          "const": "unknown",
+          "default": "unknown",
+          "title": "Timestamp Status",
+          "type": "string"
+        },
+        "resolved_at": {
+          "format": "date-time",
+          "title": "Resolved At",
+          "type": "string"
+        },
+        "field_provenance": {
+          "additionalProperties": {
+            "$ref": "#/$defs/FieldProvenanceV1"
+          },
+          "title": "Field Provenance",
+          "type": "object"
+        },
+        "source_availability": {
+          "additionalProperties": {
+            "$ref": "#/$defs/AvailabilityV1"
+          },
+          "title": "Source Availability",
+          "type": "object"
+        }
+      },
+      "required": [
+        "building_key",
+        "identity",
+        "details",
+        "selection",
+        "model",
+        "sources",
+        "resolved_at",
+        "field_provenance",
+        "source_availability"
+      ],
+      "title": "CanonicalBuildingV1",
+      "type": "object"
+    },
+    "CertificateConsumptionV1": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "basis": {
+          "const": "standardized_calculation",
+          "title": "Basis",
+          "type": "string"
+        },
+        "unit": {
+          "const": "kWh/year",
+          "title": "Unit",
+          "type": "string"
+        },
+        "building_identifier": {
+          "maxLength": 16384,
+          "minLength": 1,
+          "title": "Building Identifier",
+          "type": "string"
+        },
+        "certificate_id": {
+          "maxLength": 16384,
+          "minLength": 1,
+          "title": "Certificate Id",
+          "type": "string"
+        },
+        "certificate_version": {
+          "enum": [
+            2013,
+            2018
+          ],
+          "title": "Certificate Version",
+          "type": "integer"
+        },
+        "signed_at": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Signed At"
+        },
+        "valid_until": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Valid Until"
+        },
+        "heated_net_area_m2": {
+          "anyOf": [
+            {
+              "ge": 0,
+              "gt": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Heated Net Area M2"
+        },
+        "components": {
+          "items": {
+            "$ref": "#/$defs/ConsumptionComponentV1"
+          },
+          "maxItems": 8,
+          "minItems": 1,
+          "title": "Components",
+          "type": "array"
+        },
+        "completeness": {
+          "enum": [
+            "complete",
+            "partial"
+          ],
+          "title": "Completeness",
+          "type": "string"
+        },
+        "total_kwh_year": {
+          "anyOf": [
+            {
+              "ge": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Total Kwh Year"
+        }
+      },
+      "required": [
+        "basis",
+        "unit",
+        "building_identifier",
+        "certificate_id",
+        "certificate_version",
+        "signed_at",
+        "valid_until",
+        "heated_net_area_m2",
+        "components",
+        "completeness",
+        "total_kwh_year"
+      ],
+      "title": "CertificateConsumptionV1",
+      "type": "object"
+    },
+    "CertificateV1": {
+      "additionalProperties": false,
+      "properties": {
+        "certificate_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Certificate Id"
+        },
+        "version": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Version"
+        },
+        "building_identifier": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Building Identifier"
+        },
+        "signed_at": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Signed At"
+        },
+        "valid_until": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Valid Until"
+        },
+        "inspection_date": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Inspection Date"
+        },
+        "imported_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Imported At"
+        },
+        "energy_class": {
+          "anyOf": [
+            {
+              "enum": [
+                "A",
+                "B",
+                "C",
+                "D",
+                "E",
+                "F",
+                "G"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Energy Class"
+        },
+        "previous_class": {
+          "anyOf": [
+            {
+              "enum": [
+                "A",
+                "B",
+                "C",
+                "D",
+                "E",
+                "F",
+                "G"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Previous Class"
+        },
+        "class_scale_year": {
+          "anyOf": [
+            {
+              "enum": [
+                2013,
+                2018
+              ],
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Class Scale Year"
+        },
+        "history_count": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "History Count"
+        },
+        "heated_net_area": {
+          "anyOf": [
+            {
+              "ge": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Heated Net Area"
+        },
+        "ventilation_type_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ventilation Type Id"
+        },
+        "ventilation_type_label_fi": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ventilation Type Label Fi"
+        },
+        "ventilation_type_label_sv": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ventilation Type Label Sv"
+        },
+        "ventilation_description_fi": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ventilation Description Fi"
+        },
+        "ventilation_description_sv": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ventilation Description Sv"
+        },
+        "recommendations_fi": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Recommendations Fi"
+        },
+        "recommendations_sv": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Recommendations Sv"
+        },
+        "consumption": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CertificateConsumptionV1"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "publication_comparison": {
+          "default": "unknown",
+          "enum": [
+            "agrees",
+            "differs",
+            "unknown"
+          ],
+          "title": "Publication Comparison",
+          "type": "string"
+        },
+        "field_availability": {
+          "additionalProperties": {
+            "$ref": "#/$defs/AvailabilityV1"
+          },
+          "title": "Field Availability",
+          "type": "object"
+        }
+      },
+      "title": "CertificateV1",
+      "type": "object"
+    },
+    "CodeLabelV1": {
+      "additionalProperties": false,
+      "properties": {
+        "label_fi": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Label Fi"
+        },
+        "label_sv": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Label Sv"
+        },
+        "label_en": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Label En"
+        }
+      },
+      "title": "CodeLabelV1",
+      "type": "object"
+    },
+    "CodeLabelsV1": {
+      "additionalProperties": false,
+      "properties": {
+        "main_purpose": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CodeLabelV1"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "heating_method": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CodeLabelV1"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "heating_energy_source": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CodeLabelV1"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "CodeLabelsV1",
+      "type": "object"
+    },
+    "ConsumptionComponentV1": {
+      "additionalProperties": false,
+      "properties": {
+        "carrier": {
+          "enum": [
+            "electricity",
+            "district_heat",
+            "district_cooling",
+            "fossil_fuel",
+            "renewable_fuel",
+            "other"
+          ],
+          "title": "Carrier",
+          "type": "string"
+        },
+        "annual_kwh": {
+          "ge": 0,
+          "title": "Annual Kwh",
+          "type": "number"
+        },
+        "source_slot": {
+          "anyOf": [
+            {
+              "maximum": 2,
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source Slot"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "maxLength": 16384,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Name"
+        }
+      },
+      "required": [
+        "carrier",
+        "annual_kwh"
+      ],
+      "title": "ConsumptionComponentV1",
+      "type": "object"
+    },
+    "DetailsV1": {
+      "additionalProperties": false,
+      "properties": {
+        "completion_date": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Completion Date"
+        },
+        "ventilation_category": {
+          "anyOf": [
+            {
+              "enum": [
+                "mechanical",
+                "gravity",
+                "other",
+                "no_info"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": "no_info",
+          "title": "Ventilation Category"
+        },
+        "address_fin": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Address Fin"
+        },
+        "postal_code": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Postal Code"
+        },
+        "postal_office_fin": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Postal Office Fin"
+        },
+        "construction_year": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Construction Year"
+        },
+        "main_purpose": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Main Purpose"
+        },
+        "heating_method": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Heating Method"
+        },
+        "heating_energy_source": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Heating Energy Source"
+        },
+        "number_of_storeys": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Number Of Storeys"
+        },
+        "apartment_count": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Apartment Count"
+        },
+        "floor_area": {
+          "anyOf": [
+            {
+              "ge": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Floor Area"
+        },
+        "total_area": {
+          "anyOf": [
+            {
+              "ge": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Total Area"
+        },
+        "gross_floor_area": {
+          "anyOf": [
+            {
+              "ge": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Gross Floor Area"
+        },
+        "heated_net_area": {
+          "anyOf": [
+            {
+              "ge": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Heated Net Area"
+        },
+        "volume": {
+          "anyOf": [
+            {
+              "ge": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Volume"
+        },
+        "ventilation_type_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ventilation Type Id"
+        },
+        "ventilation_description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ventilation Description"
+        }
+      },
+      "title": "DetailsV1",
+      "type": "object"
+    },
+    "EffectiveV1": {
+      "additionalProperties": false,
+      "properties": {
+        "published_certificate": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PublishedCertificateV1"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "details": {
+          "$ref": "#/$defs/DetailsV1"
+        },
+        "scenario_inputs": {
+          "$ref": "#/$defs/ScenarioInputsV1"
+        },
+        "certificate": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CertificateV1"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "model": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ModelV1"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "model_input_divergence": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Model Input Divergence",
+          "type": "array"
+        },
+        "scenario_prefix": {
+          "anyOf": [
+            {
+              "enum": [
+                "awhp",
+                "delec",
+                "distr",
+                "elecb",
+                "gshp",
+                "oil",
+                "wood"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Scenario Prefix"
+        },
+        "resident_count_applicability": {
+          "enum": [
+            "residential",
+            "unsupported",
+            "unknown"
+          ],
+          "title": "Resident Count Applicability",
+          "type": "string"
+        }
+      },
+      "required": [
+        "details",
+        "scenario_inputs",
+        "resident_count_applicability"
+      ],
+      "title": "EffectiveV1",
+      "type": "object"
+    },
+    "FieldProvenanceV1": {
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "enum": [
+            "available",
+            "missing",
+            "invalid",
+            "unsupported",
+            "not_projected",
+            "source_unavailable",
+            "user_unknown"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reason"
+        },
+        "origin": {
+          "enum": [
+            "ryhti",
+            "certificate",
+            "model",
+            "user",
+            "derived",
+            "unavailable"
+          ],
+          "title": "Origin",
+          "type": "string"
+        },
+        "source": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source"
+        },
+        "source_observed_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source Observed At"
+        },
+        "upstream_modified_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Upstream Modified At"
+        },
+        "is_override": {
+          "default": false,
+          "title": "Is Override",
+          "type": "boolean"
+        },
+        "dependencies": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Dependencies",
+          "type": "array"
+        },
+        "source_language": {
+          "anyOf": [
+            {
+              "enum": [
+                "fi",
+                "sv"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source Language"
+        }
+      },
+      "required": [
+        "status",
+        "origin"
+      ],
+      "title": "FieldProvenanceV1",
+      "type": "object"
+    },
+    "GeometryV1": {
+      "additionalProperties": false,
+      "properties": {
+        "srid": {
+          "enum": [
+            3857,
+            4326
+          ],
+          "title": "Srid",
+          "type": "integer"
+        },
+        "source": {
+          "enum": [
+            "main.polygon",
+            "main.point",
+            "polygons.polygon",
+            "buildings.point"
+          ],
+          "title": "Source",
+          "type": "string"
+        },
+        "geometry": {
+          "discriminator": {
+            "mapping": {
+              "MultiPolygon": "#/$defs/MultiPolygonV1",
+              "Point": "#/$defs/PointV1",
+              "Polygon": "#/$defs/PolygonV1"
+            },
+            "propertyName": "type"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/PointV1"
+            },
+            {
+              "$ref": "#/$defs/PolygonV1"
+            },
+            {
+              "$ref": "#/$defs/MultiPolygonV1"
+            }
+          ],
+          "title": "Geometry"
+        }
+      },
+      "required": [
+        "srid",
+        "source",
+        "geometry"
+      ],
+      "title": "GeometryV1",
+      "type": "object"
+    },
+    "IdentityV1": {
+      "additionalProperties": false,
+      "properties": {
+        "permanent_building_identifier": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Permanent Building Identifier"
+        },
+        "property_identifier": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Property Identifier"
+        },
+        "address_key": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Address Key"
+        }
+      },
+      "title": "IdentityV1",
+      "type": "object"
+    },
+    "LastKnownBuildingSummaryV1": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "building_key": {
+          "title": "Building Key",
+          "type": "string"
+        },
+        "name": {
+          "default": null,
+          "title": "Name",
+          "type": "null"
+        },
+        "address_fin": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Address Fin"
+        },
+        "postal_code": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Postal Code"
+        },
+        "postal_office_fin": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Postal Office Fin"
+        },
+        "location": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LocationV1"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "source_observed_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source Observed At"
+        },
+        "source_availability": {
+          "additionalProperties": {
+            "$ref": "#/$defs/AvailabilityV1"
+          },
+          "title": "Source Availability",
+          "type": "object"
+        },
+        "captured_at": {
+          "format": "date-time",
+          "title": "Captured At",
+          "type": "string"
+        }
+      },
+      "required": [
+        "building_key",
+        "source_availability",
+        "captured_at"
+      ],
+      "title": "LastKnownBuildingSummaryV1",
+      "type": "object"
+    },
+    "LocationV1": {
+      "additionalProperties": false,
+      "properties": {
+        "longitude": {
+          "maximum": 180,
+          "minimum": -180,
+          "title": "Longitude",
+          "type": "number"
+        },
+        "latitude": {
+          "maximum": 90,
+          "minimum": -90,
+          "title": "Latitude",
+          "type": "number"
+        },
+        "srid": {
+          "const": 4326,
+          "default": 4326,
+          "title": "Srid",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "longitude",
+        "latitude"
+      ],
+      "title": "LocationV1",
+      "type": "object"
+    },
+    "ModelV1": {
+      "additionalProperties": false,
+      "properties": {
+        "modeled_energy_class": {
+          "anyOf": [
+            {
+              "enum": [
+                "A",
+                "B",
+                "C",
+                "D",
+                "E",
+                "F",
+                "G"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Modeled Energy Class"
+        },
+        "modeled_energy_e_value": {
+          "anyOf": [
+            {
+              "ge": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Modeled Energy E Value"
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reason"
+        },
+        "area_source": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Area Source"
+        },
+        "energy_class": {
+          "anyOf": [
+            {
+              "enum": [
+                "A",
+                "B",
+                "C",
+                "D",
+                "E",
+                "F",
+                "G"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Energy Class"
+        },
+        "is_energy_class_modeled": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Is Energy Class Modeled"
+        },
+        "energy_class_year": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Energy Class Year"
+        },
+        "consumption_scenarios": {
+          "additionalProperties": {
+            "additionalProperties": {
+              "additionalProperties": {
+                "$ref": "#/$defs/ScenarioQuantityV1"
+              },
+              "propertyNames": {
+                "enum": [
+                  "total",
+                  "heat",
+                  "elec"
+                ]
+              },
+              "type": "object"
+            },
+            "propertyNames": {
+              "enum": [
+                "default",
+                "aahp",
+                "solar",
+                "windows"
+              ]
+            },
+            "type": "object"
+          },
+          "propertyNames": {
+            "enum": [
+              "awhp",
+              "delec",
+              "distr",
+              "elecb",
+              "gshp",
+              "oil",
+              "wood"
+            ]
+          },
+          "title": "Consumption Scenarios",
+          "type": "object"
+        },
+        "field_availability": {
+          "additionalProperties": {
+            "$ref": "#/$defs/AvailabilityV1"
+          },
+          "title": "Field Availability",
+          "type": "object"
+        },
+        "context": {
+          "const": "source_based_not_recalculated",
+          "default": "source_based_not_recalculated",
+          "title": "Context",
+          "type": "string"
+        },
+        "generated_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Generated At"
+        }
+      },
+      "title": "ModelV1",
+      "type": "object"
+    },
+    "MultiPolygonV1": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "MultiPolygon",
+          "title": "Type",
+          "type": "string"
+        },
+        "coordinates": {
+          "items": {
+            "items": {
+              "items": {
+                "items": {
+                  "type": "number"
+                },
+                "maxItems": 3,
+                "minItems": 2,
+                "type": "array"
+              },
+              "type": "array"
+            },
+            "type": "array"
+          },
+          "title": "Coordinates",
+          "type": "array"
+        }
+      },
+      "required": [
+        "type",
+        "coordinates"
+      ],
+      "title": "MultiPolygonV1",
+      "type": "object"
+    },
+    "PatchSetV1": {
+      "additionalProperties": false,
+      "properties": {
+        "overrides": {
+          "$ref": "#/$defs/BuildingOverridesV1"
+        },
+        "scenario_inputs": {
+          "$ref": "#/$defs/ScenarioInputsV1"
+        }
+      },
+      "title": "PatchSetV1",
+      "type": "object"
+    },
+    "PersonalBuildingPatchV1": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "display_name": {
+          "anyOf": [
+            {
+              "maxLength": 120,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Display Name"
+        },
+        "set": {
+          "$ref": "#/$defs/PatchSetV1"
+        },
+        "unset": {
+          "items": {
+            "enum": [
+              "overrides.address_fin",
+              "overrides.apartment_count",
+              "overrides.construction_year",
+              "overrides.floor_area",
+              "overrides.gross_floor_area",
+              "overrides.heated_net_area",
+              "overrides.heating_energy_source",
+              "overrides.heating_method",
+              "overrides.main_purpose",
+              "overrides.number_of_storeys",
+              "overrides.postal_code",
+              "overrides.postal_office_fin",
+              "overrides.total_area",
+              "overrides.ventilation_description",
+              "overrides.ventilation_type_id",
+              "overrides.volume",
+              "scenario_inputs.resident_count"
+            ],
+            "type": "string"
+          },
+          "maxItems": 17,
+          "title": "Unset",
+          "type": "array"
+        }
+      },
+      "title": "PersonalBuildingPatchV1",
+      "type": "object"
+    },
+    "PersonalBuildingProjectionV1": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "building_key": {
+          "title": "Building Key",
+          "type": "string"
+        },
+        "base_status": {
+          "enum": [
+            "available",
+            "unavailable"
+          ],
+          "title": "Base Status",
+          "type": "string"
+        },
+        "base_unavailable_reason": {
+          "anyOf": [
+            {
+              "enum": [
+                "missing",
+                "ambiguous",
+                "source_unavailable"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Base Unavailable Reason"
+        },
+        "base": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CanonicalBuildingV1"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "overrides": {
+          "$ref": "#/$defs/BuildingOverridesV1"
+        },
+        "scenario_inputs": {
+          "$ref": "#/$defs/ScenarioInputsV1"
+        },
+        "effective": {
+          "$ref": "#/$defs/EffectiveV1"
+        },
+        "field_provenance": {
+          "additionalProperties": {
+            "$ref": "#/$defs/FieldProvenanceV1"
+          },
+          "title": "Field Provenance",
+          "type": "object"
+        },
+        "source_availability": {
+          "additionalProperties": {
+            "$ref": "#/$defs/AvailabilityV1"
+          },
+          "title": "Source Availability",
+          "type": "object"
+        },
+        "source_observed_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Source Observed At"
+        },
+        "last_known_summary": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LastKnownBuildingSummaryV1"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "building_key",
+        "base_status",
+        "base",
+        "overrides",
+        "scenario_inputs",
+        "effective",
+        "field_provenance",
+        "source_availability",
+        "source_observed_at"
+      ],
+      "title": "PersonalBuildingProjectionV1",
+      "type": "object"
+    },
+    "PersonalBuildingPutV1": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "display_name": {
+          "anyOf": [
+            {
+              "maxLength": 120,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Display Name"
+        },
+        "overrides": {
+          "$ref": "#/$defs/BuildingOverridesV1"
+        },
+        "scenario_inputs": {
+          "$ref": "#/$defs/ScenarioInputsV1"
+        }
+      },
+      "title": "PersonalBuildingPutV1",
+      "type": "object"
+    },
+    "PointV1": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "Point",
+          "title": "Type",
+          "type": "string"
+        },
+        "coordinates": {
+          "items": {
+            "type": "number"
+          },
+          "maxItems": 3,
+          "minItems": 2,
+          "title": "Coordinates",
+          "type": "array"
+        }
+      },
+      "required": [
+        "type",
+        "coordinates"
+      ],
+      "title": "PointV1",
+      "type": "object"
+    },
+    "PolygonV1": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "Polygon",
+          "title": "Type",
+          "type": "string"
+        },
+        "coordinates": {
+          "items": {
+            "items": {
+              "items": {
+                "type": "number"
+              },
+              "maxItems": 3,
+              "minItems": 2,
+              "type": "array"
+            },
+            "type": "array"
+          },
+          "title": "Coordinates",
+          "type": "array"
+        }
+      },
+      "required": [
+        "type",
+        "coordinates"
+      ],
+      "title": "PolygonV1",
+      "type": "object"
+    },
+    "PublishedCertificateV1": {
+      "additionalProperties": false,
+      "description": "Main snapshot facts; never attributed to a current selected certificate ID.",
+      "properties": {
+        "source": {
+          "const": "main",
+          "default": "main",
+          "title": "Source",
+          "type": "string"
+        },
+        "energy_class": {
+          "anyOf": [
+            {
+              "enum": [
+                "A",
+                "B",
+                "C",
+                "D",
+                "E",
+                "F",
+                "G"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Energy Class"
+        },
+        "previous_class": {
+          "anyOf": [
+            {
+              "enum": [
+                "A",
+                "B",
+                "C",
+                "D",
+                "E",
+                "F",
+                "G"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Previous Class"
+        },
+        "class_scale_year": {
+          "anyOf": [
+            {
+              "enum": [
+                2013,
+                2018
+              ],
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Class Scale Year"
+        },
+        "valid_until": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Valid Until"
+        },
+        "heated_net_area": {
+          "anyOf": [
+            {
+              "ge": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Heated Net Area"
+        },
+        "ventilation_type_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ventilation Type Id"
+        },
+        "ventilation_description_fi": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ventilation Description Fi"
+        },
+        "ventilation_description_sv": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ventilation Description Sv"
+        },
+        "recommendations_fi": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Recommendations Fi"
+        },
+        "recommendations_sv": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Recommendations Sv"
+        },
+        "field_availability": {
+          "additionalProperties": {
+            "$ref": "#/$defs/AvailabilityV1"
+          },
+          "title": "Field Availability",
+          "type": "object"
+        }
+      },
+      "title": "PublishedCertificateV1",
+      "type": "object"
+    },
+    "SavedBuildingPageV1": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "items": {
+          "items": {
+            "$ref": "#/$defs/SavedBuildingSummaryV1"
+          },
+          "title": "Items",
+          "type": "array"
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Next Cursor"
+        }
+      },
+      "required": [
+        "items",
+        "next_cursor"
+      ],
+      "title": "SavedBuildingPageV1",
+      "type": "object"
+    },
+    "SavedBuildingSummaryV1": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "saved_id": {
+          "format": "uuid",
+          "title": "Saved Id",
+          "type": "string"
+        },
+        "building_key": {
+          "title": "Building Key",
+          "type": "string"
+        },
+        "display_name": {
+          "anyOf": [
+            {
+              "maxLength": 120,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Display Name"
+        },
+        "revision": {
+          "minimum": 1,
+          "title": "Revision",
+          "type": "integer"
+        },
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        },
+        "updated_at": {
+          "format": "date-time",
+          "title": "Updated At",
+          "type": "string"
+        },
+        "share_enabled": {
+          "default": false,
+          "title": "Share Enabled",
+          "type": "boolean"
+        },
+        "base_status": {
+          "enum": [
+            "available",
+            "unavailable"
+          ],
+          "title": "Base Status",
+          "type": "string"
+        },
+        "base_unavailable_reason": {
+          "anyOf": [
+            {
+              "enum": [
+                "missing",
+                "ambiguous",
+                "source_unavailable"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Base Unavailable Reason"
+        },
+        "current_summary": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/BuildingSummaryV1"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "last_known_summary": {
+          "$ref": "#/$defs/LastKnownBuildingSummaryV1"
+        }
+      },
+      "required": [
+        "saved_id",
+        "building_key",
+        "display_name",
+        "revision",
+        "created_at",
+        "updated_at",
+        "base_status",
+        "base_unavailable_reason",
+        "current_summary",
+        "last_known_summary"
+      ],
+      "title": "SavedBuildingSummaryV1",
+      "type": "object"
+    },
+    "SavedBuildingV1": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "building_key": {
+          "title": "Building Key",
+          "type": "string"
+        },
+        "base_status": {
+          "enum": [
+            "available",
+            "unavailable"
+          ],
+          "title": "Base Status",
+          "type": "string"
+        },
+        "base_unavailable_reason": {
+          "anyOf": [
+            {
+              "enum": [
+                "missing",
+                "ambiguous",
+                "source_unavailable"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Base Unavailable Reason"
+        },
+        "base": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CanonicalBuildingV1"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "overrides": {
+          "$ref": "#/$defs/BuildingOverridesV1"
+        },
+        "scenario_inputs": {
+          "$ref": "#/$defs/ScenarioInputsV1"
+        },
+        "effective": {
+          "$ref": "#/$defs/EffectiveV1"
+        },
+        "field_provenance": {
+          "additionalProperties": {
+            "$ref": "#/$defs/FieldProvenanceV1"
+          },
+          "title": "Field Provenance",
+          "type": "object"
+        },
+        "source_availability": {
+          "additionalProperties": {
+            "$ref": "#/$defs/AvailabilityV1"
+          },
+          "title": "Source Availability",
+          "type": "object"
+        },
+        "source_observed_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Source Observed At"
+        },
+        "last_known_summary": {
+          "$ref": "#/$defs/LastKnownBuildingSummaryV1"
+        },
+        "saved_id": {
+          "format": "uuid",
+          "title": "Saved Id",
+          "type": "string"
+        },
+        "display_name": {
+          "anyOf": [
+            {
+              "maxLength": 120,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Display Name"
+        },
+        "revision": {
+          "minimum": 1,
+          "title": "Revision",
+          "type": "integer"
+        },
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        },
+        "updated_at": {
+          "format": "date-time",
+          "title": "Updated At",
+          "type": "string"
+        },
+        "share_enabled": {
+          "default": false,
+          "title": "Share Enabled",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "building_key",
+        "base_status",
+        "base",
+        "overrides",
+        "scenario_inputs",
+        "effective",
+        "field_provenance",
+        "source_availability",
+        "source_observed_at",
+        "last_known_summary",
+        "saved_id",
+        "display_name",
+        "revision",
+        "created_at",
+        "updated_at"
+      ],
+      "title": "SavedBuildingV1",
+      "type": "object"
+    },
+    "ScenarioInputsV1": {
+      "additionalProperties": false,
+      "properties": {
+        "resident_count": {
+          "anyOf": [
+            {
+              "maximum": 10000,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Resident Count"
+        }
+      },
+      "title": "ScenarioInputsV1",
+      "type": "object"
+    },
+    "ScenarioQuantityV1": {
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "enum": [
+            "available",
+            "missing",
+            "invalid",
+            "unsupported",
+            "not_projected",
+            "source_unavailable",
+            "user_unknown"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reason"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "ge": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Value"
+        },
+        "unit": {
+          "const": "kWh/m\u00b2/year",
+          "default": "kWh/m\u00b2/year",
+          "title": "Unit",
+          "type": "string"
+        }
+      },
+      "required": [
+        "status"
+      ],
+      "title": "ScenarioQuantityV1",
+      "type": "object"
+    },
+    "SelectionV1": {
+      "additionalProperties": false,
+      "properties": {
+        "address_variants": {
+          "default": 0,
+          "title": "Address Variants",
+          "type": "integer"
+        },
+        "geometry_variants": {
+          "default": 0,
+          "title": "Geometry Variants",
+          "type": "integer"
+        },
+        "geometry_source": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Geometry Source"
+        },
+        "geometry_status": {
+          "$ref": "#/$defs/AvailabilityV1"
+        },
+        "address_policy": {
+          "const": "usable_then_C_lexical",
+          "default": "usable_then_C_lexical",
+          "title": "Address Policy",
+          "type": "string"
+        },
+        "geometry_policy": {
+          "const": "polygon_then_point_EWKB",
+          "default": "polygon_then_point_EWKB",
+          "title": "Geometry Policy",
+          "type": "string"
+        }
+      },
+      "required": [
+        "geometry_status"
+      ],
+      "title": "SelectionV1",
+      "type": "object"
+    },
+    "ShareCreatedV1": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "share_token": {
+          "pattern": "^[A-Za-z0-9_-]{43}$",
+          "title": "Share Token",
+          "type": "string"
+        },
+        "resolver_path": {
+          "pattern": "^/energy-data/shared-buildings/[A-Za-z0-9_-]{43}$",
+          "title": "Resolver Path",
+          "type": "string"
+        },
+        "revision": {
+          "minimum": 1,
+          "title": "Revision",
+          "type": "integer"
+        },
+        "updated_at": {
+          "format": "date-time",
+          "title": "Updated At",
+          "type": "string"
+        }
+      },
+      "required": [
+        "share_token",
+        "resolver_path",
+        "revision",
+        "updated_at"
+      ],
+      "title": "ShareCreatedV1",
+      "type": "object"
+    },
+    "SharedBaseV1": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "building_key": {
+          "title": "Building Key",
+          "type": "string"
+        },
+        "base_status": {
+          "const": "available",
+          "title": "Base Status",
+          "type": "string"
+        },
+        "identity": {
+          "$ref": "#/$defs/SharedIdentityV1"
+        },
+        "details": {
+          "$ref": "#/$defs/DetailsV1"
+        },
+        "geometry": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/GeometryV1"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "location": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LocationV1"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "selection": {
+          "$ref": "#/$defs/SelectionV1"
+        },
+        "code_labels": {
+          "$ref": "#/$defs/CodeLabelsV1"
+        },
+        "certificate": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CertificateV1"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "published_certificate": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PublishedCertificateV1"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "model": {
+          "$ref": "#/$defs/ModelV1"
+        },
+        "sources": {
+          "$ref": "#/$defs/SourcesV1"
+        },
+        "source_observed_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Source Observed At"
+        },
+        "timestamp_status": {
+          "const": "unknown",
+          "title": "Timestamp Status",
+          "type": "string"
+        },
+        "resolved_at": {
+          "format": "date-time",
+          "title": "Resolved At",
+          "type": "string"
+        },
+        "field_provenance": {
+          "additionalProperties": {
+            "$ref": "#/$defs/FieldProvenanceV1"
+          },
+          "title": "Field Provenance",
+          "type": "object"
+        },
+        "source_availability": {
+          "additionalProperties": {
+            "$ref": "#/$defs/AvailabilityV1"
+          },
+          "title": "Source Availability",
+          "type": "object"
+        }
+      },
+      "required": [
+        "building_key",
+        "base_status",
+        "identity",
+        "details",
+        "geometry",
+        "location",
+        "selection",
+        "code_labels",
+        "certificate",
+        "published_certificate",
+        "model",
+        "sources",
+        "source_observed_at",
+        "timestamp_status",
+        "resolved_at",
+        "field_provenance",
+        "source_availability"
+      ],
+      "title": "SharedBaseV1",
+      "type": "object"
+    },
+    "SharedBuildingV1": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "building_key": {
+          "title": "Building Key",
+          "type": "string"
+        },
+        "display_name": {
+          "anyOf": [
+            {
+              "maxLength": 120,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Display Name"
+        },
+        "revision": {
+          "minimum": 1,
+          "title": "Revision",
+          "type": "integer"
+        },
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        },
+        "updated_at": {
+          "format": "date-time",
+          "title": "Updated At",
+          "type": "string"
+        },
+        "base_status": {
+          "enum": [
+            "available",
+            "unavailable"
+          ],
+          "title": "Base Status",
+          "type": "string"
+        },
+        "base_unavailable_reason": {
+          "anyOf": [
+            {
+              "enum": [
+                "missing",
+                "ambiguous",
+                "source_unavailable"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Base Unavailable Reason"
+        },
+        "base": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SharedBaseV1"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "overrides": {
+          "$ref": "#/$defs/BuildingOverridesV1"
+        },
+        "scenario_inputs": {
+          "$ref": "#/$defs/ScenarioInputsV1"
+        },
+        "effective": {
+          "$ref": "#/$defs/EffectiveV1"
+        },
+        "field_provenance": {
+          "additionalProperties": {
+            "$ref": "#/$defs/FieldProvenanceV1"
+          },
+          "title": "Field Provenance",
+          "type": "object"
+        },
+        "source_availability": {
+          "additionalProperties": {
+            "$ref": "#/$defs/AvailabilityV1"
+          },
+          "title": "Source Availability",
+          "type": "object"
+        },
+        "source_observed_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Source Observed At"
+        },
+        "last_known_summary": {
+          "$ref": "#/$defs/LastKnownBuildingSummaryV1"
+        }
+      },
+      "required": [
+        "building_key",
+        "display_name",
+        "revision",
+        "created_at",
+        "updated_at",
+        "base_status",
+        "base_unavailable_reason",
+        "base",
+        "overrides",
+        "scenario_inputs",
+        "effective",
+        "field_provenance",
+        "source_availability",
+        "source_observed_at",
+        "last_known_summary"
+      ],
+      "title": "SharedBuildingV1",
+      "type": "object"
+    },
+    "SharedIdentityV1": {
+      "additionalProperties": false,
+      "properties": {
+        "permanent_building_identifier": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Permanent Building Identifier"
+        },
+        "property_identifier": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Property Identifier"
+        }
+      },
+      "required": [
+        "permanent_building_identifier",
+        "property_identifier"
+      ],
+      "title": "SharedIdentityV1",
+      "type": "object"
+    },
+    "SourceV1": {
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "enum": [
+            "available",
+            "missing",
+            "invalid",
+            "unsupported",
+            "not_projected",
+            "source_unavailable",
+            "user_unknown"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reason"
+        },
+        "upstream_modified_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Upstream Modified At"
+        },
+        "timestamp_status": {
+          "default": "unknown",
+          "enum": [
+            "known",
+            "missing",
+            "invalid",
+            "unknown"
+          ],
+          "title": "Timestamp Status",
+          "type": "string"
+        },
+        "imported_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Imported At"
+        }
+      },
+      "required": [
+        "status"
+      ],
+      "title": "SourceV1",
+      "type": "object"
+    },
+    "SourcesV1": {
+      "additionalProperties": false,
+      "properties": {
+        "main": {
+          "$ref": "#/$defs/SourceV1"
+        },
+        "ryhti_building": {
+          "$ref": "#/$defs/SourceV1"
+        },
+        "ryhti_address": {
+          "$ref": "#/$defs/SourceV1"
+        },
+        "ryhti_polygon": {
+          "$ref": "#/$defs/SourceV1"
+        },
+        "certificate": {
+          "$ref": "#/$defs/SourceV1"
+        },
+        "code_catalog": {
+          "$ref": "#/$defs/SourceV1"
+        }
+      },
+      "required": [
+        "main",
+        "ryhti_building",
+        "ryhti_address",
+        "ryhti_polygon",
+        "certificate",
+        "code_catalog"
+      ],
+      "title": "SourcesV1",
+      "type": "object"
+    }
+  },
+  "title": "EnergyMapBuildingContractV1"
+}

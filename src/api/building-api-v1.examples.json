@@ -1,0 +1,1876 @@
+{
+  "public_detail": {
+    "schema_version": 1,
+    "building_key": "000-fixture-opaque-key",
+    "base_status": "available",
+    "identity": {
+      "permanent_building_identifier": null,
+      "property_identifier": null,
+      "address_key": null
+    },
+    "code_labels": {
+      "main_purpose": null,
+      "heating_method": null,
+      "heating_energy_source": null
+    },
+    "published_certificate": null,
+    "details": {
+      "completion_date": null,
+      "ventilation_category": "no_info",
+      "address_fin": "Example street 1",
+      "postal_code": "00100",
+      "postal_office_fin": null,
+      "construction_year": null,
+      "main_purpose": null,
+      "heating_method": null,
+      "heating_energy_source": null,
+      "number_of_storeys": null,
+      "apartment_count": null,
+      "floor_area": 0.0,
+      "total_area": null,
+      "gross_floor_area": null,
+      "heated_net_area": null,
+      "volume": null,
+      "ventilation_type_id": null,
+      "ventilation_description": null
+    },
+    "geometry": null,
+    "location": null,
+    "selection": {
+      "address_variants": 0,
+      "geometry_variants": 0,
+      "geometry_source": null,
+      "geometry_status": {
+        "status": "missing",
+        "reason": null
+      },
+      "address_policy": "usable_then_C_lexical",
+      "geometry_policy": "polygon_then_point_EWKB"
+    },
+    "certificate": null,
+    "model": {
+      "modeled_energy_class": null,
+      "modeled_energy_e_value": null,
+      "reason": null,
+      "area_source": null,
+      "energy_class": null,
+      "is_energy_class_modeled": null,
+      "energy_class_year": null,
+      "consumption_scenarios": {},
+      "field_availability": {},
+      "context": "source_based_not_recalculated",
+      "generated_at": null
+    },
+    "sources": {
+      "main": {
+        "status": "available",
+        "reason": null,
+        "upstream_modified_at": null,
+        "timestamp_status": "unknown",
+        "imported_at": null
+      },
+      "ryhti_building": {
+        "status": "missing",
+        "reason": null,
+        "upstream_modified_at": null,
+        "timestamp_status": "unknown",
+        "imported_at": null
+      },
+      "ryhti_address": {
+        "status": "missing",
+        "reason": null,
+        "upstream_modified_at": null,
+        "timestamp_status": "unknown",
+        "imported_at": null
+      },
+      "ryhti_polygon": {
+        "status": "missing",
+        "reason": null,
+        "upstream_modified_at": null,
+        "timestamp_status": "unknown",
+        "imported_at": null
+      },
+      "certificate": {
+        "status": "missing",
+        "reason": null,
+        "upstream_modified_at": null,
+        "timestamp_status": "unknown",
+        "imported_at": null
+      },
+      "code_catalog": {
+        "status": "missing",
+        "reason": null,
+        "upstream_modified_at": null,
+        "timestamp_status": "unknown",
+        "imported_at": null
+      }
+    },
+    "source_observed_at": null,
+    "timestamp_status": "unknown",
+    "resolved_at": "2026-10-23T00:00:00Z",
+    "field_provenance": {
+      "details.completion_date": {
+        "status": "missing",
+        "reason": null,
+        "origin": "ryhti",
+        "source": "main.completion_date",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": false,
+        "dependencies": [],
+        "source_language": null
+      },
+      "details.ventilation_category": {
+        "status": "available",
+        "reason": null,
+        "origin": "derived",
+        "source": "ventilation_policy_v1",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": false,
+        "dependencies": [],
+        "source_language": null
+      },
+      "details.address_fin": {
+        "status": "available",
+        "reason": null,
+        "origin": "ryhti",
+        "source": "main.address_fin",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": false,
+        "dependencies": [],
+        "source_language": null
+      },
+      "details.postal_code": {
+        "status": "available",
+        "reason": null,
+        "origin": "ryhti",
+        "source": "main.postal_code",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": false,
+        "dependencies": [],
+        "source_language": null
+      },
+      "details.postal_office_fin": {
+        "status": "missing",
+        "reason": null,
+        "origin": "ryhti",
+        "source": "main.postal_office_fin",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": false,
+        "dependencies": [],
+        "source_language": null
+      },
+      "details.construction_year": {
+        "status": "missing",
+        "reason": null,
+        "origin": "ryhti",
+        "source": "main.construction_year",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": false,
+        "dependencies": [],
+        "source_language": null
+      },
+      "details.main_purpose": {
+        "status": "missing",
+        "reason": null,
+        "origin": "ryhti",
+        "source": "main.main_purpose",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": false,
+        "dependencies": [],
+        "source_language": null
+      },
+      "details.heating_method": {
+        "status": "missing",
+        "reason": null,
+        "origin": "ryhti",
+        "source": "main.heating_method",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": false,
+        "dependencies": [],
+        "source_language": null
+      },
+      "details.heating_energy_source": {
+        "status": "missing",
+        "reason": null,
+        "origin": "ryhti",
+        "source": "main.heating_energy_source",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": false,
+        "dependencies": [],
+        "source_language": null
+      },
+      "details.number_of_storeys": {
+        "status": "missing",
+        "reason": null,
+        "origin": "ryhti",
+        "source": "main.number_of_storeys",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": false,
+        "dependencies": [],
+        "source_language": null
+      },
+      "details.apartment_count": {
+        "status": "missing",
+        "reason": null,
+        "origin": "ryhti",
+        "source": "main.apartment_count",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": false,
+        "dependencies": [],
+        "source_language": null
+      },
+      "details.floor_area": {
+        "status": "available",
+        "reason": null,
+        "origin": "ryhti",
+        "source": "main.floor_area",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": false,
+        "dependencies": [],
+        "source_language": null
+      },
+      "details.total_area": {
+        "status": "missing",
+        "reason": null,
+        "origin": "ryhti",
+        "source": "main.total_area",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": false,
+        "dependencies": [],
+        "source_language": null
+      },
+      "details.gross_floor_area": {
+        "status": "missing",
+        "reason": null,
+        "origin": "ryhti",
+        "source": "main.gross_floor_area",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": false,
+        "dependencies": [],
+        "source_language": null
+      },
+      "details.heated_net_area": {
+        "status": "missing",
+        "reason": null,
+        "origin": "ryhti",
+        "source": "main.heated_net_area",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": false,
+        "dependencies": [],
+        "source_language": null
+      },
+      "details.volume": {
+        "status": "missing",
+        "reason": null,
+        "origin": "ryhti",
+        "source": "main.volume",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": false,
+        "dependencies": [],
+        "source_language": null
+      },
+      "details.ventilation_type_id": {
+        "status": "missing",
+        "reason": null,
+        "origin": "ryhti",
+        "source": "main.ventilation_type_id",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": false,
+        "dependencies": [],
+        "source_language": null
+      },
+      "details.ventilation_description": {
+        "status": "missing",
+        "reason": null,
+        "origin": "ryhti",
+        "source": "main.ventilation_description",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": false,
+        "dependencies": [],
+        "source_language": null
+      }
+    },
+    "source_availability": {
+      "source_observed_at": {
+        "status": "missing",
+        "reason": "unknown_source_freshness"
+      }
+    }
+  },
+  "owner_saved": {
+    "schema_version": 1,
+    "building_key": "000-fixture-opaque-key",
+    "base_status": "available",
+    "base_unavailable_reason": null,
+    "base": {
+      "schema_version": 1,
+      "building_key": "000-fixture-opaque-key",
+      "base_status": "available",
+      "identity": {
+        "permanent_building_identifier": null,
+        "property_identifier": null,
+        "address_key": null
+      },
+      "code_labels": {
+        "main_purpose": null,
+        "heating_method": null,
+        "heating_energy_source": null
+      },
+      "published_certificate": null,
+      "details": {
+        "completion_date": null,
+        "ventilation_category": "no_info",
+        "address_fin": "Example street 1",
+        "postal_code": "00100",
+        "postal_office_fin": null,
+        "construction_year": null,
+        "main_purpose": null,
+        "heating_method": null,
+        "heating_energy_source": null,
+        "number_of_storeys": null,
+        "apartment_count": null,
+        "floor_area": 0.0,
+        "total_area": null,
+        "gross_floor_area": null,
+        "heated_net_area": null,
+        "volume": null,
+        "ventilation_type_id": null,
+        "ventilation_description": null
+      },
+      "geometry": null,
+      "location": null,
+      "selection": {
+        "address_variants": 0,
+        "geometry_variants": 0,
+        "geometry_source": null,
+        "geometry_status": {
+          "status": "missing",
+          "reason": null
+        },
+        "address_policy": "usable_then_C_lexical",
+        "geometry_policy": "polygon_then_point_EWKB"
+      },
+      "certificate": null,
+      "model": {
+        "modeled_energy_class": null,
+        "modeled_energy_e_value": null,
+        "reason": null,
+        "area_source": null,
+        "energy_class": null,
+        "is_energy_class_modeled": null,
+        "energy_class_year": null,
+        "consumption_scenarios": {},
+        "field_availability": {},
+        "context": "source_based_not_recalculated",
+        "generated_at": null
+      },
+      "sources": {
+        "main": {
+          "status": "available",
+          "reason": null,
+          "upstream_modified_at": null,
+          "timestamp_status": "unknown",
+          "imported_at": null
+        },
+        "ryhti_building": {
+          "status": "missing",
+          "reason": null,
+          "upstream_modified_at": null,
+          "timestamp_status": "unknown",
+          "imported_at": null
+        },
+        "ryhti_address": {
+          "status": "missing",
+          "reason": null,
+          "upstream_modified_at": null,
+          "timestamp_status": "unknown",
+          "imported_at": null
+        },
+        "ryhti_polygon": {
+          "status": "missing",
+          "reason": null,
+          "upstream_modified_at": null,
+          "timestamp_status": "unknown",
+          "imported_at": null
+        },
+        "certificate": {
+          "status": "missing",
+          "reason": null,
+          "upstream_modified_at": null,
+          "timestamp_status": "unknown",
+          "imported_at": null
+        },
+        "code_catalog": {
+          "status": "missing",
+          "reason": null,
+          "upstream_modified_at": null,
+          "timestamp_status": "unknown",
+          "imported_at": null
+        }
+      },
+      "source_observed_at": null,
+      "timestamp_status": "unknown",
+      "resolved_at": "2026-10-23T00:00:00Z",
+      "field_provenance": {
+        "details.completion_date": {
+          "status": "missing",
+          "reason": null,
+          "origin": "ryhti",
+          "source": "main.completion_date",
+          "source_observed_at": null,
+          "upstream_modified_at": null,
+          "is_override": false,
+          "dependencies": [],
+          "source_language": null
+        },
+        "details.ventilation_category": {
+          "status": "available",
+          "reason": null,
+          "origin": "derived",
+          "source": "ventilation_policy_v1",
+          "source_observed_at": null,
+          "upstream_modified_at": null,
+          "is_override": false,
+          "dependencies": [],
+          "source_language": null
+        },
+        "details.address_fin": {
+          "status": "available",
+          "reason": null,
+          "origin": "ryhti",
+          "source": "main.address_fin",
+          "source_observed_at": null,
+          "upstream_modified_at": null,
+          "is_override": false,
+          "dependencies": [],
+          "source_language": null
+        },
+        "details.postal_code": {
+          "status": "available",
+          "reason": null,
+          "origin": "ryhti",
+          "source": "main.postal_code",
+          "source_observed_at": null,
+          "upstream_modified_at": null,
+          "is_override": false,
+          "dependencies": [],
+          "source_language": null
+        },
+        "details.postal_office_fin": {
+          "status": "missing",
+          "reason": null,
+          "origin": "ryhti",
+          "source": "main.postal_office_fin",
+          "source_observed_at": null,
+          "upstream_modified_at": null,
+          "is_override": false,
+          "dependencies": [],
+          "source_language": null
+        },
+        "details.construction_year": {
+          "status": "missing",
+          "reason": null,
+          "origin": "ryhti",
+          "source": "main.construction_year",
+          "source_observed_at": null,
+          "upstream_modified_at": null,
+          "is_override": false,
+          "dependencies": [],
+          "source_language": null
+        },
+        "details.main_purpose": {
+          "status": "missing",
+          "reason": null,
+          "origin": "ryhti",
+          "source": "main.main_purpose",
+          "source_observed_at": null,
+          "upstream_modified_at": null,
+          "is_override": false,
+          "dependencies": [],
+          "source_language": null
+        },
+        "details.heating_method": {
+          "status": "missing",
+          "reason": null,
+          "origin": "ryhti",
+          "source": "main.heating_method",
+          "source_observed_at": null,
+          "upstream_modified_at": null,
+          "is_override": false,
+          "dependencies": [],
+          "source_language": null
+        },
+        "details.heating_energy_source": {
+          "status": "missing",
+          "reason": null,
+          "origin": "ryhti",
+          "source": "main.heating_energy_source",
+          "source_observed_at": null,
+          "upstream_modified_at": null,
+          "is_override": false,
+          "dependencies": [],
+          "source_language": null
+        },
+        "details.number_of_storeys": {
+          "status": "missing",
+          "reason": null,
+          "origin": "ryhti",
+          "source": "main.number_of_storeys",
+          "source_observed_at": null,
+          "upstream_modified_at": null,
+          "is_override": false,
+          "dependencies": [],
+          "source_language": null
+        },
+        "details.apartment_count": {
+          "status": "missing",
+          "reason": null,
+          "origin": "ryhti",
+          "source": "main.apartment_count",
+          "source_observed_at": null,
+          "upstream_modified_at": null,
+          "is_override": false,
+          "dependencies": [],
+          "source_language": null
+        },
+        "details.floor_area": {
+          "status": "available",
+          "reason": null,
+          "origin": "ryhti",
+          "source": "main.floor_area",
+          "source_observed_at": null,
+          "upstream_modified_at": null,
+          "is_override": false,
+          "dependencies": [],
+          "source_language": null
+        },
+        "details.total_area": {
+          "status": "missing",
+          "reason": null,
+          "origin": "ryhti",
+          "source": "main.total_area",
+          "source_observed_at": null,
+          "upstream_modified_at": null,
+          "is_override": false,
+          "dependencies": [],
+          "source_language": null
+        },
+        "details.gross_floor_area": {
+          "status": "missing",
+          "reason": null,
+          "origin": "ryhti",
+          "source": "main.gross_floor_area",
+          "source_observed_at": null,
+          "upstream_modified_at": null,
+          "is_override": false,
+          "dependencies": [],
+          "source_language": null
+        },
+        "details.heated_net_area": {
+          "status": "missing",
+          "reason": null,
+          "origin": "ryhti",
+          "source": "main.heated_net_area",
+          "source_observed_at": null,
+          "upstream_modified_at": null,
+          "is_override": false,
+          "dependencies": [],
+          "source_language": null
+        },
+        "details.volume": {
+          "status": "missing",
+          "reason": null,
+          "origin": "ryhti",
+          "source": "main.volume",
+          "source_observed_at": null,
+          "upstream_modified_at": null,
+          "is_override": false,
+          "dependencies": [],
+          "source_language": null
+        },
+        "details.ventilation_type_id": {
+          "status": "missing",
+          "reason": null,
+          "origin": "ryhti",
+          "source": "main.ventilation_type_id",
+          "source_observed_at": null,
+          "upstream_modified_at": null,
+          "is_override": false,
+          "dependencies": [],
+          "source_language": null
+        },
+        "details.ventilation_description": {
+          "status": "missing",
+          "reason": null,
+          "origin": "ryhti",
+          "source": "main.ventilation_description",
+          "source_observed_at": null,
+          "upstream_modified_at": null,
+          "is_override": false,
+          "dependencies": [],
+          "source_language": null
+        }
+      },
+      "source_availability": {
+        "source_observed_at": {
+          "status": "missing",
+          "reason": "unknown_source_freshness"
+        }
+      }
+    },
+    "overrides": {
+      "floor_area": 0.0,
+      "total_area": null
+    },
+    "scenario_inputs": {
+      "resident_count": 2
+    },
+    "effective": {
+      "published_certificate": null,
+      "details": {
+        "completion_date": null,
+        "ventilation_category": "no_info",
+        "address_fin": "Example street 1",
+        "postal_code": "00100",
+        "postal_office_fin": null,
+        "construction_year": null,
+        "main_purpose": null,
+        "heating_method": null,
+        "heating_energy_source": null,
+        "number_of_storeys": null,
+        "apartment_count": null,
+        "floor_area": 0.0,
+        "total_area": null,
+        "gross_floor_area": null,
+        "heated_net_area": null,
+        "volume": null,
+        "ventilation_type_id": null,
+        "ventilation_description": null
+      },
+      "scenario_inputs": {
+        "resident_count": 2
+      },
+      "certificate": null,
+      "model": {
+        "modeled_energy_class": null,
+        "modeled_energy_e_value": null,
+        "reason": null,
+        "area_source": null,
+        "energy_class": null,
+        "is_energy_class_modeled": null,
+        "energy_class_year": null,
+        "consumption_scenarios": {},
+        "field_availability": {},
+        "context": "source_based_not_recalculated",
+        "generated_at": null
+      },
+      "model_input_divergence": [],
+      "scenario_prefix": null,
+      "resident_count_applicability": "unknown"
+    },
+    "field_provenance": {
+      "details.completion_date": {
+        "status": "missing",
+        "reason": null,
+        "origin": "ryhti",
+        "source": "main.completion_date",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": false,
+        "dependencies": [],
+        "source_language": null
+      },
+      "details.ventilation_category": {
+        "status": "available",
+        "reason": null,
+        "origin": "derived",
+        "source": "ventilation_policy_v1",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": false,
+        "dependencies": [
+          "details.ventilation_type_id",
+          "details.ventilation_description"
+        ],
+        "source_language": null
+      },
+      "details.address_fin": {
+        "status": "available",
+        "reason": null,
+        "origin": "ryhti",
+        "source": "main.address_fin",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": false,
+        "dependencies": [],
+        "source_language": null
+      },
+      "details.postal_code": {
+        "status": "available",
+        "reason": null,
+        "origin": "ryhti",
+        "source": "main.postal_code",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": false,
+        "dependencies": [],
+        "source_language": null
+      },
+      "details.postal_office_fin": {
+        "status": "missing",
+        "reason": null,
+        "origin": "ryhti",
+        "source": "main.postal_office_fin",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": false,
+        "dependencies": [],
+        "source_language": null
+      },
+      "details.construction_year": {
+        "status": "missing",
+        "reason": null,
+        "origin": "ryhti",
+        "source": "main.construction_year",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": false,
+        "dependencies": [],
+        "source_language": null
+      },
+      "details.main_purpose": {
+        "status": "missing",
+        "reason": null,
+        "origin": "ryhti",
+        "source": "main.main_purpose",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": false,
+        "dependencies": [],
+        "source_language": null
+      },
+      "details.heating_method": {
+        "status": "missing",
+        "reason": null,
+        "origin": "ryhti",
+        "source": "main.heating_method",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": false,
+        "dependencies": [],
+        "source_language": null
+      },
+      "details.heating_energy_source": {
+        "status": "missing",
+        "reason": null,
+        "origin": "ryhti",
+        "source": "main.heating_energy_source",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": false,
+        "dependencies": [],
+        "source_language": null
+      },
+      "details.number_of_storeys": {
+        "status": "missing",
+        "reason": null,
+        "origin": "ryhti",
+        "source": "main.number_of_storeys",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": false,
+        "dependencies": [],
+        "source_language": null
+      },
+      "details.apartment_count": {
+        "status": "missing",
+        "reason": null,
+        "origin": "ryhti",
+        "source": "main.apartment_count",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": false,
+        "dependencies": [],
+        "source_language": null
+      },
+      "details.floor_area": {
+        "status": "available",
+        "reason": null,
+        "origin": "user",
+        "source": "overrides.floor_area",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": true,
+        "dependencies": [],
+        "source_language": null
+      },
+      "details.total_area": {
+        "status": "user_unknown",
+        "reason": null,
+        "origin": "user",
+        "source": "overrides.total_area",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": true,
+        "dependencies": [],
+        "source_language": null
+      },
+      "details.gross_floor_area": {
+        "status": "missing",
+        "reason": null,
+        "origin": "ryhti",
+        "source": "main.gross_floor_area",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": false,
+        "dependencies": [],
+        "source_language": null
+      },
+      "details.heated_net_area": {
+        "status": "missing",
+        "reason": null,
+        "origin": "ryhti",
+        "source": "main.heated_net_area",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": false,
+        "dependencies": [],
+        "source_language": null
+      },
+      "details.volume": {
+        "status": "missing",
+        "reason": null,
+        "origin": "ryhti",
+        "source": "main.volume",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": false,
+        "dependencies": [],
+        "source_language": null
+      },
+      "details.ventilation_type_id": {
+        "status": "missing",
+        "reason": null,
+        "origin": "ryhti",
+        "source": "main.ventilation_type_id",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": false,
+        "dependencies": [],
+        "source_language": null
+      },
+      "details.ventilation_description": {
+        "status": "missing",
+        "reason": null,
+        "origin": "ryhti",
+        "source": "main.ventilation_description",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": false,
+        "dependencies": [],
+        "source_language": null
+      },
+      "scenario_inputs.resident_count": {
+        "status": "available",
+        "reason": null,
+        "origin": "user",
+        "source": "scenario_inputs.resident_count",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": true,
+        "dependencies": [],
+        "source_language": null
+      }
+    },
+    "source_availability": {
+      "source_observed_at": {
+        "status": "missing",
+        "reason": "unknown_source_freshness"
+      },
+      "details.completion_date": {
+        "status": "missing",
+        "reason": null
+      },
+      "details.ventilation_category": {
+        "status": "available",
+        "reason": null
+      },
+      "details.address_fin": {
+        "status": "available",
+        "reason": null
+      },
+      "details.postal_code": {
+        "status": "available",
+        "reason": null
+      },
+      "details.postal_office_fin": {
+        "status": "missing",
+        "reason": null
+      },
+      "details.construction_year": {
+        "status": "missing",
+        "reason": null
+      },
+      "details.main_purpose": {
+        "status": "missing",
+        "reason": null
+      },
+      "details.heating_method": {
+        "status": "missing",
+        "reason": null
+      },
+      "details.heating_energy_source": {
+        "status": "missing",
+        "reason": null
+      },
+      "details.number_of_storeys": {
+        "status": "missing",
+        "reason": null
+      },
+      "details.apartment_count": {
+        "status": "missing",
+        "reason": null
+      },
+      "details.floor_area": {
+        "status": "available",
+        "reason": null
+      },
+      "details.total_area": {
+        "status": "user_unknown",
+        "reason": null
+      },
+      "details.gross_floor_area": {
+        "status": "missing",
+        "reason": null
+      },
+      "details.heated_net_area": {
+        "status": "missing",
+        "reason": null
+      },
+      "details.volume": {
+        "status": "missing",
+        "reason": null
+      },
+      "details.ventilation_type_id": {
+        "status": "missing",
+        "reason": null
+      },
+      "details.ventilation_description": {
+        "status": "missing",
+        "reason": null
+      },
+      "scenario_inputs.resident_count": {
+        "status": "available",
+        "reason": null
+      }
+    },
+    "source_observed_at": null,
+    "last_known_summary": {
+      "schema_version": 1,
+      "building_key": "000-fixture-opaque-key",
+      "name": null,
+      "address_fin": "Example street 1",
+      "postal_code": "00100",
+      "postal_office_fin": null,
+      "location": null,
+      "source_observed_at": null,
+      "source_availability": {
+        "address_fin": {
+          "status": "available",
+          "reason": null
+        },
+        "postal_code": {
+          "status": "available",
+          "reason": null
+        },
+        "postal_office_fin": {
+          "status": "missing",
+          "reason": null
+        },
+        "location": {
+          "status": "missing",
+          "reason": null
+        },
+        "main": {
+          "status": "available",
+          "reason": null
+        },
+        "source_observed_at": {
+          "status": "missing",
+          "reason": "unknown_source_freshness"
+        }
+      },
+      "captured_at": "2026-10-23T12:00:00Z"
+    },
+    "saved_id": "00000000-0000-0000-0000-000000000001",
+    "display_name": "Shared example home",
+    "revision": 2,
+    "created_at": "2026-10-23T12:00:00Z",
+    "updated_at": "2026-10-23T12:00:00Z",
+    "share_enabled": true
+  },
+  "owner_list": {
+    "schema_version": 1,
+    "items": [
+      {
+        "schema_version": 1,
+        "saved_id": "00000000-0000-0000-0000-000000000001",
+        "building_key": "000-fixture-opaque-key",
+        "display_name": "Shared example home",
+        "revision": 2,
+        "created_at": "2026-10-23T12:00:00Z",
+        "updated_at": "2026-10-23T12:00:00Z",
+        "share_enabled": true,
+        "base_status": "available",
+        "base_unavailable_reason": null,
+        "last_known_summary": {
+          "schema_version": 1,
+          "building_key": "000-fixture-opaque-key",
+          "name": null,
+          "address_fin": "Example street 1",
+          "postal_code": "00100",
+          "postal_office_fin": null,
+          "location": null,
+          "source_observed_at": null,
+          "source_availability": {
+            "address_fin": {
+              "status": "available",
+              "reason": null
+            },
+            "postal_code": {
+              "status": "available",
+              "reason": null
+            },
+            "postal_office_fin": {
+              "status": "missing",
+              "reason": null
+            },
+            "location": {
+              "status": "missing",
+              "reason": null
+            },
+            "main": {
+              "status": "available",
+              "reason": null
+            },
+            "source_observed_at": {
+              "status": "missing",
+              "reason": "unknown_source_freshness"
+            }
+          },
+          "captured_at": "2026-10-23T12:00:00Z"
+        },
+        "current_summary": {
+          "schema_version": 1,
+          "building_key": "000-fixture-opaque-key",
+          "name": null,
+          "address_fin": "Example street 1",
+          "postal_code": "00100",
+          "postal_office_fin": null,
+          "location": null,
+          "source_observed_at": null,
+          "source_availability": {
+            "address_fin": {
+              "status": "available",
+              "reason": null
+            },
+            "postal_code": {
+              "status": "available",
+              "reason": null
+            },
+            "postal_office_fin": {
+              "status": "missing",
+              "reason": null
+            },
+            "location": {
+              "status": "missing",
+              "reason": null
+            },
+            "main": {
+              "status": "available",
+              "reason": null
+            },
+            "source_observed_at": {
+              "status": "missing",
+              "reason": "unknown_source_freshness"
+            }
+          }
+        }
+      }
+    ],
+    "next_cursor": null
+  },
+  "share_created": {
+    "schema_version": 1,
+    "share_token": "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+    "resolver_path": "/energy-data/shared-buildings/eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee",
+    "revision": 2,
+    "updated_at": "2026-10-23T12:00:00Z"
+  },
+  "shared_detail": {
+    "schema_version": 1,
+    "building_key": "000-fixture-opaque-key",
+    "display_name": "Shared example home",
+    "revision": 2,
+    "created_at": "2026-10-23T12:00:00Z",
+    "updated_at": "2026-10-23T12:00:00Z",
+    "base_status": "available",
+    "base_unavailable_reason": null,
+    "base": {
+      "schema_version": 1,
+      "building_key": "000-fixture-opaque-key",
+      "base_status": "available",
+      "identity": {
+        "permanent_building_identifier": null,
+        "property_identifier": null
+      },
+      "details": {
+        "completion_date": null,
+        "ventilation_category": "no_info",
+        "address_fin": "Example street 1",
+        "postal_code": "00100",
+        "postal_office_fin": null,
+        "construction_year": null,
+        "main_purpose": null,
+        "heating_method": null,
+        "heating_energy_source": null,
+        "number_of_storeys": null,
+        "apartment_count": null,
+        "floor_area": 0.0,
+        "total_area": null,
+        "gross_floor_area": null,
+        "heated_net_area": null,
+        "volume": null,
+        "ventilation_type_id": null,
+        "ventilation_description": null
+      },
+      "geometry": null,
+      "location": null,
+      "selection": {
+        "address_variants": 0,
+        "geometry_variants": 0,
+        "geometry_source": null,
+        "geometry_status": {
+          "status": "missing",
+          "reason": null
+        },
+        "address_policy": "usable_then_C_lexical",
+        "geometry_policy": "polygon_then_point_EWKB"
+      },
+      "code_labels": {
+        "main_purpose": null,
+        "heating_method": null,
+        "heating_energy_source": null
+      },
+      "certificate": null,
+      "published_certificate": null,
+      "model": {
+        "modeled_energy_class": null,
+        "modeled_energy_e_value": null,
+        "reason": null,
+        "area_source": null,
+        "energy_class": null,
+        "is_energy_class_modeled": null,
+        "energy_class_year": null,
+        "consumption_scenarios": {},
+        "field_availability": {},
+        "context": "source_based_not_recalculated",
+        "generated_at": null
+      },
+      "sources": {
+        "main": {
+          "status": "available",
+          "reason": null,
+          "upstream_modified_at": null,
+          "timestamp_status": "unknown",
+          "imported_at": null
+        },
+        "ryhti_building": {
+          "status": "missing",
+          "reason": null,
+          "upstream_modified_at": null,
+          "timestamp_status": "unknown",
+          "imported_at": null
+        },
+        "ryhti_address": {
+          "status": "missing",
+          "reason": null,
+          "upstream_modified_at": null,
+          "timestamp_status": "unknown",
+          "imported_at": null
+        },
+        "ryhti_polygon": {
+          "status": "missing",
+          "reason": null,
+          "upstream_modified_at": null,
+          "timestamp_status": "unknown",
+          "imported_at": null
+        },
+        "certificate": {
+          "status": "missing",
+          "reason": null,
+          "upstream_modified_at": null,
+          "timestamp_status": "unknown",
+          "imported_at": null
+        },
+        "code_catalog": {
+          "status": "missing",
+          "reason": null,
+          "upstream_modified_at": null,
+          "timestamp_status": "unknown",
+          "imported_at": null
+        }
+      },
+      "source_observed_at": null,
+      "timestamp_status": "unknown",
+      "resolved_at": "2026-10-23T00:00:00Z",
+      "field_provenance": {
+        "details.completion_date": {
+          "status": "missing",
+          "reason": null,
+          "origin": "ryhti",
+          "source": "main.completion_date",
+          "source_observed_at": null,
+          "upstream_modified_at": null,
+          "is_override": false,
+          "dependencies": [],
+          "source_language": null
+        },
+        "details.ventilation_category": {
+          "status": "available",
+          "reason": null,
+          "origin": "derived",
+          "source": "ventilation_policy_v1",
+          "source_observed_at": null,
+          "upstream_modified_at": null,
+          "is_override": false,
+          "dependencies": [],
+          "source_language": null
+        },
+        "details.address_fin": {
+          "status": "available",
+          "reason": null,
+          "origin": "ryhti",
+          "source": "main.address_fin",
+          "source_observed_at": null,
+          "upstream_modified_at": null,
+          "is_override": false,
+          "dependencies": [],
+          "source_language": null
+        },
+        "details.postal_code": {
+          "status": "available",
+          "reason": null,
+          "origin": "ryhti",
+          "source": "main.postal_code",
+          "source_observed_at": null,
+          "upstream_modified_at": null,
+          "is_override": false,
+          "dependencies": [],
+          "source_language": null
+        },
+        "details.postal_office_fin": {
+          "status": "missing",
+          "reason": null,
+          "origin": "ryhti",
+          "source": "main.postal_office_fin",
+          "source_observed_at": null,
+          "upstream_modified_at": null,
+          "is_override": false,
+          "dependencies": [],
+          "source_language": null
+        },
+        "details.construction_year": {
+          "status": "missing",
+          "reason": null,
+          "origin": "ryhti",
+          "source": "main.construction_year",
+          "source_observed_at": null,
+          "upstream_modified_at": null,
+          "is_override": false,
+          "dependencies": [],
+          "source_language": null
+        },
+        "details.main_purpose": {
+          "status": "missing",
+          "reason": null,
+          "origin": "ryhti",
+          "source": "main.main_purpose",
+          "source_observed_at": null,
+          "upstream_modified_at": null,
+          "is_override": false,
+          "dependencies": [],
+          "source_language": null
+        },
+        "details.heating_method": {
+          "status": "missing",
+          "reason": null,
+          "origin": "ryhti",
+          "source": "main.heating_method",
+          "source_observed_at": null,
+          "upstream_modified_at": null,
+          "is_override": false,
+          "dependencies": [],
+          "source_language": null
+        },
+        "details.heating_energy_source": {
+          "status": "missing",
+          "reason": null,
+          "origin": "ryhti",
+          "source": "main.heating_energy_source",
+          "source_observed_at": null,
+          "upstream_modified_at": null,
+          "is_override": false,
+          "dependencies": [],
+          "source_language": null
+        },
+        "details.number_of_storeys": {
+          "status": "missing",
+          "reason": null,
+          "origin": "ryhti",
+          "source": "main.number_of_storeys",
+          "source_observed_at": null,
+          "upstream_modified_at": null,
+          "is_override": false,
+          "dependencies": [],
+          "source_language": null
+        },
+        "details.apartment_count": {
+          "status": "missing",
+          "reason": null,
+          "origin": "ryhti",
+          "source": "main.apartment_count",
+          "source_observed_at": null,
+          "upstream_modified_at": null,
+          "is_override": false,
+          "dependencies": [],
+          "source_language": null
+        },
+        "details.floor_area": {
+          "status": "available",
+          "reason": null,
+          "origin": "ryhti",
+          "source": "main.floor_area",
+          "source_observed_at": null,
+          "upstream_modified_at": null,
+          "is_override": false,
+          "dependencies": [],
+          "source_language": null
+        },
+        "details.total_area": {
+          "status": "missing",
+          "reason": null,
+          "origin": "ryhti",
+          "source": "main.total_area",
+          "source_observed_at": null,
+          "upstream_modified_at": null,
+          "is_override": false,
+          "dependencies": [],
+          "source_language": null
+        },
+        "details.gross_floor_area": {
+          "status": "missing",
+          "reason": null,
+          "origin": "ryhti",
+          "source": "main.gross_floor_area",
+          "source_observed_at": null,
+          "upstream_modified_at": null,
+          "is_override": false,
+          "dependencies": [],
+          "source_language": null
+        },
+        "details.heated_net_area": {
+          "status": "missing",
+          "reason": null,
+          "origin": "ryhti",
+          "source": "main.heated_net_area",
+          "source_observed_at": null,
+          "upstream_modified_at": null,
+          "is_override": false,
+          "dependencies": [],
+          "source_language": null
+        },
+        "details.volume": {
+          "status": "missing",
+          "reason": null,
+          "origin": "ryhti",
+          "source": "main.volume",
+          "source_observed_at": null,
+          "upstream_modified_at": null,
+          "is_override": false,
+          "dependencies": [],
+          "source_language": null
+        },
+        "details.ventilation_type_id": {
+          "status": "missing",
+          "reason": null,
+          "origin": "ryhti",
+          "source": "main.ventilation_type_id",
+          "source_observed_at": null,
+          "upstream_modified_at": null,
+          "is_override": false,
+          "dependencies": [],
+          "source_language": null
+        },
+        "details.ventilation_description": {
+          "status": "missing",
+          "reason": null,
+          "origin": "ryhti",
+          "source": "main.ventilation_description",
+          "source_observed_at": null,
+          "upstream_modified_at": null,
+          "is_override": false,
+          "dependencies": [],
+          "source_language": null
+        }
+      },
+      "source_availability": {
+        "source_observed_at": {
+          "status": "missing",
+          "reason": "unknown_source_freshness"
+        }
+      }
+    },
+    "overrides": {
+      "floor_area": 0.0,
+      "total_area": null
+    },
+    "scenario_inputs": {
+      "resident_count": 2
+    },
+    "effective": {
+      "published_certificate": null,
+      "details": {
+        "completion_date": null,
+        "ventilation_category": "no_info",
+        "address_fin": "Example street 1",
+        "postal_code": "00100",
+        "postal_office_fin": null,
+        "construction_year": null,
+        "main_purpose": null,
+        "heating_method": null,
+        "heating_energy_source": null,
+        "number_of_storeys": null,
+        "apartment_count": null,
+        "floor_area": 0.0,
+        "total_area": null,
+        "gross_floor_area": null,
+        "heated_net_area": null,
+        "volume": null,
+        "ventilation_type_id": null,
+        "ventilation_description": null
+      },
+      "scenario_inputs": {
+        "resident_count": 2
+      },
+      "certificate": null,
+      "model": {
+        "modeled_energy_class": null,
+        "modeled_energy_e_value": null,
+        "reason": null,
+        "area_source": null,
+        "energy_class": null,
+        "is_energy_class_modeled": null,
+        "energy_class_year": null,
+        "consumption_scenarios": {},
+        "field_availability": {},
+        "context": "source_based_not_recalculated",
+        "generated_at": null
+      },
+      "model_input_divergence": [],
+      "scenario_prefix": null,
+      "resident_count_applicability": "unknown"
+    },
+    "field_provenance": {
+      "details.completion_date": {
+        "status": "missing",
+        "reason": null,
+        "origin": "ryhti",
+        "source": "main.completion_date",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": false,
+        "dependencies": [],
+        "source_language": null
+      },
+      "details.ventilation_category": {
+        "status": "available",
+        "reason": null,
+        "origin": "derived",
+        "source": "ventilation_policy_v1",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": false,
+        "dependencies": [
+          "details.ventilation_type_id",
+          "details.ventilation_description"
+        ],
+        "source_language": null
+      },
+      "details.address_fin": {
+        "status": "available",
+        "reason": null,
+        "origin": "ryhti",
+        "source": "main.address_fin",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": false,
+        "dependencies": [],
+        "source_language": null
+      },
+      "details.postal_code": {
+        "status": "available",
+        "reason": null,
+        "origin": "ryhti",
+        "source": "main.postal_code",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": false,
+        "dependencies": [],
+        "source_language": null
+      },
+      "details.postal_office_fin": {
+        "status": "missing",
+        "reason": null,
+        "origin": "ryhti",
+        "source": "main.postal_office_fin",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": false,
+        "dependencies": [],
+        "source_language": null
+      },
+      "details.construction_year": {
+        "status": "missing",
+        "reason": null,
+        "origin": "ryhti",
+        "source": "main.construction_year",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": false,
+        "dependencies": [],
+        "source_language": null
+      },
+      "details.main_purpose": {
+        "status": "missing",
+        "reason": null,
+        "origin": "ryhti",
+        "source": "main.main_purpose",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": false,
+        "dependencies": [],
+        "source_language": null
+      },
+      "details.heating_method": {
+        "status": "missing",
+        "reason": null,
+        "origin": "ryhti",
+        "source": "main.heating_method",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": false,
+        "dependencies": [],
+        "source_language": null
+      },
+      "details.heating_energy_source": {
+        "status": "missing",
+        "reason": null,
+        "origin": "ryhti",
+        "source": "main.heating_energy_source",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": false,
+        "dependencies": [],
+        "source_language": null
+      },
+      "details.number_of_storeys": {
+        "status": "missing",
+        "reason": null,
+        "origin": "ryhti",
+        "source": "main.number_of_storeys",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": false,
+        "dependencies": [],
+        "source_language": null
+      },
+      "details.apartment_count": {
+        "status": "missing",
+        "reason": null,
+        "origin": "ryhti",
+        "source": "main.apartment_count",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": false,
+        "dependencies": [],
+        "source_language": null
+      },
+      "details.floor_area": {
+        "status": "available",
+        "reason": null,
+        "origin": "user",
+        "source": "overrides.floor_area",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": true,
+        "dependencies": [],
+        "source_language": null
+      },
+      "details.total_area": {
+        "status": "user_unknown",
+        "reason": null,
+        "origin": "user",
+        "source": "overrides.total_area",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": true,
+        "dependencies": [],
+        "source_language": null
+      },
+      "details.gross_floor_area": {
+        "status": "missing",
+        "reason": null,
+        "origin": "ryhti",
+        "source": "main.gross_floor_area",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": false,
+        "dependencies": [],
+        "source_language": null
+      },
+      "details.heated_net_area": {
+        "status": "missing",
+        "reason": null,
+        "origin": "ryhti",
+        "source": "main.heated_net_area",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": false,
+        "dependencies": [],
+        "source_language": null
+      },
+      "details.volume": {
+        "status": "missing",
+        "reason": null,
+        "origin": "ryhti",
+        "source": "main.volume",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": false,
+        "dependencies": [],
+        "source_language": null
+      },
+      "details.ventilation_type_id": {
+        "status": "missing",
+        "reason": null,
+        "origin": "ryhti",
+        "source": "main.ventilation_type_id",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": false,
+        "dependencies": [],
+        "source_language": null
+      },
+      "details.ventilation_description": {
+        "status": "missing",
+        "reason": null,
+        "origin": "ryhti",
+        "source": "main.ventilation_description",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": false,
+        "dependencies": [],
+        "source_language": null
+      },
+      "scenario_inputs.resident_count": {
+        "status": "available",
+        "reason": null,
+        "origin": "user",
+        "source": "scenario_inputs.resident_count",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": true,
+        "dependencies": [],
+        "source_language": null
+      }
+    },
+    "source_availability": {
+      "source_observed_at": {
+        "status": "missing",
+        "reason": "unknown_source_freshness"
+      },
+      "details.completion_date": {
+        "status": "missing",
+        "reason": null
+      },
+      "details.ventilation_category": {
+        "status": "available",
+        "reason": null
+      },
+      "details.address_fin": {
+        "status": "available",
+        "reason": null
+      },
+      "details.postal_code": {
+        "status": "available",
+        "reason": null
+      },
+      "details.postal_office_fin": {
+        "status": "missing",
+        "reason": null
+      },
+      "details.construction_year": {
+        "status": "missing",
+        "reason": null
+      },
+      "details.main_purpose": {
+        "status": "missing",
+        "reason": null
+      },
+      "details.heating_method": {
+        "status": "missing",
+        "reason": null
+      },
+      "details.heating_energy_source": {
+        "status": "missing",
+        "reason": null
+      },
+      "details.number_of_storeys": {
+        "status": "missing",
+        "reason": null
+      },
+      "details.apartment_count": {
+        "status": "missing",
+        "reason": null
+      },
+      "details.floor_area": {
+        "status": "available",
+        "reason": null
+      },
+      "details.total_area": {
+        "status": "user_unknown",
+        "reason": null
+      },
+      "details.gross_floor_area": {
+        "status": "missing",
+        "reason": null
+      },
+      "details.heated_net_area": {
+        "status": "missing",
+        "reason": null
+      },
+      "details.volume": {
+        "status": "missing",
+        "reason": null
+      },
+      "details.ventilation_type_id": {
+        "status": "missing",
+        "reason": null
+      },
+      "details.ventilation_description": {
+        "status": "missing",
+        "reason": null
+      },
+      "scenario_inputs.resident_count": {
+        "status": "available",
+        "reason": null
+      }
+    },
+    "source_observed_at": null,
+    "last_known_summary": {
+      "schema_version": 1,
+      "building_key": "000-fixture-opaque-key",
+      "name": null,
+      "address_fin": "Example street 1",
+      "postal_code": "00100",
+      "postal_office_fin": null,
+      "location": null,
+      "source_observed_at": null,
+      "source_availability": {
+        "address_fin": {
+          "status": "available",
+          "reason": null
+        },
+        "postal_code": {
+          "status": "available",
+          "reason": null
+        },
+        "postal_office_fin": {
+          "status": "missing",
+          "reason": null
+        },
+        "location": {
+          "status": "missing",
+          "reason": null
+        },
+        "main": {
+          "status": "available",
+          "reason": null
+        },
+        "source_observed_at": {
+          "status": "missing",
+          "reason": "unknown_source_freshness"
+        }
+      },
+      "captured_at": "2026-10-23T12:00:00Z"
+    }
+  },
+  "first_save_request": {
+    "schema_version": 1,
+    "display_name": "Home",
+    "overrides": {
+      "floor_area": 0,
+      "total_area": null
+    },
+    "scenario_inputs": {
+      "resident_count": 2
+    }
+  },
+  "full_replace_request": {
+    "schema_version": 1,
+    "overrides": {
+      "floor_area": 120
+    }
+  },
+  "patch_request": {
+    "set": {
+      "overrides": {
+        "floor_area": 150,
+        "total_area": null
+      },
+      "scenario_inputs": {
+        "resident_count": 4
+      }
+    },
+    "unset": [
+      "overrides.heated_net_area"
+    ]
+  },
+  "reset_request": {
+    "display_name": null,
+    "unset": [
+      "overrides.floor_area",
+      "scenario_inputs.resident_count"
+    ]
+  },
+  "reset_all_request": {}
+}

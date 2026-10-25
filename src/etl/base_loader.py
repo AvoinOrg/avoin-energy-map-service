@@ -257,6 +257,13 @@ class BaseLoader:
         if not valid_rows:
             return 0
 
+        row_columns = set(valid_rows[0])
+        if any(set(row) != row_columns for row in valid_rows[1:]):
+            self.logger.error(
+                "Batch contains inconsistent projected columns; refusing partial upsert"
+            )
+            return 0
+
         # 2. IO Bound: Execute single Batch Upsert
         with SessionLocal() as worker_sess:
             try:
@@ -269,7 +276,8 @@ class BaseLoader:
                 update_dict = {
                     col.name: getattr(stmt.excluded, col.name)
                     for col in self.model_class.__table__.columns
-                    if col.name not in self._conflict_field_names()
+                    if col.name in row_columns
+                    and col.name not in self._conflict_field_names()
                 }
 
                 # Attach the ON CONFLICT clause

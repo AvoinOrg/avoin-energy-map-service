@@ -5,6 +5,8 @@ import os
 from sqlalchemy import text
 
 from db.session import SessionLocal
+from etl.load_property_identifiers import apply_property_identifiers
+from src.etl.augment_certificate_consumption import augment_consumption
 
 
 MAIN_TABLE = "main"
@@ -13,6 +15,7 @@ BUILDING_KEY_COLUMN = "building_key"
 CERTIFICATE_CLASS_COLUMN = "energy_certificate_class"
 CERTIFICATE_CLASS_YEAR_COLUMN = "energy_certificate_class_year"
 MAIN_COLUMNS = {
+    "energy_certificate_consumption": "text",
     "property_identifier": "text",
     CERTIFICATE_CLASS_COLUMN: "text",
     CERTIFICATE_CLASS_YEAR_COLUMN: "integer",
@@ -165,17 +168,19 @@ def ensure_main_columns() -> None:
 
 def augment_property_identifiers() -> int:
     with SessionLocal() as session:
+        projection_updates = apply_property_identifiers(session)
         result = session.execute(
             text("""
                 UPDATE main m
                 SET property_identifier = b.property_identifier
                 FROM buildings b
                 WHERE m.building_key = b.building_key
+                  AND NULLIF(TRIM(b.property_identifier), '') IS NOT NULL
                   AND m.property_identifier IS DISTINCT FROM b.property_identifier;
             """)
         )
         session.commit()
-        return result.rowcount or 0
+        return projection_updates["updated_main"] + (result.rowcount or 0)
 
 
 def augment_main(clear_stale: bool = True) -> int:
@@ -312,6 +317,7 @@ def augment_main(clear_stale: bool = True) -> int:
             """)
         )
 
+        augment_consumption(session, clear_stale=clear_stale)
         session.commit()
         return updated_rows
 
