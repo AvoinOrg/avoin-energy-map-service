@@ -188,25 +188,14 @@ makes personal state/readiness fail closed while public source remains usable.
 `/healthz` is liveness, `/readyz` is area readiness, `/readyz/state` is independent
 read-only state schema/role readiness, not identity/backup verification.
 
-Take a **full-data** private custom schema backup using `umask 077` and
-`pg_dump --schema=energymap_state --format=custom --file=/private/state.backup`.
-Never use --schema-only for recovery. Backups contain personal text/principal
-identity and capability digests: encrypt, restrict, rotate and verify recovery.
-Restore into a separately guarded/provisioned target with
-`pg_restore --no-owner --no-privileges --dbname=<new-target> /private/state.backup`.
-Reapply schema USAGE, owner-column and share SELECT/INSERT/DELETE grants; review
-PUBLIC/inherited ACLs and reader denial. Compare complete rows, UUIDs, revisions,
-UTC timestamps, sparse null/zero documents, summaries and digests privately,
-then verify a persisted capability from a second API interpreter. Protect
-migration metadata/config separately; the schema archive omits public source and
-Alembic version metadata. Persistent storage/backups require deployed verification.
-
-**Destructive share downgrade:** `poetry run alembic downgrade c7d3e921ab40`
-deletes every capability and invalidates every link. It leaves saved owners,
-schema and analytical/source data intact. Re-upgrade creates empty sharing; only
-a full private-state recovery restores former capabilities. Do not downgrade
-older owner/area/source revisions accidentally. Test failed migration rollback,
-new-revision-only downgrade and recovery on disposable PostGIS via runtime_doctor.
+For NEW isolated databases use the complete executable
+[personal-state operations contract](../../docs/operations/personal-state-storage.md):
+independent state migration `es0001_saved_share`, full private database backup
+including version metadata, and guarded fresh-target restore with exact grants.
+The earlier global revisions apply only to existing combined/source databases.
+A schema-scoped dump there omits public migration metadata and source objects;
+it is not a complete dedicated-state archive. Do not run the source chain or
+stamp its head in isolated state. Never use downgrade/reset as recovery.
 
 ## Log and proxy privacy
 
@@ -269,8 +258,8 @@ injected unexpected error. Inspect every access/error/upstream/APM destination
 privately for raw and encoded URL/token/query spellings; assert no retention.
 Check no Age/cache HIT/304 after rotate/revoke/delete and unchanged immediate
 404s, plus ETag/conditional/CORS forwarding on 201/204/412/428. Check frontend
-Referrer-Policy and analytics exclusions in the persistent Brave Personal
-profile. These deployed checks, actual issuer/audience/client/ordinary-user token
+Referrer-Policy and analytics exclusions in the dedicated development-only Chrome service with a fresh isolated
+context (verify identity using the framework browser/client.mjs first). These deployed checks, actual issuer/audience/client/ordinary-user token
 smoke test, state provisioning/storage/migrations/grants/backup recovery,
 production-scale performance, frontend/UI/browser acceptance and deployment
 remain external and unverified by local backend fixtures.

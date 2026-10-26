@@ -173,8 +173,10 @@ Keep global `PGOPTIONS=-c default_transaction_read_only=on` and
 options overriding inherited read-only to off; it also restricts search_path.
 Real grants enforce isolation. Source resolution always uses a separate existing
 read-only analytical connection, even when state is hosted in the same database.
-For Dokploy, explicitly inject the two state variables into the API container
-after provisioning; Compose's global public-read safeguard is unchanged.
+For deployment, follow the complete
+[personal-state configuration and verified-TLS contract](../../docs/operations/personal-state-storage.md#migration-and-runtime-transport),
+including the required CA settings and read-only trust-material mount. Compose's
+global public-read safeguard is unchanged.
 
 `/healthz` remains liveness; `/readyz` remains area-data readiness.
 `GET /readyz/state` independently probes expected column types, valid required
@@ -189,33 +191,15 @@ query. Unsafe superuser/owner/membership/CREATE or public-source write privilege
 fail closed with 503, as do absent required indexes/types/grants. Pointing the
 writer configuration at migration-owner credentials is rejected.
 
-Use separate migration-owner, runtime-writer and analytical-reader roles. The
-operator must review/adapt these **placeholder instructions**, not run them live
-as part of feature startup. Example for a dedicated state database (if sharing a
-source database, coordinate PUBLIC revokes with its existing role grants):
-
-```sql
-CREATE ROLE energy_state_migrator LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE;
-CREATE ROLE energy_state_writer LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE NOINHERIT NOBYPASSRLS;
--- Set generated credentials through the secret-management channel.
-REVOKE CREATE ON DATABASE energy_state FROM PUBLIC;
-REVOKE CREATE ON SCHEMA public FROM PUBLIC;
-GRANT CONNECT, CREATE ON DATABASE energy_state TO energy_state_migrator;
-GRANT CONNECT ON DATABASE energy_state TO energy_state_writer;
--- Apply the reviewed migration AS the migrator first, then:
-REVOKE ALL ON SCHEMA energymap_state FROM PUBLIC;
-REVOKE ALL ON energymap_state.energymap_user_buildings FROM PUBLIC;
-GRANT USAGE ON SCHEMA energymap_state TO energy_state_writer;
-GRANT SELECT, INSERT, DELETE ON energymap_state.energymap_user_buildings TO energy_state_writer;
-GRANT UPDATE (display_name,schema_version,overrides,scenario_inputs,last_known_summary,revision,updated_at)
-  ON energymap_state.energymap_user_buildings TO energy_state_writer;
-```
-
-The writer must be a non-owner/non-superuser, no role memberships, CREATE,
-TRUNCATE, grant option or source/aggregate/certificate privileges. Never grant
-ALL on public tables. Analytical readers do not get state-schema access. They
-retain necessary explicit source SELECT grants; do not give those to the writer.
-Verify effective inherited/PUBLIC rights, not just these GRANT statements.
+Use separate migration-owner, runtime-writer and analytical-reader roles. For a
+new dedicated database, the canonical
+[resource and privilege contract](../../docs/operations/personal-state-storage.md#resource-and-connection-contract)
+defines the exact grants and guarded provisioning command. It requires proven
+writer entry denial on the analytical source database: effective CONNECT denial,
+or targeted new-account HBA confinement when PUBLIC CONNECT is present. Fresh
+state success and explicit source refusal are required; source ACLs stay unchanged.
+Analytical readers retain their separate source connection and receive no
+personal-state access.
 
 Durable rows live only in `energymap_state.energymap_user_buildings`, without any
 FK/dependency on main/buildings/addresses/certificates. The migration adds UUID
@@ -230,42 +214,26 @@ than aliasing owners. One exact owner/key tuple cannot create duplicate rows.
 
 ## Migration, backup, restore and downgrade
 
-Migration `c7d3e921ab40` follows re-observed `9b812a37ef01`. Re-discover heads
-before applying; no autogeneration or startup upgrade. Use both repository and
-`src` Python import roots and inject PGHOST/PGPORT/PGDATABASE/PGUSER/PGPASSWORD for
-the reviewed migration-owner connection. These are operator instructions only:
+For a **new dedicated state database**, use the guarded isolated
+[personal-state operations contract](../../docs/operations/personal-state-storage.md).
+It provisions the exact narrow grants, runs independent revision
+`es0001_saved_share`, and backs up/restores the **entire dedicated database**,
+including independent version metadata and private saved/share rows. Never run
+the source Alembic chain in a new state-only database or stamp its source head.
 
-```sh
-poetry run alembic heads
-poetry run alembic upgrade c7d3e921ab40
-# Verify expected state schema, indexes, constraints and effective runtime grants.
-# Use a private PGPASSFILE/secret injection and restrictive umask:
-umask 077
-pg_dump --schema=energymap_state --format=custom --file=/private/state.backup
-# Includes ALL personal rows, not --schema-only. Protect/rotate/encrypt backups.
-# Restore to a NEW reviewed target as a migration owner, never over live state:
-pg_restore --no-owner --no-privileges --dbname=<new-target> /private/state.backup
-# Reapply/review narrow grants; compare counts/UUIDs/principals/revisions/
-# timestamps/explicit-null documents/snapshots and test readiness before cutover.
-```
+The original combined-database lineage remains `c7d3e921ab40` (saved) followed by
+`d4e8f021bc63` (shares). Existing combined installations alone use the global
+Alembic entry point, with a separately reviewed migration connection and source
+prerequisites. A schema-scoped `pg_dump --schema=energymap_state` from such an
+installation omits public migration metadata and source prerequisites; it is
+not a complete dedicated-state recovery archive. Preserve matching migration
+metadata/configuration separately and restore only into a new reviewed target.
+All archives contain private identities, text and share digests; protect and
+encrypt them and verify actual complete row recovery and reader denial.
 
-Dump needs access to all state rows. Back up schema evolution metadata/config
-separately; this schema-scoped archive does not include public Alembic version,
-source data or provider secrets. A new full-service target must be provisioned
-with PostGIS and matching migration metadata separately. Keep the archive private;
-it contains principal IDs and personal text. Test recovery and retention.
-
-**Destructive downgrade deletes every personal record. Take and verify a full
-state backup first.** Only downgrade this new revision after any later sharing
-revision has been removed with its own backup procedure:
-
-```sh
-poetry run alembic downgrade 9b812a37ef01
-```
-
-It drops only the saved table and its schema, without CASCADE or source changes.
-Upgrade recreates empty state; restore the verified private archive into a clean
-target for recovery. Never downgrade older area/source revisions for this task.
+Isolated tooling refuses destructive downgrade/adoption/reset. Historical global
+downgrades delete personal records/links; do not use them as repair or downgrade
+older source/area revisions. Use a verified complete backup and fresh target.
 
 Deployed state DB/roles/grants/migration/backups, Energy API audience/Basic-client
 provisioning, a real-token Zitadel smoke test, direct/proxy header forwarding,

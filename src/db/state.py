@@ -4,7 +4,7 @@ from functools import lru_cache
 import os
 
 from sqlalchemy import create_engine, text
-from sqlalchemy.engine import make_url
+from .state_settings import runtime_settings
 from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
@@ -14,24 +14,18 @@ class StateUnavailable(Exception):
 
 
 @lru_cache(maxsize=4)
-def _engine(dsn):
-    return create_engine(dsn, hide_parameters=True, pool_pre_ping=True,
-        pool_size=5, max_overflow=0, pool_timeout=3,
-        connect_args={'connect_timeout': 3, 'options':
-            '-c default_transaction_read_only=off -c statement_timeout=10000 -c lock_timeout=2000 -c search_path=pg_catalog,energymap_state'})
+def _engine(settings):
+    return create_engine('postgresql+psycopg2://', hide_parameters=True,
+        pool_pre_ping=True, pool_size=5, max_overflow=0, pool_timeout=3,
+        connect_args=settings.kwargs())
 
 
 def state_engine():
     try:
         if os.getenv('ENERGY_MAP_STATE_ENABLED', 'false').lower() != 'true':
             raise ValueError
-        dsn = os.environ['ENERGY_MAP_STATE_DATABASE_URL']
-        url = make_url(dsn)
-        if (url.drivername not in ('postgresql', 'postgresql+psycopg2') or
-                not url.host or not url.username or not url.database or url.query):
-            raise ValueError
-        return _engine(dsn)
-    except (ValueError, KeyError, SQLAlchemyError):
+        return _engine(runtime_settings(os.environ))
+    except (ValueError, KeyError, OSError, SQLAlchemyError):
         raise StateUnavailable from None
 
 
@@ -80,7 +74,19 @@ def check_state(session):
         "AND EXISTS(SELECT 1 FROM pg_roles WHERE rolname=current_user "
         "AND NOT (rolsuper OR rolcreatedb OR rolcreaterole OR rolreplication OR rolbypassrls)) "
         "AND NOT EXISTS(SELECT 1 FROM pg_auth_members WHERE member=current_user::regrole) "
-        "AND NOT has_database_privilege(current_database(),'CREATE') "
+        "AND NOT has_database_privilege(current_database(),'CREATE,TEMP') "
+        "AND NOT has_table_privilege(:t,'UPDATE,TRUNCATE,REFERENCES,TRIGGER') "
+        "AND NOT EXISTS(SELECT 1 FROM pg_attribute WHERE attrelid=to_regclass(:t) AND attnum>0 "
+        "AND NOT attisdropped AND attname NOT IN ('display_name','schema_version','overrides','scenario_inputs','last_known_summary','revision','updated_at') "
+        "AND has_column_privilege(:t,attname,'UPDATE')) "
+        "AND NOT EXISTS(SELECT 1 FROM pg_class c, LATERAL aclexplode(c.relacl) a "
+        "WHERE c.oid IN (to_regclass(:t),to_regclass(:s)) AND a.grantee IN (0,current_user::regrole::oid) AND a.is_grantable) "
+        "AND NOT EXISTS(SELECT 1 FROM pg_attribute c, LATERAL aclexplode(c.attacl) a "
+        "WHERE c.attrelid IN (to_regclass(:t),to_regclass(:s)) AND a.grantee IN (0,current_user::regrole::oid) AND a.is_grantable) "
+        "AND NOT EXISTS(SELECT 1 FROM pg_database d,LATERAL aclexplode(d.datacl) a "
+        "WHERE d.datname=current_database() AND a.grantee IN (0,current_user::regrole::oid) AND a.is_grantable) "
+        "AND NOT EXISTS(SELECT 1 FROM pg_namespace n,LATERAL aclexplode(n.nspacl) a "
+        "WHERE n.nspname IN ('public','energymap_state') AND a.grantee IN (0,current_user::regrole::oid) AND a.is_grantable) "
         "AND NOT has_schema_privilege('public','CREATE') "
         "AND NOT has_schema_privilege('energymap_state','CREATE') "
         "AND NOT EXISTS(SELECT 1 FROM pg_class WHERE oid=to_regclass(:t) AND relowner=current_user::regrole) "
