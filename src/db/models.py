@@ -1,6 +1,7 @@
-from datetime import date
+from datetime import date, datetime
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
-from sqlalchemy import String, TIMESTAMP, text, Date
+from sqlalchemy import String, TIMESTAMP, text, Date, Integer, Float, Text, Index, BigInteger
+from sqlalchemy.dialects.postgresql import JSONB
 from geoalchemy2 import Geometry
 
 class Base(DeclarativeBase):
@@ -43,6 +44,106 @@ class Building(Base):
     created_at: Mapped[str | None] = mapped_column(TIMESTAMP(timezone=True), server_default=text("now()"))
     updated_at: Mapped[str | None] = mapped_column(TIMESTAMP(timezone=True), server_default=text("now()"))
 
+class EnergyCertificate(Base):
+    __tablename__ = "energy_certificates"
+    __table_args__ = (
+        Index("idx_energy_certificates_building_identifier", "building_identifier"),
+        Index("idx_energy_certificates_signed_at", "signed_at"),
+    )
+
+    certificate_id: Mapped[str] = mapped_column(String, primary_key=True)
+    version: Mapped[int | None] = mapped_column(Integer)
+    signed_at: Mapped[datetime | None] = mapped_column(TIMESTAMP(timezone=False))
+    valid_until: Mapped[datetime | None] = mapped_column(TIMESTAMP(timezone=False))
+    language: Mapped[str | None] = mapped_column(String)
+    drafting_stage: Mapped[str | None] = mapped_column(String)
+    inspection_date: Mapped[date | None] = mapped_column(Date)
+    name_fi: Mapped[str | None] = mapped_column(String)
+    name_sv: Mapped[str | None] = mapped_column(String)
+    completion_year: Mapped[int | None] = mapped_column(Integer)
+    street_address_fi: Mapped[str | None] = mapped_column(String)
+    street_address_sv: Mapped[str | None] = mapped_column(String)
+    postal_code: Mapped[str | None] = mapped_column(String)
+    building_identifier: Mapped[str | None] = mapped_column(String)
+    use_purpose: Mapped[str | None] = mapped_column(String)
+    sub_use_purpose_fi: Mapped[str | None] = mapped_column(String)
+    e_value: Mapped[float | None] = mapped_column(Float)
+    e_class: Mapped[str | None] = mapped_column(String)
+    e_class_limit_2018: Mapped[float | None] = mapped_column(Float)
+    e_class_purpose_label_fi: Mapped[str | None] = mapped_column(String)
+    recommendations_fi: Mapped[str | None] = mapped_column(Text)
+    recommendations_sv: Mapped[str | None] = mapped_column(Text)
+    heated_net_area: Mapped[float | None] = mapped_column(Float)
+    ventilation_type_id: Mapped[str | None] = mapped_column(String)
+    ventilation_description_fi: Mapped[str | None] = mapped_column(Text)
+    ventilation_description_sv: Mapped[str | None] = mapped_column(Text)
+    heating_form_1_id: Mapped[str | None] = mapped_column(String)
+    heating_form_2_id: Mapped[str | None] = mapped_column(String)
+    heating_form_1_description_fi: Mapped[str | None] = mapped_column(Text)
+    heating_form_1_description_sv: Mapped[str | None] = mapped_column(Text)
+    heating_form_2_description_fi: Mapped[str | None] = mapped_column(Text)
+    heating_form_2_description_sv: Mapped[str | None] = mapped_column(Text)
+    heat_distribution_id: Mapped[str | None] = mapped_column(String)
+    heat_distribution_description_fi: Mapped[str | None] = mapped_column(Text)
+    heat_distribution_description_sv: Mapped[str | None] = mapped_column(Text)
+    source_row: Mapped[dict | None] = mapped_column(JSONB)
+    created_at: Mapped[str | None] = mapped_column(TIMESTAMP(timezone=True), server_default=text("now()"))
+    updated_at: Mapped[str | None] = mapped_column(TIMESTAMP(timezone=True), server_default=text("now()"))
+
+class EnergymapDensityGridZ5_8(Base):
+    __tablename__ = "energymap_density_grid_z5_8"
+    __table_args__ = (
+        Index("idx_energymap_density_grid_z5_8_geom", "geom", postgresql_using="gist"),
+    )
+
+    cell_id: Mapped[str] = mapped_column(String, primary_key=True)
+    cell_size_m: Mapped[int] = mapped_column(Integer)
+    min_zoom: Mapped[int] = mapped_column(Integer)
+    max_zoom: Mapped[int] = mapped_column(Integer)
+    cell_x: Mapped[int] = mapped_column(BigInteger)
+    cell_y: Mapped[int] = mapped_column(BigInteger)
+    building_count: Mapped[int] = mapped_column(Integer)
+    certified_building_count: Mapped[int] = mapped_column(Integer)
+    certificate_coverage: Mapped[float | None] = mapped_column(Float)
+    class_a_count: Mapped[int] = mapped_column(Integer)
+    class_b_count: Mapped[int] = mapped_column(Integer)
+    class_c_count: Mapped[int] = mapped_column(Integer)
+    class_d_count: Mapped[int] = mapped_column(Integer)
+    class_e_count: Mapped[int] = mapped_column(Integer)
+    class_f_count: Mapped[int] = mapped_column(Integer)
+    class_g_count: Mapped[int] = mapped_column(Integer)
+    class_unknown_count: Mapped[int] = mapped_column(Integer)
+    dominant_energy_certificate_class: Mapped[str | None] = mapped_column(String)
+    dominant_energy_certificate_class_count: Mapped[int] = mapped_column(Integer)
+    geom: Mapped[str | None] = mapped_column(Geometry("POLYGON", srid=3857, spatial_index=True))
+
+class EnergymapDensityGridZ9_12(Base):
+    __tablename__ = "energymap_density_grid_z9_12"
+    __table_args__ = (
+        Index("idx_energymap_density_grid_z9_12_geom", "geom", postgresql_using="gist"),
+    )
+
+    cell_id: Mapped[str] = mapped_column(String, primary_key=True)
+    cell_size_m: Mapped[int] = mapped_column(Integer)
+    min_zoom: Mapped[int] = mapped_column(Integer)
+    max_zoom: Mapped[int] = mapped_column(Integer)
+    cell_x: Mapped[int] = mapped_column(BigInteger)
+    cell_y: Mapped[int] = mapped_column(BigInteger)
+    building_count: Mapped[int] = mapped_column(Integer)
+    certified_building_count: Mapped[int] = mapped_column(Integer)
+    certificate_coverage: Mapped[float | None] = mapped_column(Float)
+    class_a_count: Mapped[int] = mapped_column(Integer)
+    class_b_count: Mapped[int] = mapped_column(Integer)
+    class_c_count: Mapped[int] = mapped_column(Integer)
+    class_d_count: Mapped[int] = mapped_column(Integer)
+    class_e_count: Mapped[int] = mapped_column(Integer)
+    class_f_count: Mapped[int] = mapped_column(Integer)
+    class_g_count: Mapped[int] = mapped_column(Integer)
+    class_unknown_count: Mapped[int] = mapped_column(Integer)
+    dominant_energy_certificate_class: Mapped[str | None] = mapped_column(String)
+    dominant_energy_certificate_class_count: Mapped[int] = mapped_column(Integer)
+    geom: Mapped[str | None] = mapped_column(Geometry("POLYGON", srid=3857, spatial_index=True))
+
 class Address(Base):
     __tablename__ = "addresses"
     address_key: Mapped[str | None] = mapped_column(String, primary_key=True) # primary address key
@@ -64,3 +165,7 @@ class Polygon(Base):
     polygon: Mapped[str | None] = mapped_column(Geometry("MULTIPOLYGON", srid=4326, spatial_index=True)) #  SRID 4326 / WGS84 coordinates
     created_at: Mapped[str | None] = mapped_column(TIMESTAMP(timezone=True), server_default=text("now()"))
     updated_at: Mapped[str | None] = mapped_column(TIMESTAMP(timezone=True), server_default=text("now()"))
+
+# Register analytical tables in the same Alembic metadata.
+from . import area_models  # noqa: E402,F401
+from . import user_building_models  # noqa: E402,F401

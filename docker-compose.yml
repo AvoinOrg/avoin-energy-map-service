@@ -28,6 +28,7 @@ services:
         condition: service_healthy
     environment:
       PYTHONPATH: /app/src
+      ENERGY_MAP_API_ORIGINS: ${ENERGY_MAP_API_ORIGINS:-http://127.0.0.1:8080,null}
       # DB (app reads these in db/database.py and alembic.ini)
       PGHOST: ${PGHOST:-db}
       PGPORT: ${PGPORT:-5432}
@@ -38,6 +39,8 @@ services:
       # Upstream endpoints (fill these!)
       BUILDINGS_API_URL: ${BUILDINGS_API_URL:-}
       ADDRESSES_API_URL: ${ADDRESSES_API_URL:-}
+      ENERGY_CERTIFICATES_CSV_URL: ${ENERGY_CERTIFICATES_CSV_URL:-https://www.energiatodistusrekisteri.fi/api/public/energiatodistukset/csv/energiatodistukset.csv}
+      ENERGY_CERTIFICATES_CSV_PATH: ${ENERGY_CERTIFICATES_CSV_PATH:-data/energiatodistukset.csv}
 
     # For live dev, mount the code (optional)
     volumes:

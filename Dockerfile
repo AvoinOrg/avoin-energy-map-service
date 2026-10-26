@@ -21,9 +21,9 @@ COPY pyproject.toml poetry.lock* /app/
 # Install deps (no root package install)
 RUN poetry install --no-root
 
-# Now copy the actual source code
-COPY src/db /app/db
-COPY src/etl /app/etl
+# Now copy the actual source code and versioned ETL reference assets
+COPY src /app/src
+COPY assets /app/assets
 COPY db_migrations /app/db_migrations
 COPY alembic.ini /app/alembic.ini
 
@@ -32,5 +32,9 @@ COPY entrypoint.sh /entrypoint.sh
 RUN chmod +x /entrypoint.sh
 
 ENV PYTHONUNBUFFERED=1
+ENV PYTHONPATH=/app:/app/src
+EXPOSE 8000
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
+  CMD curl --fail --silent http://127.0.0.1:8000/healthz || exit 1
 
 ENTRYPOINT ["/entrypoint.sh"]

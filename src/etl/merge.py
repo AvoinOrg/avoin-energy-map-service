@@ -1,6 +1,30 @@
 from sqlalchemy import text
 from src.db.session import SessionLocal
+from src.etl.augment_modeled_energy_classes import augment_main as augment_modeled_energy_classes
+from src.etl.load_property_identifiers import apply_property_identifiers
+from src.etl.augment_certificate_consumption import augment_consumption
 import time
+
+def validate_energy_certificate_join(db):
+    duplicate_sql = text("""
+        SELECT permanent_building_identifier, COUNT(*) AS building_count
+        FROM buildings
+        WHERE permanent_building_identifier IS NOT NULL
+        GROUP BY permanent_building_identifier
+        HAVING COUNT(*) > 1
+        LIMIT 10;
+    """)
+    duplicates = db.execute(duplicate_sql).mappings().all()
+
+    if duplicates:
+        sample = ", ".join(
+            f"{row['permanent_building_identifier']} ({row['building_count']})"
+            for row in duplicates
+        )
+        raise RuntimeError(
+            "Cannot cleanly join energy certificates: duplicate "
+            f"buildings.permanent_building_identifier values found: {sample}"
+        )
 
 def merge_table():
     print("Start merging table into one")
@@ -11,12 +35,41 @@ def merge_table():
         # populate main table with merged data & processed geometries
         """
         CREATE TABLE main AS
-        WITH processed_buildings AS (
+        WITH ranked_energy_certificates AS (
+            SELECT
+                building_identifier,
+                e_class,
+                version,
+                valid_until,
+                recommendations_fi,
+                recommendations_sv,
+                heated_net_area,
+                ventilation_type_id,
+                ventilation_description_fi,
+                ventilation_description_sv,
+                LEAD(e_class) OVER (
+                    PARTITION BY building_identifier
+                    ORDER BY signed_at DESC NULLS LAST, certificate_id DESC
+                ) AS previous_class,
+                ROW_NUMBER() OVER (
+                    PARTITION BY building_identifier
+                    ORDER BY signed_at DESC NULLS LAST, certificate_id DESC
+                ) AS history_position
+            FROM energy_certificates
+            WHERE building_identifier IS NOT NULL
+        ),
+        latest_energy_certificates AS (
+            SELECT *
+            FROM ranked_energy_certificates
+            WHERE history_position = 1
+        ),
+        processed_buildings AS (
             -- join buildings, addresses & polygons
             -- set final geometry data for building
             SELECT
                 b.building_key,
                 b.permanent_building_identifier,
+                b.property_identifier,
                 b.heating_method,
                 b.heating_energy_source,
                 b.main_purpose,
@@ -25,6 +78,7 @@ def merge_table():
                 b.gross_floor_area,
                 b.total_area,
                 b.volume,
+                b.number_of_storeys,
 
                 -- keep the raw 4326 geometries for polygon overlapping check later
                 b.point as raw_point_4326,
@@ -55,6 +109,7 @@ def merge_table():
 
             pb.building_key,
             pb.permanent_building_identifier,
+            pb.property_identifier,
             pb.heating_method,
             pb.heating_energy_source,
             pb.main_purpose,
@@ -63,6 +118,34 @@ def merge_table():
             pb.gross_floor_area,
             pb.total_area,
             pb.volume,
+            pb.number_of_storeys,
+            ec.e_class as energy_certificate_class,
+            CASE
+                WHEN NULLIF(TRIM(ec.e_class), '') IS NOT NULL THEN ec.version
+                ELSE NULL
+            END as energy_certificate_class_year,
+            ec.valid_until as energy_certificate_valid_until,
+            ec.previous_class as energy_certificate_previous_class,
+            ec.recommendations_fi as energy_certificate_recommendations_fi,
+            ec.recommendations_sv as energy_certificate_recommendations_sv,
+            ec.heated_net_area as energy_certificate_heated_net_area,
+            ec.ventilation_type_id as energy_certificate_ventilation_type_id,
+            ec.ventilation_description_fi as energy_certificate_ventilation_description_fi,
+            ec.ventilation_description_sv as energy_certificate_ventilation_description_sv,
+            NULL::text as energy_certificate_consumption,
+            NULL::text as modeled_energy_class,
+            NULL::double precision as modeled_energy_e_value,
+            NULL::text as modeled_energy_class_reason,
+            NULL::text as modeled_energy_class_area_source,
+            NULLIF(UPPER(TRIM(ec.e_class)), '') as energy_class,
+            CASE
+                WHEN NULLIF(TRIM(ec.e_class), '') IS NOT NULL THEN false
+                ELSE NULL
+            END as is_energy_class_modeled,
+            CASE
+                WHEN NULLIF(TRIM(ec.e_class), '') IS NOT NULL THEN ec.version
+                ELSE NULL
+            END as energy_class_year,
             pb.polygon,
 
             -- remove point if polygon exist to avoid duplicates in MVT tiles
@@ -81,7 +164,9 @@ def merge_table():
             END as point
 
         FROM processed_buildings pb
-        LEFT JOIN addresses a ON pb.building_key = a.building_key;
+        LEFT JOIN addresses a ON pb.building_key = a.building_key
+        LEFT JOIN latest_energy_certificates ec
+            ON pb.permanent_building_identifier = ec.building_identifier;
         """,
 
         # add spatial index for MVT queries
@@ -90,11 +175,17 @@ def merge_table():
     ]
 
     with SessionLocal() as db:
+        validate_energy_certificate_join(db)
         for cmd in sql_commands:
             print(f"  - Executing: {cmd[:50]}...")
             db.execute(text(cmd))
+        apply_property_identifiers(db)
+        if db.execute(text("SELECT EXISTS (SELECT 1 FROM energy_certificates)")).scalar_one():
+            augment_consumption(db)
+        modeled_rows = augment_modeled_energy_classes(db)
         db.commit()
 
+    print(f"Modeled energy classes evaluated for {modeled_rows} main rows")
     print(f"Table merging completed in {time.time() - start:.2f}s")
 
 if __name__ == "__main__":
