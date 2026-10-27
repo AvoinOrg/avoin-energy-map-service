@@ -21,7 +21,8 @@ from .catalog import (audit_acl, audit_schema, audit_source, grant_state, harden
                       role_audit, rows, scalar)
 from .config import ROOT
 from .source_entry import audit_policy, entry_probe
-from .private import atomic_write, read, read_json, require, write_json
+from .private import StorageError, atomic_write, read, read_json, require, write_json
+from .logging_policy import check_preloads
 
 
 def connect(target, *, database=None, user=None, password=None, read_only=False):
@@ -53,15 +54,18 @@ def connected(target, **kwargs):
 
 def secret_safe_session(connection):
     # Session-local only. No credential DDL until this policy is verified.
-    require(scalar(connection, "SELECT current_setting('shared_preload_libraries')") == '', 'unsafe_logging')
-    for setting in ('session_preload_libraries', 'local_preload_libraries'):
-        require(scalar(connection, 'SELECT current_setting(%s)', (setting,)) == '', 'unsafe_logging')
-    for key, value in {'log_statement':'none', 'log_min_duration_statement':'-1',
+    # No caller/descriptor/CLI can substitute a preload allowlist or attestation.
+    try:
+        check_preloads(connection, scalar)
+        for key, value in {'log_statement':'none', 'log_duration':'off', 'log_min_duration_statement':'-1',
                        'log_min_duration_sample':'-1', 'log_transaction_sample_rate':'0',
                        'log_min_error_statement':'panic',
                        'log_parameter_max_length':'0', 'log_parameter_max_length_on_error':'0'}.items():
-        rows(connection, 'SELECT set_config(%s,%s,false)', (key,value))
-        require(scalar(connection, 'SELECT current_setting(%s)', (key,)) == value, 'unsafe_logging')
+            rows(connection, 'SELECT set_config(%s,%s,false)', (key,value))
+            require(scalar(connection, 'SELECT current_setting(%s)', (key,)) == value, 'unsafe_logging')
+    except Exception:
+        # Permission/file errors must not expose connection or SQL diagnostics.
+        raise StorageError('unsafe_logging') from None
 
 
 def bundle_path(target):

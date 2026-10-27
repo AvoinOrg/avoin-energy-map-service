@@ -6,6 +6,8 @@ F003.2 applies it to the authorized sandbox only after independent review.
 No command publishes, deploys, edits source ACLs or enables a frontend.
 Discover the independent head with `alembic -c state-alembic.ini heads`; online
 use of that environment requires the guarded tool-supplied connection.
+The [sandbox outcome record](personal-state-sandbox.md) distinguishes applied
+resources, completed checks and the remaining review/release gates.
 
 ## Resource and connection contract
 
@@ -103,10 +105,51 @@ retains the bundle so finalization can resume without rotation. Never repair an
 unrelated resource, drop a live database or use an administrator as the runtime.
 
 Before password DDL the provisioner verifies session logging is secret-safe
-(disabled statement/duration/parameter logging, verified
-`log_transaction_sample_rate=0`, and no audit/preload hooks).
+(disabled statement/duration/parameter/error-statement logging, verified
+`log_transaction_sample_rate=0`, and the fixed preload predicate below).
 If it cannot establish that policy it fails closed; it never changes shared
 logging globally. Driver/subprocess failures use fixed error categories.
+
+### Bounded stock scheduler compatibility
+
+Empty shared preloads remain supported. The only nonempty accepted spelling is
+exactly `pg_cron`, with empty session/local preloads. The fixed implementation
+in `logging_policy.py` requires PostgreSQL 17.2, the standard PG17 library
+directory and `$libdir` loader path, no pending shared-preload restart, and
+server-read SHA256 equality for the reviewed module and control bytes. These
+pins came from `postgresql-17-cron 1.6.4-2.pgdg120+1` in immutable sandbox image
+`sha256:0fea25c4d3ffb65a8cd7148af702544d835baa3c208a7fe215f8c6f65f48a9f9`.
+The SQL extension default version `1.6` is not the package version. Neither an
+extension nor a scheduler job is needed in the provisioning database. Additional
+libraries, aliases, paths, changed bytes/version or unreadable provenance fail
+before credential encryption/DDL. No descriptor, CLI option or receipt can waive
+this check. An image/package upgrade requires a new review and updated pins.
+The fixed Linux guard also reads this fresh backend's `/proc/self/maps`, requires
+the exact nondeleted mapped module path, and requires module/control modification
+and change timestamps strictly before the postmaster startup second (the file
+view has second precision). This ties installed bytes to inherited mappings;
+unavailable provenance fails closed. At application time the doctor also verifies
+loaded-file/package/image parity over the authenticated administrative channel.
+
+The source rationale uses pg_cron 1.6.4 commit
+[`9490f9cc9803f75105f2f7d89839a998f011f8d8`](https://github.com/citusdata/pg_cron/tree/9490f9cc9803f75105f2f7d89839a998f011f8d8/src).
+In [scheduler initialization and execution](https://github.com/citusdata/pg_cron/blob/9490f9cc9803f75105f2f7d89839a998f011f8d8/src/pg_cron.c),
+initialization registers a scheduler background worker and relcache invalidation;
+`CronLogStatement` branches log scheduled commands/results. Ordinary statement
+execution hooks are absent from the reviewed C sources. The supported inference
+is that this stock scheduler does not intercept direct-session role DDL. It
+must be supported by isolated actual-log tests with synthetic secrets and a
+positive capture control before live application. This is not a claim about
+unknown instrumentation, modified binaries or administrator/server compromise.
+
+`cron.log_statement=on` is a scheduler setting, not proof of direct-session
+auditing. It is postmaster-only and must not be changed by the provisioner.
+All native controls remain session-local and are read back exactly:
+`log_statement=none`, `log_duration=off`, both duration thresholds `-1`,
+transaction sample rate `0`, error-statement threshold `panic`, and both
+parameter lengths `0`. Denied or ineffective controls produce only
+`unsafe_logging`. Direct SCRAM credential DDL stays on the short-lived protected
+admin connection; never submit it to cron or store it in scheduler tables.
 
 F003.2 outputs are fixed:
 `/home/xbexbex/syncthing/work/avoin/projects/energymap/reference/personal-state-sandbox-credentials.md`
@@ -195,18 +238,133 @@ an existing target's block; verification rejects any preceding broad/group/regex
 or matching-user rule. Each target's suffix must still match its pinned baseline.
 Roll back stacked policies in reverse order. Keep completed live policies and
 backups in place; recovery does not remove the original target's protection.
+
+### Persistent sandbox startup adapter
+
+The active HBA is on container overlay. Its prefix must also be reconstructed
+through the existing persistent custom-script bind before any temporary or final
+listener. `sandbox_startup.py` is a fixed adapter for the immutable image above;
+it is not a general entrypoint manager. Frozen private copies of it, `hba_file.py`
+and the same `entry-request.json` belong under `/scripts/custom/energy-state/`
+(directory 0700, files 0600, expected sandbox service identity 101:103).
+The request contains no credential. Nothing installs an interpreter or application
+dependencies on the shared server. The existing `/usr/bin/python3 -I` executes
+only the fixed protected helper, ignoring ambient Python paths and user packages.
+
+The image invokes the sourced custom modifier as root. The adapter checks that
+caller explicitly; private controls retain exact service ownership 101:103 and
+0600 modes. Only the fixed pinned native base-script paths accept the observed
+root:root/0755 pre-repair phase or service101:103/0755 phase, with the same exact
+parent identities/mode. Persistent custom scripts retain exact service ownership.
+The fixture must exercise untouched root-owned image scripts, without an artificial
+pre-chown, then service-owned initialized replay. Before HBA mutation the short-lived guard clears supplementary
+groups and permanently sets real/effective/saved IDs to 101:103, then verifies
+the transition. It uses the unchanged owner-only HBA helper after that descent.
+The enclosing startup shell retains its original identity and behavior.
+On the native initialization path the completed HBA can still be root:root/0644;
+database setup normally repairs its ownership later. Before descent the adapter
+moves only that ownership repair forward: it requires a regular single-link
+0644 file, exact unprefixed generated baseline, unchanged inode/content metadata,
+and a service-owned 101:103/0755 parent, then changes only that file to 101:103.
+Bytes and mode are read back unchanged. Other unexpected ownership refuses;
+already service-owned files are not changed. The owner-only HBA helper's checks
+remain intact, and no live ownership change is part of installing this adapter.
+
+The earlier configuration modifier repeats its exact `max_connections = 1000`
+line at the existing `shared_buffers` site on each startup. For chain validation,
+the adapter reduces one contiguous run of that exact line to a single copy
+**in memory**, then requires the entire result to match the pinned configuration
+script. It changes neither the configuration script nor modifier behavior.
+Missing, moved, separated or differently spelled insertions and any surrounding
+byte drift remain errors. The transitive user, SSL and replication setup scripts
+are pinned along with the entrypoint and HBA-generation chain.
+
+The existing HBA modifier's original bytes are preserved. Insert only the
+adapter's checked `NORMALIZE_CALL` after its shebang and append `PREPARE_CALL`.
+Both failures execute `exit 1` in the enclosing sourced shell. The old modifier's
+sed injection otherwise repeats on the same overlay at an ordinary restart.
+Normalization accepts only the pinned pristine file, the single canonical prior
+injection, or that same file with this guard. It backs up the canonical file,
+removes only the known prior injection/guard to the pinned pristine bytes, then
+the unchanged sourced body inserts the additions exactly once. Unknown edits or
+duplicate injections are refused; arbitrary drift is never normalized.
+After the original modifier completes,
+`prepare` verifies exact setup/entrypoint byte pins and metadata, then atomically
+adds `GUARD_CALL` before the pinned unique initialized-path `return 0` and at the
+**end** of `/scripts/setup-pg_hba.sh`. The initialized return otherwise skips the
+end-of-file guard on replay. It must re-establish a missing prefix on the exact
+known baseline or refuse drift before a listener; an old prefix alone is not proof
+that the startup guard executed. The end-of-file guard is after
+the existing additions source (line 82) and final HBA write (line 86), before
+base database setup (line 67) can start its initialization listener. The base's
+final listener is later (line 100). A guard attached only inside the additions
+hook would run too early. Guard failure explicitly exits the caller even when
+the script is sourced in a function or conditional; `set -e` alone is insufficient.
+Preparation takes a protected nonblocking startup lock and fsyncs an exclusive
+0600 `setup-original.backup` in the persistent private directory before replacing
+the generated setup file. Existing unrelated backup contents are refused.
+
+The guard checks the chain again and calls the exact frozen `hba_file.change()`.
+The prefix, suffix digest and file metadata must match the reviewed active-file
+contract. A repeat accepts only the same managed bytes. Missing files/interpreter,
+drift, wrong identity, links or a changed baseline refuse startup. The reviewed
+baseline already has SQL parser validation; before any live LOGIN/reload, the
+doctor must separately repeat real parser/reload and entry-success/refusal checks.
+The adapter starts no listener, issues no SQL and changes no shared setting.
+
+Before live installation, protect exclusive byte-exact original backups of
+every changed persistent file, record UID/GID/mode/hash, serialize against
+administrative edits, install atomically and read back. Refresh the current
+image, whole startup chain and baseline first. Unknown bytes are never adopted.
+Install/read back the persistent integration and active prefix while both new
+accounts are absent/disabled; only then may reviewed provisioning enable LOGIN.
+Keep a rollback receipt and all backup material private. For rollback first
+quarantine only marker-verified new accounts, then remove the exact persistent
+modifier wrapper/owned new files in reverse order and restore the active HBA
+through its guarded rollback/reload. Never remove confinement for enabled roles.
+If the generated setup file already has both guards, restore only its exact pinned
+original bytes with metadata-preserving CAS before removing the helper directory.
+Construction, reversal and restart normalization accept only the exact two-site
+managed form; a moved or missing call is drift.
+
+The actual-image isolated proof must execute the copied complete sourced chain
+on initialization and existing-data paths, instrumenting **every** listener
+boundary. Require the final original suffix/order/metadata, repeated-start
+idempotency, failure propagation with no listener, drift refusal, and exact
+rollback. Pure helper tests are additional evidence. Neither copy tests nor
+persistent-bind observations establish a live reboot/recreation result. No
+shared restart/recreation is part of this operation. Independent pre-application
+review must approve both the concrete adapter proof and credential-log proof;
+then the doctor may perform only the reviewed reload-only live recipe.
 Keep the server filesystem access path and private receipts out of Git.
 
-An active HBA on a container writable layer is not durable account confinement.
-F003.2 must use the existing persistent sandbox custom-startup binding to recreate
-this same new-account prefix after ordinary HBA generation and before client
-entry, preserving original scripts/rules/order with protected backup, hash guards
-and rollback. The primary's private read-only startup/parity evidence identifies
-the existing hook; the sibling owns its narrowly scoped reviewed integration.
-Verify construction on an isolated fixture/protected copy and read back the
-persistent host/container binding. Do not claim reboot/recreation acceptance,
-restart a shared server, install a live interpreter or deploy an application to
-establish it. A one-time active prefix alone cannot satisfy sibling readiness.
+## Scoped sandbox persistence probe
+
+`python -m tests.sandbox_state_probe {create,read,cleanup} --config-file
+/absolute/private/target.json --probe-file
+/absolute/private/target-work/synthetic-probe.json --allow-sandbox-synthetic`
+is an explicitly authorized sandbox check, not a destructive fixture suite.
+Use the same reviewed sandbox descriptor and exactly
+`private_dir/synthetic-probe.json`. Run each operation in a separate interpreter.
+The helper exclusively reserves and durably writes its private cleanup authority
+before connecting, creates one synthetic owner/saved/share pair, and reports only
+success/failure. Repeated or concurrent creation refuses an existing authority;
+it never overwrites it or adopts an existing row.
+
+`read` verifies only that exact synthetic UUID, reserved test issuer/subject/key,
+revision/strong ETag and capability digest. It rehearses an allowed column update in a savepoint and
+requires PostgreSQL permission denial for a forbidden owner-column update, also
+within a savepoint targeting only that record. Neither change is committed.
+Persisted JSON summaries use the production `user_buildings.stored_summary`
+loader: strict JSON timestamp parsing and exact building-key matching remain
+enforced. Python-mode validation of JSON-decoded timestamp strings is unsuitable
+for this strict DTO.
+Keep the record and protected authority through backup/restore acceptance, then
+`cleanup` deletes only that exact synthetic saved identity and verifies its
+share cascaded. Retain the private authority until cleanup is confirmed. Do not
+replace it with an arbitrary owner/key, point fixture suites at the sandbox, or
+print its capability or contents. Recovery operation checks on a disposable
+restore use the existing guarded `tests.state_recovery_probe` helper instead.
 
 ## Migration and runtime transport
 
