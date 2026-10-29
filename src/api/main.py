@@ -9,6 +9,7 @@ from src.db.session import SessionLocal, SessionSandbox
 from src.api.building_shares import router as share_router
 from src.api.areas import router as area_router
 from src.api.buildings import router as building_router
+from src.api.building_lookup import router as lookup_router, LookupBoundary
 from src.api.user_buildings import router as user_building_router, PrivateBoundary, readiness as state_readiness
 
 install_log_redaction()
@@ -16,6 +17,7 @@ install_log_redaction()
 app = FastAPI(title="Energy Map API", description="Canonical building details, building tiles and latest published area statistics.")
 app.include_router(area_router)
 app.include_router(building_router)
+app.include_router(lookup_router)
 app.include_router(user_building_router)
 app.include_router(share_router)
 app.add_api_route('/readyz/state', state_readiness, methods=['GET'], tags=['Readiness'])
@@ -56,6 +58,7 @@ app.add_middleware(
 
 # Wrap CORS too, so its preflight/denial responses also carry no-store.
 app.add_middleware(PrivateBoundary)
+app.add_middleware(LookupBoundary)
 
 
 @app.get("/energy-data/tiles/{z}/{x}/{y}.pbf")

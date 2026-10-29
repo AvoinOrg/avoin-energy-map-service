@@ -1,0 +1,725 @@
+{
+  "$defs": {
+    "AddressQueryV1": {
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "const": "address",
+          "title": "Mode",
+          "type": "string"
+        },
+        "address_fin": {
+          "maxLength": 512,
+          "title": "Address Fin",
+          "type": "string",
+          "x-maxUtf8Bytes": 512
+        },
+        "postal_code": {
+          "maxLength": 5,
+          "minLength": 5,
+          "pattern": "^[0-9]{5}$",
+          "title": "Postal Code",
+          "type": "string"
+        },
+        "municipality_number": {
+          "maxLength": 3,
+          "minLength": 3,
+          "pattern": "^[0-9]{3}$",
+          "title": "Municipality Number",
+          "type": "string"
+        }
+      },
+      "required": [
+        "mode",
+        "address_fin"
+      ],
+      "title": "AddressQueryV1",
+      "type": "object"
+    },
+    "BuildingLookupErrorV1": {
+      "additionalProperties": false,
+      "properties": {
+        "detail": {
+          "$ref": "#/$defs/LookupErrorDetailV1"
+        }
+      },
+      "required": [
+        "detail"
+      ],
+      "title": "BuildingLookupErrorV1",
+      "type": "object"
+    },
+    "BuildingLookupPageV1": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "query": {
+          "discriminator": {
+            "mapping": {
+              "address": "#/$defs/AddressQueryV1",
+              "permanent_building_identifier": "#/$defs/PermanentQueryV1",
+              "property_identifier": "#/$defs/PropertyQueryV1-Output"
+            },
+            "propertyName": "mode"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/AddressQueryV1"
+            },
+            {
+              "$ref": "#/$defs/PropertyQueryV1-Output"
+            },
+            {
+              "$ref": "#/$defs/PermanentQueryV1"
+            }
+          ],
+          "title": "Query"
+        },
+        "candidates": {
+          "items": {
+            "$ref": "#/$defs/LookupCandidateV1"
+          },
+          "maxItems": 50,
+          "title": "Candidates",
+          "type": "array"
+        },
+        "outcome": {
+          "enum": [
+            "candidates",
+            "no_match",
+            "no_match_in_scope"
+          ],
+          "title": "Outcome",
+          "type": "string"
+        },
+        "coverage": {
+          "$ref": "#/$defs/LookupCoverageV1"
+        },
+        "page": {
+          "$ref": "#/$defs/LookupPageInfoV1"
+        },
+        "observed_at": {
+          "format": "date-time",
+          "title": "Observed At",
+          "type": "string"
+        },
+        "source_version": {
+          "$ref": "#/$defs/LookupSourceVersionV1"
+        }
+      },
+      "required": [
+        "query",
+        "candidates",
+        "outcome",
+        "coverage",
+        "page",
+        "observed_at",
+        "source_version"
+      ],
+      "title": "BuildingLookupPageV1",
+      "type": "object"
+    },
+    "BuildingLookupRequestV1": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "query": {
+          "discriminator": {
+            "mapping": {
+              "address": "#/$defs/AddressQueryV1",
+              "permanent_building_identifier": "#/$defs/PermanentQueryV1",
+              "property_identifier": "#/$defs/PropertyQueryV1-Input"
+            },
+            "propertyName": "mode"
+          },
+          "oneOf": [
+            {
+              "$ref": "#/$defs/AddressQueryV1"
+            },
+            {
+              "$ref": "#/$defs/PropertyQueryV1-Input"
+            },
+            {
+              "$ref": "#/$defs/PermanentQueryV1"
+            }
+          ],
+          "title": "Query"
+        },
+        "limit": {
+          "default": 20,
+          "maximum": 50,
+          "minimum": 1,
+          "title": "Limit",
+          "type": "integer"
+        },
+        "cursor": {
+          "anyOf": [
+            {
+              "maxLength": 2048,
+              "minLength": 1,
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cursor"
+        }
+      },
+      "required": [
+        "schema_version",
+        "query"
+      ],
+      "title": "BuildingLookupRequestV1",
+      "type": "object"
+    },
+    "LookupAddressV1": {
+      "additionalProperties": false,
+      "properties": {
+        "address_fin": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Address Fin"
+        },
+        "postal_code": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Postal Code"
+        },
+        "postal_office_fin": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Postal Office Fin"
+        },
+        "municipality_number": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Municipality Number"
+        },
+        "source": {
+          "const": "main",
+          "default": "main",
+          "title": "Source",
+          "type": "string"
+        },
+        "source_language": {
+          "const": "fi",
+          "default": "fi",
+          "title": "Source Language",
+          "type": "string"
+        }
+      },
+      "required": [
+        "address_fin",
+        "postal_code",
+        "postal_office_fin",
+        "municipality_number"
+      ],
+      "title": "LookupAddressV1",
+      "type": "object"
+    },
+    "LookupCandidateV1": {
+      "additionalProperties": false,
+      "properties": {
+        "building_key": {
+          "title": "Building Key",
+          "type": "string"
+        },
+        "requires_canonical_confirmation": {
+          "const": true,
+          "default": true,
+          "title": "Requires Canonical Confirmation",
+          "type": "boolean"
+        },
+        "permanent_building_identifier": {
+          "anyOf": [
+            {
+              "maxLength": 256,
+              "type": "string",
+              "x-maxUtf8Bytes": 256
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Permanent Building Identifier"
+        },
+        "property_identifier": {
+          "anyOf": [
+            {
+              "not": {
+                "const": "00000000000000"
+              },
+              "pattern": "^[0-9]{14}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Property Identifier"
+        },
+        "permanent_identity_status": {
+          "enum": [
+            "available",
+            "missing"
+          ],
+          "title": "Permanent Identity Status",
+          "type": "string"
+        },
+        "property_identity_status": {
+          "enum": [
+            "available",
+            "missing",
+            "invalid"
+          ],
+          "title": "Property Identity Status",
+          "type": "string"
+        },
+        "identity_conflict": {
+          "const": false,
+          "default": false,
+          "title": "Identity Conflict",
+          "type": "boolean"
+        },
+        "matched_mode": {
+          "const": "permanent_building_identifier",
+          "default": "permanent_building_identifier",
+          "title": "Matched Mode",
+          "type": "string"
+        },
+        "matched_source": {
+          "const": "main",
+          "default": "main",
+          "title": "Matched Source",
+          "type": "string"
+        },
+        "representative_address": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/LookupAddressV1"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "address_variant_count": {
+          "maximum": 2048,
+          "minimum": 0,
+          "title": "Address Variant Count",
+          "type": "integer"
+        },
+        "matching_address": {
+          "default": null,
+          "title": "Matching Address",
+          "type": "null"
+        },
+        "evidence": {
+          "items": {
+            "$ref": "#/$defs/LookupEvidenceV1"
+          },
+          "title": "Evidence",
+          "type": "array"
+        },
+        "geometry_availability": {
+          "enum": [
+            "present_unvalidated",
+            "missing_in_scope",
+            "unknown"
+          ],
+          "title": "Geometry Availability",
+          "type": "string"
+        },
+        "location": {
+          "default": null,
+          "title": "Location",
+          "type": "null"
+        }
+      },
+      "required": [
+        "building_key",
+        "permanent_building_identifier",
+        "property_identifier",
+        "permanent_identity_status",
+        "property_identity_status",
+        "representative_address",
+        "address_variant_count",
+        "evidence",
+        "geometry_availability"
+      ],
+      "title": "LookupCandidateV1",
+      "type": "object"
+    },
+    "LookupComponentV1": {
+      "additionalProperties": false,
+      "properties": {
+        "component": {
+          "enum": [
+            "main",
+            "buildings",
+            "addresses",
+            "polygons"
+          ],
+          "title": "Component",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "included",
+            "absent",
+            "unreadable",
+            "unsupported"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "reason": {
+          "enum": [
+            "indexed_permanent_equality",
+            "no_reviewed_bounded_path",
+            "not_in_main_scope"
+          ],
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "component",
+        "status",
+        "reason"
+      ],
+      "title": "LookupComponentV1",
+      "type": "object"
+    },
+    "LookupCoverageV1": {
+      "additionalProperties": false,
+      "properties": {
+        "scope": {
+          "const": "main",
+          "default": "main",
+          "title": "Scope",
+          "type": "string"
+        },
+        "enumeration_complete": {
+          "title": "Enumeration Complete",
+          "type": "boolean"
+        },
+        "scope_complete": {
+          "const": false,
+          "default": false,
+          "title": "Scope Complete",
+          "type": "boolean"
+        },
+        "national_completeness": {
+          "const": "unknown",
+          "default": "unknown",
+          "title": "National Completeness",
+          "type": "string"
+        },
+        "components": {
+          "items": {
+            "$ref": "#/$defs/LookupComponentV1"
+          },
+          "title": "Components",
+          "type": "array"
+        }
+      },
+      "required": [
+        "enumeration_complete",
+        "components"
+      ],
+      "title": "LookupCoverageV1",
+      "type": "object"
+    },
+    "LookupErrorDetailV1": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "enum": [
+            "lookup_capability_unavailable",
+            "lookup_source_unavailable",
+            "lookup_source_contract_failure",
+            "lookup_identity_conflict",
+            "lookup_page_invalidated",
+            "lookup_query_too_broad",
+            "lookup_invalid_request",
+            "lookup_payload_too_large",
+            "lookup_unsupported_media_type",
+            "lookup_internal_error"
+          ],
+          "title": "Code",
+          "type": "string"
+        },
+        "message": {
+          "title": "Message",
+          "type": "string"
+        },
+        "mode": {
+          "anyOf": [
+            {
+              "enum": [
+                "address",
+                "property_identifier",
+                "permanent_building_identifier"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Mode"
+        },
+        "component": {
+          "anyOf": [
+            {
+              "const": "main",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Component"
+        }
+      },
+      "required": [
+        "code",
+        "message"
+      ],
+      "title": "LookupErrorDetailV1",
+      "type": "object"
+    },
+    "LookupEvidenceV1": {
+      "additionalProperties": false,
+      "properties": {
+        "component": {
+          "const": "main",
+          "default": "main",
+          "title": "Component",
+          "type": "string"
+        },
+        "upstream_modified_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Upstream Modified At"
+        },
+        "timestamp_status": {
+          "default": "unknown",
+          "enum": [
+            "unknown",
+            "missing",
+            "invalid",
+            "known"
+          ],
+          "title": "Timestamp Status",
+          "type": "string"
+        },
+        "reason": {
+          "const": "not_projected",
+          "default": "not_projected",
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "title": "LookupEvidenceV1",
+      "type": "object"
+    },
+    "LookupPageInfoV1": {
+      "additionalProperties": false,
+      "properties": {
+        "total_candidates": {
+          "maximum": 512,
+          "minimum": 0,
+          "title": "Total Candidates",
+          "type": "integer"
+        },
+        "has_more": {
+          "title": "Has More",
+          "type": "boolean"
+        },
+        "next_cursor": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Next Cursor"
+        },
+        "order_policy": {
+          "const": "lookup-v1-exact-utf8-C-1",
+          "default": "lookup-v1-exact-utf8-C-1",
+          "title": "Order Policy",
+          "type": "string"
+        },
+        "permanent_id_multiplicity": {
+          "title": "Permanent Id Multiplicity",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "total_candidates",
+        "has_more",
+        "next_cursor",
+        "permanent_id_multiplicity"
+      ],
+      "title": "LookupPageInfoV1",
+      "type": "object"
+    },
+    "LookupSourceVersionV1": {
+      "additionalProperties": false,
+      "properties": {
+        "dataset_version": {
+          "default": null,
+          "title": "Dataset Version",
+          "type": "null"
+        },
+        "checksum": {
+          "default": null,
+          "title": "Checksum",
+          "type": "null"
+        },
+        "refreshed_at": {
+          "default": null,
+          "title": "Refreshed At",
+          "type": "null"
+        },
+        "status": {
+          "const": "unknown",
+          "default": "unknown",
+          "title": "Status",
+          "type": "string"
+        },
+        "reason": {
+          "const": "no_authoritative_generation_lineage",
+          "default": "no_authoritative_generation_lineage",
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "title": "LookupSourceVersionV1",
+      "type": "object"
+    },
+    "PermanentQueryV1": {
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "const": "permanent_building_identifier",
+          "title": "Mode",
+          "type": "string"
+        },
+        "permanent_building_identifier": {
+          "maxLength": 256,
+          "title": "Permanent Building Identifier",
+          "type": "string",
+          "x-maxUtf8Bytes": 256
+        }
+      },
+      "required": [
+        "mode",
+        "permanent_building_identifier"
+      ],
+      "title": "PermanentQueryV1",
+      "type": "object"
+    },
+    "PropertyQueryV1-Input": {
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "const": "property_identifier",
+          "title": "Mode",
+          "type": "string"
+        },
+        "property_identifier": {
+          "maxLength": 14,
+          "minLength": 14,
+          "not": {
+            "const": "00000000000000"
+          },
+          "title": "Property Identifier",
+          "type": "string"
+        }
+      },
+      "required": [
+        "mode",
+        "property_identifier"
+      ],
+      "title": "PropertyQueryV1",
+      "type": "object"
+    },
+    "PropertyQueryV1-Output": {
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "const": "property_identifier",
+          "title": "Mode",
+          "type": "string"
+        },
+        "property_identifier": {
+          "not": {
+            "const": "00000000000000"
+          },
+          "pattern": "^[0-9]{14}$",
+          "title": "Property Identifier",
+          "type": "string"
+        }
+      },
+      "required": [
+        "mode",
+        "property_identifier"
+      ],
+      "title": "PropertyQueryV1",
+      "type": "object"
+    }
+  },
+  "title": "EnergyMapBuildingLookupV1"
+}

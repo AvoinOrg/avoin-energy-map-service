@@ -1,0 +1,536 @@
+{
+  "request_address": {
+    "schema_version": 1,
+    "query": {
+      "mode": "address",
+      "address_fin": "Mäkelänkatu 1",
+      "postal_code": "00550",
+      "municipality_number": "091"
+    },
+    "limit": 20
+  },
+  "request_property_identifier": {
+    "schema_version": 1,
+    "query": {
+      "mode": "property_identifier",
+      "property_identifier": "00012345678901"
+    },
+    "limit": 20
+  },
+  "request_permanent_building_identifier": {
+    "schema_version": 1,
+    "query": {
+      "mode": "permanent_building_identifier",
+      "permanent_building_identifier": "0000000001"
+    },
+    "limit": 20
+  },
+  "ambiguity": {
+    "schema_version": 1,
+    "query": {
+      "mode": "permanent_building_identifier",
+      "permanent_building_identifier": "0000000001"
+    },
+    "candidates": [
+      {
+        "building_key": "000-synthetic-key",
+        "requires_canonical_confirmation": true,
+        "permanent_building_identifier": "0000000001",
+        "property_identifier": "00012345678901",
+        "permanent_identity_status": "available",
+        "property_identity_status": "available",
+        "identity_conflict": false,
+        "matched_mode": "permanent_building_identifier",
+        "matched_source": "main",
+        "representative_address": {
+          "address_fin": "Mäkelänkatu 1",
+          "postal_code": "00550",
+          "postal_office_fin": "Helsinki",
+          "municipality_number": null,
+          "source": "main",
+          "source_language": "fi"
+        },
+        "address_variant_count": 1,
+        "matching_address": null,
+        "evidence": [
+          {
+            "component": "main",
+            "upstream_modified_at": null,
+            "timestamp_status": "unknown",
+            "reason": "not_projected"
+          }
+        ],
+        "geometry_availability": "missing_in_scope",
+        "location": null
+      },
+      {
+        "building_key": "synthetic/key",
+        "requires_canonical_confirmation": true,
+        "permanent_building_identifier": "0000000001",
+        "property_identifier": "00012345678901",
+        "permanent_identity_status": "available",
+        "property_identity_status": "available",
+        "identity_conflict": false,
+        "matched_mode": "permanent_building_identifier",
+        "matched_source": "main",
+        "representative_address": {
+          "address_fin": "Mäkelänkatu 1",
+          "postal_code": "00550",
+          "postal_office_fin": "Helsinki",
+          "municipality_number": null,
+          "source": "main",
+          "source_language": "fi"
+        },
+        "address_variant_count": 1,
+        "matching_address": null,
+        "evidence": [
+          {
+            "component": "main",
+            "upstream_modified_at": null,
+            "timestamp_status": "unknown",
+            "reason": "not_projected"
+          }
+        ],
+        "geometry_availability": "present_unvalidated",
+        "location": null
+      }
+    ],
+    "outcome": "candidates",
+    "coverage": {
+      "scope": "main",
+      "enumeration_complete": true,
+      "scope_complete": false,
+      "national_completeness": "unknown",
+      "components": [
+        {
+          "component": "main",
+          "status": "included",
+          "reason": "indexed_permanent_equality"
+        },
+        {
+          "component": "buildings",
+          "status": "unsupported",
+          "reason": "no_reviewed_bounded_path"
+        },
+        {
+          "component": "addresses",
+          "status": "unsupported",
+          "reason": "not_in_main_scope"
+        },
+        {
+          "component": "polygons",
+          "status": "unsupported",
+          "reason": "not_in_main_scope"
+        }
+      ]
+    },
+    "page": {
+      "total_candidates": 2,
+      "has_more": false,
+      "next_cursor": null,
+      "order_policy": "lookup-v1-exact-utf8-C-1",
+      "permanent_id_multiplicity": true
+    },
+    "observed_at": "2026-10-29T12:00:00Z",
+    "source_version": {
+      "dataset_version": null,
+      "checksum": null,
+      "refreshed_at": null,
+      "status": "unknown",
+      "reason": "no_authoritative_generation_lineage"
+    }
+  },
+  "single_no_geometry": {
+    "schema_version": 1,
+    "query": {
+      "mode": "permanent_building_identifier",
+      "permanent_building_identifier": "0000000001"
+    },
+    "candidates": [
+      {
+        "building_key": "000-synthetic-key",
+        "requires_canonical_confirmation": true,
+        "permanent_building_identifier": "0000000001",
+        "property_identifier": "00012345678901",
+        "permanent_identity_status": "available",
+        "property_identity_status": "available",
+        "identity_conflict": false,
+        "matched_mode": "permanent_building_identifier",
+        "matched_source": "main",
+        "representative_address": {
+          "address_fin": "Mäkelänkatu 1",
+          "postal_code": "00550",
+          "postal_office_fin": "Helsinki",
+          "municipality_number": null,
+          "source": "main",
+          "source_language": "fi"
+        },
+        "address_variant_count": 1,
+        "matching_address": null,
+        "evidence": [
+          {
+            "component": "main",
+            "upstream_modified_at": null,
+            "timestamp_status": "unknown",
+            "reason": "not_projected"
+          }
+        ],
+        "geometry_availability": "missing_in_scope",
+        "location": null
+      }
+    ],
+    "outcome": "candidates",
+    "coverage": {
+      "scope": "main",
+      "enumeration_complete": true,
+      "scope_complete": false,
+      "national_completeness": "unknown",
+      "components": [
+        {
+          "component": "main",
+          "status": "included",
+          "reason": "indexed_permanent_equality"
+        },
+        {
+          "component": "buildings",
+          "status": "unsupported",
+          "reason": "no_reviewed_bounded_path"
+        },
+        {
+          "component": "addresses",
+          "status": "unsupported",
+          "reason": "not_in_main_scope"
+        },
+        {
+          "component": "polygons",
+          "status": "unsupported",
+          "reason": "not_in_main_scope"
+        }
+      ]
+    },
+    "page": {
+      "total_candidates": 1,
+      "has_more": false,
+      "next_cursor": null,
+      "order_policy": "lookup-v1-exact-utf8-C-1",
+      "permanent_id_multiplicity": false
+    },
+    "observed_at": "2026-10-29T12:00:00Z",
+    "source_version": {
+      "dataset_version": null,
+      "checksum": null,
+      "refreshed_at": null,
+      "status": "unknown",
+      "reason": "no_authoritative_generation_lineage"
+    }
+  },
+  "no_match_in_scope": {
+    "schema_version": 1,
+    "query": {
+      "mode": "permanent_building_identifier",
+      "permanent_building_identifier": "0000000001"
+    },
+    "candidates": [],
+    "outcome": "no_match_in_scope",
+    "coverage": {
+      "scope": "main",
+      "enumeration_complete": true,
+      "scope_complete": false,
+      "national_completeness": "unknown",
+      "components": [
+        {
+          "component": "main",
+          "status": "included",
+          "reason": "indexed_permanent_equality"
+        },
+        {
+          "component": "buildings",
+          "status": "unsupported",
+          "reason": "no_reviewed_bounded_path"
+        },
+        {
+          "component": "addresses",
+          "status": "unsupported",
+          "reason": "not_in_main_scope"
+        },
+        {
+          "component": "polygons",
+          "status": "unsupported",
+          "reason": "not_in_main_scope"
+        }
+      ]
+    },
+    "page": {
+      "total_candidates": 0,
+      "has_more": false,
+      "next_cursor": null,
+      "order_policy": "lookup-v1-exact-utf8-C-1",
+      "permanent_id_multiplicity": false
+    },
+    "observed_at": "2026-10-29T12:00:00Z",
+    "source_version": {
+      "dataset_version": null,
+      "checksum": null,
+      "refreshed_at": null,
+      "status": "unknown",
+      "reason": "no_authoritative_generation_lineage"
+    }
+  },
+  "first_page": {
+    "schema_version": 1,
+    "query": {
+      "mode": "permanent_building_identifier",
+      "permanent_building_identifier": "0000000001"
+    },
+    "candidates": [
+      {
+        "building_key": "000-synthetic-key",
+        "requires_canonical_confirmation": true,
+        "permanent_building_identifier": "0000000001",
+        "property_identifier": "00012345678901",
+        "permanent_identity_status": "available",
+        "property_identity_status": "available",
+        "identity_conflict": false,
+        "matched_mode": "permanent_building_identifier",
+        "matched_source": "main",
+        "representative_address": {
+          "address_fin": "Mäkelänkatu 1",
+          "postal_code": "00550",
+          "postal_office_fin": "Helsinki",
+          "municipality_number": null,
+          "source": "main",
+          "source_language": "fi"
+        },
+        "address_variant_count": 1,
+        "matching_address": null,
+        "evidence": [
+          {
+            "component": "main",
+            "upstream_modified_at": null,
+            "timestamp_status": "unknown",
+            "reason": "not_projected"
+          }
+        ],
+        "geometry_availability": "missing_in_scope",
+        "location": null
+      }
+    ],
+    "outcome": "candidates",
+    "coverage": {
+      "scope": "main",
+      "enumeration_complete": true,
+      "scope_complete": false,
+      "national_completeness": "unknown",
+      "components": [
+        {
+          "component": "main",
+          "status": "included",
+          "reason": "indexed_permanent_equality"
+        },
+        {
+          "component": "buildings",
+          "status": "unsupported",
+          "reason": "no_reviewed_bounded_path"
+        },
+        {
+          "component": "addresses",
+          "status": "unsupported",
+          "reason": "not_in_main_scope"
+        },
+        {
+          "component": "polygons",
+          "status": "unsupported",
+          "reason": "not_in_main_scope"
+        }
+      ]
+    },
+    "page": {
+      "total_candidates": 2,
+      "has_more": true,
+      "next_cursor": "eyJjYW5kaWRhdGVzX2hhc2giOiI5YjQ4ZTNhZmE4MGU2OWE0NTg0MDNjYTBjMTJhYzI4YmMxNzVjYTNkMTcxMmUzYjRiYzk2NzI4OTM2MzQ2NDc3IiwiZXhwaXJlcyI6MTc5MzI3NTUwMCwiaXNzdWVkIjoxNzkzMjc1MjAwLCJsYXN0X2tleSI6IjAwMC1zeW50aGV0aWMta2V5IiwibGltaXQiOjEsInBvbGljeSI6Imxvb2t1cC12MS1leGFjdC11dGY4LUMtMSIsInF1ZXJ5X2hhc2giOiI2MGQzYmZkMDI5Y2M2YjIwZmRhOWMyNzA1NjdkZDlmNjQ0Mjc3NDFhMDE2MmJjNDkzNjY2N2EwMDc3N2YyY2U3Iiwic2NvcGVfaGFzaCI6ImFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWEiLCJ2ZXJzaW9uIjoxfQ",
+      "order_policy": "lookup-v1-exact-utf8-C-1",
+      "permanent_id_multiplicity": true
+    },
+    "observed_at": "2026-10-29T12:00:00Z",
+    "source_version": {
+      "dataset_version": null,
+      "checksum": null,
+      "refreshed_at": null,
+      "status": "unknown",
+      "reason": "no_authoritative_generation_lineage"
+    }
+  },
+  "next_page_request": {
+    "schema_version": 1,
+    "query": {
+      "mode": "permanent_building_identifier",
+      "permanent_building_identifier": "0000000001"
+    },
+    "limit": 1,
+    "cursor": "eyJjYW5kaWRhdGVzX2hhc2giOiI5YjQ4ZTNhZmE4MGU2OWE0NTg0MDNjYTBjMTJhYzI4YmMxNzVjYTNkMTcxMmUzYjRiYzk2NzI4OTM2MzQ2NDc3IiwiZXhwaXJlcyI6MTc5MzI3NTUwMCwiaXNzdWVkIjoxNzkzMjc1MjAwLCJsYXN0X2tleSI6IjAwMC1zeW50aGV0aWMta2V5IiwibGltaXQiOjEsInBvbGljeSI6Imxvb2t1cC12MS1leGFjdC11dGY4LUMtMSIsInF1ZXJ5X2hhc2giOiI2MGQzYmZkMDI5Y2M2YjIwZmRhOWMyNzA1NjdkZDlmNjQ0Mjc3NDFhMDE2MmJjNDkzNjY2N2EwMDc3N2YyY2U3Iiwic2NvcGVfaGFzaCI6ImFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWEiLCJ2ZXJzaW9uIjoxfQ"
+  },
+  "last_page": {
+    "schema_version": 1,
+    "query": {
+      "mode": "permanent_building_identifier",
+      "permanent_building_identifier": "0000000001"
+    },
+    "candidates": [
+      {
+        "building_key": "synthetic/key",
+        "requires_canonical_confirmation": true,
+        "permanent_building_identifier": "0000000001",
+        "property_identifier": "00012345678901",
+        "permanent_identity_status": "available",
+        "property_identity_status": "available",
+        "identity_conflict": false,
+        "matched_mode": "permanent_building_identifier",
+        "matched_source": "main",
+        "representative_address": {
+          "address_fin": "Mäkelänkatu 1",
+          "postal_code": "00550",
+          "postal_office_fin": "Helsinki",
+          "municipality_number": null,
+          "source": "main",
+          "source_language": "fi"
+        },
+        "address_variant_count": 1,
+        "matching_address": null,
+        "evidence": [
+          {
+            "component": "main",
+            "upstream_modified_at": null,
+            "timestamp_status": "unknown",
+            "reason": "not_projected"
+          }
+        ],
+        "geometry_availability": "present_unvalidated",
+        "location": null
+      }
+    ],
+    "outcome": "candidates",
+    "coverage": {
+      "scope": "main",
+      "enumeration_complete": true,
+      "scope_complete": false,
+      "national_completeness": "unknown",
+      "components": [
+        {
+          "component": "main",
+          "status": "included",
+          "reason": "indexed_permanent_equality"
+        },
+        {
+          "component": "buildings",
+          "status": "unsupported",
+          "reason": "no_reviewed_bounded_path"
+        },
+        {
+          "component": "addresses",
+          "status": "unsupported",
+          "reason": "not_in_main_scope"
+        },
+        {
+          "component": "polygons",
+          "status": "unsupported",
+          "reason": "not_in_main_scope"
+        }
+      ]
+    },
+    "page": {
+      "total_candidates": 2,
+      "has_more": false,
+      "next_cursor": null,
+      "order_policy": "lookup-v1-exact-utf8-C-1",
+      "permanent_id_multiplicity": true
+    },
+    "observed_at": "2026-10-29T12:00:10Z",
+    "source_version": {
+      "dataset_version": null,
+      "checksum": null,
+      "refreshed_at": null,
+      "status": "unknown",
+      "reason": "no_authoritative_generation_lineage"
+    }
+  },
+  "lookup_capability_unavailable": {
+    "detail": {
+      "code": "lookup_capability_unavailable",
+      "message": "This lookup source capability is unavailable",
+      "mode": null,
+      "component": null
+    }
+  },
+  "lookup_source_unavailable": {
+    "detail": {
+      "code": "lookup_source_unavailable",
+      "message": "Lookup source is temporarily unavailable",
+      "mode": null,
+      "component": null
+    }
+  },
+  "lookup_source_contract_failure": {
+    "detail": {
+      "code": "lookup_source_contract_failure",
+      "message": "Lookup source does not satisfy the supported contract",
+      "mode": null,
+      "component": null
+    }
+  },
+  "lookup_identity_conflict": {
+    "detail": {
+      "code": "lookup_identity_conflict",
+      "message": "Lookup source identity is conflicting",
+      "mode": null,
+      "component": null
+    }
+  },
+  "lookup_page_invalidated": {
+    "detail": {
+      "code": "lookup_page_invalidated",
+      "message": "Lookup page changed or expired; restart at page one",
+      "mode": null,
+      "component": null
+    }
+  },
+  "lookup_query_too_broad": {
+    "detail": {
+      "code": "lookup_query_too_broad",
+      "message": "Lookup exceeds bounded enumeration or response limits",
+      "mode": null,
+      "component": null
+    }
+  },
+  "lookup_invalid_request": {
+    "detail": {
+      "code": "lookup_invalid_request",
+      "message": "Invalid lookup request",
+      "mode": null,
+      "component": null
+    }
+  },
+  "lookup_payload_too_large": {
+    "detail": {
+      "code": "lookup_payload_too_large",
+      "message": "Lookup body exceeds 16 KiB",
+      "mode": null,
+      "component": null
+    }
+  },
+  "lookup_unsupported_media_type": {
+    "detail": {
+      "code": "lookup_unsupported_media_type",
+      "message": "Lookup requires application/json",
+      "mode": null,
+      "component": null
+    }
+  },
+  "lookup_internal_error": {
+    "detail": {
+      "code": "lookup_internal_error",
+      "message": "Lookup request failed",
+      "mode": null,
+      "component": null
+    }
+  }
+}

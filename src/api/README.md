@@ -51,6 +51,12 @@ For operator candidate verification and rollback, explicit `?release_id=UUID` me
 
 ## Canonical building details and reusable personal inputs
 
+Anonymous `POST /energy-data/building-lookup` provides bounded partial Main-scope
+permanent-ID candidate discovery. Address/property inputs currently return explicit
+capability errors. The [lookup v1 contract](building-lookup.md) documents exact
+input semantics, coverage gaps, pages/errors and canonical confirmation, with
+[schemas](building-lookup-v1.schema.json) and [synthetic examples](building-lookup-v1.examples.json).
+
 `GET /energy-data/buildings/{building_key}` returns schema version 1 public details,
 source selection, certificate/model provenance and nullable source freshness. It
 is anonymous and read-only. The [building contract](building-contract.md) contains

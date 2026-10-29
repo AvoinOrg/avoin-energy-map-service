@@ -13,6 +13,7 @@ from uvicorn.logging import AccessFormatter, DefaultFormatter
 # Redact the complete URI suffix, including query values, even for malformed
 # tokens or unsupported methods. Repeated decoding covers encoded separators.
 PATH = re.compile(r'/energy-data/shared-buildings', re.IGNORECASE)
+LOOKUP_PATH = re.compile(r'/energy-data/building-lookup', re.IGNORECASE)
 SPAN = re.compile(r"[^\s'\"<>]+")
 CAPABILITY = re.compile(r'(?<![A-Za-z0-9_-])(?:[A-Za-z0-9_-]{43}|[0-9a-fA-F]{64})(?![A-Za-z0-9_-])')
 BEARER = re.compile(r'Bearer\s+[^\s\'"<>]+', re.IGNORECASE)
@@ -27,6 +28,9 @@ def redact(value):
                 break
             result = decoded
         sensitive = PATH.search(result)
+        lookup = LOOKUP_PATH.search(result)
+        if lookup and (not sensitive or lookup.start() < sensitive.start()):
+            return result[:lookup.start()] + '/energy-data/building-lookup/[REDACTED]'
         if sensitive:
             # Identify spans BEFORE decoding: encoded spaces/quotes must not
             # terminate redaction and expose the rest of a sensitive query.
