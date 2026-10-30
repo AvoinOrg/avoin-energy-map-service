@@ -2,8 +2,8 @@
 from fastapi import APIRouter
 
 from src.api.building_examples import shared_example
-from src.api.user_buildings import OwnerRoute, error, observe
-from src.building_share_contract import SharedBuildingV1, shared_projection
+from src.api.user_buildings import OwnerRoute, error, observe, PersonalVersion
+from src.building_share_contract import SharedBuildingV1, SharedBuildingV2, shared_projection
 from src.building_shares import ShareNotFound, TOKEN_PATTERN, lookup
 from src.db.state import state_session
 from src.user_building_contract import OwnerErrorV1
@@ -17,12 +17,12 @@ def missing_shared_token():
     return error(404, 'shared_building_not_found', 'Shared building not found')
 
 
-@router.get('/{share_token:path}', response_model=SharedBuildingV1, responses={
+@router.get('/{share_token:path}', response_model=SharedBuildingV1 | SharedBuildingV2, responses={
     200: {'content': {'application/json': {'example': shared_example()}}},
     404: {'model': OwnerErrorV1, 'description': 'Share not found'},
     503: {'model': OwnerErrorV1, 'description': 'Personal state unavailable'},
 })
-def get_shared_building(share_token: str):
+def get_shared_building(share_token: str, version: PersonalVersion):
     try:
         if not TOKEN_PATTERN.fullmatch(share_token):
             raise ShareNotFound
@@ -34,6 +34,6 @@ def get_shared_building(share_token: str):
         # the read linearization point. Reuse latest saved overrides/revision.
         with state_session(read_only=True) as state:
             row = lookup(state, share_token)
-            return shared_projection(row, base, reason)
+            return shared_projection(row, base, reason, version)
     except ShareNotFound:
         return error(404, 'shared_building_not_found', 'Shared building not found')

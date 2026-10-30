@@ -190,7 +190,7 @@ read-only state schema/role readiness, not identity/backup verification.
 
 For NEW isolated databases use the complete executable
 [personal-state operations contract](../../docs/operations/personal-state-storage.md):
-independent state migration `es0001_saved_share`, full private database backup
+independent state head `es0002_personal_v2` after frozen `es0001_saved_share`, full private database backup
 including version metadata, and guarded fresh-target restore with exact grants.
 The earlier global revisions apply only to existing combined/source databases.
 A schema-scoped dump there omits public migration metadata and source objects;
@@ -263,3 +263,18 @@ context (verify identity using the framework browser/client.mjs first). These de
 smoke test, state provisioning/storage/migrations/grants/backup recovery,
 production-scale performance, frontend/UI/browser acceptance and deployment
 remain external and unverified by local backend fixtures.
+
+Personal-v2 shared views accept the explicit personal_schema_version selector
+and preserve active capabilities across promotion; default reads remain strict
+v1 projections. Share creation/rotation/revoke requests remain version-independent.
+See [personal v2](personal-property-v2.md) for the exact safe projection and limits.
+
+The v2 shared projection includes all seven optional personal inputs, effective
+values, allowlisted per-field provenance and current-input status. Personal
+class/scale/year never replaces official certificate/model data. Absent leaves
+remain absent; null remains unknown. Capability holders see these personal fields
+by the same deliberate sharing policy as existing inputs. No owner issuer/subject,
+saved UUID, address_key or digest is exposed. V1 views omit new fields without
+mutating storage. The adopted purpose pin qualifies all seven supported codes.
+An unavailable catalog or unknown/retired saved code affects qualification
+status, preserving capability readability and revocation.

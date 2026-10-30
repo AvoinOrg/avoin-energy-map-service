@@ -29,7 +29,8 @@ from src.api.auth import get_introspector, ZitadelIntrospector, AuthenticatedPri
 from src.api.buildings import building_session
 from src.api.areas import area_session
 from src.building_resolver import resolve_building, resolve_building_summaries, BuildingSourceUnavailable
-from src.building_contract import personal_document
+from src.building_contract import personal_document, CodeCatalog
+from src.purpose_catalog import PurposeCatalogUnavailable
 from src.db.state import state_engine, state_ready, state_session
 from src.db.user_building_models import UserBuilding as Row
 from src import user_buildings as service
@@ -85,7 +86,8 @@ class OwnerDatabaseTests(unittest.TestCase):
                 for code in codes:
                     session.execute(text('INSERT INTO code_maps(type,code) VALUES(:t,:c)'),{'t':kind,'c':code})
         self.merge()
-        self.patches = [patch('src.api.user_buildings.SessionLocal',self.Reader),
+        self.patches = [patch('src.api.user_buildings.purpose_validation_catalog',self.fixture_purpose_catalog),
+                        patch('src.api.user_buildings.SessionLocal',self.Reader),
                         patch('src.api.main.SessionLocal',self.Reader)]
         for mocked in self.patches: mocked.start(); self.addCleanup(mocked.stop)
         app.dependency_overrides[building_session] = self.source_dependency
@@ -98,6 +100,17 @@ class OwnerDatabaseTests(unittest.TestCase):
         app.dependency_overrides[get_introspector] = introspector
         self.addCleanup(app.dependency_overrides.clear)
         self.client = TestClient(app); self.addCleanup(self.client.close)
+
+    def fixture_purpose_catalog(self):
+        """Synthetic selectable choices for persistence tests, not registry proof."""
+        try:
+            with self.Reader() as session:
+                codes=frozenset(session.execute(text("SELECT code FROM code_maps WHERE type='main_purpose'")).scalars())
+            if not codes:
+                raise PurposeCatalogUnavailable
+            return CodeCatalog({'main_purpose':codes})
+        except DBAPIError:
+            raise PurposeCatalogUnavailable from None
 
     def source_dependency(self):
         with self.Reader() as session: yield session

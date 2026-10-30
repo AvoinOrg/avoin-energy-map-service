@@ -6,7 +6,9 @@ from psycopg2 import sql
 
 from .private import require
 
-VERSION = 'es0001_saved_share'
+HISTORICAL_VERSION = 'es0001_saved_share'
+VERSION = 'es0002_personal_v2'
+PROFILES = {HISTORICAL_VERSION: 'expected_catalog.json', VERSION: 'expected_catalog_v2.json'}
 DATA = 'energymap_state'
 META = 'energymap_state_meta'
 SAVED = 'energymap_user_buildings'
@@ -52,10 +54,18 @@ def normalized(value):
     return json.loads(json.dumps(value))
 
 
-def audit_schema(connection):
-    expected = json.loads((Path(__file__).parent / 'expected_catalog.json').read_text())
+def schema_version(connection):
+    versions = scalar(connection, "SELECT array_agg(version_num::text ORDER BY version_num) FROM energymap_state_meta.alembic_version")
+    require(versions in ([HISTORICAL_VERSION], [VERSION]), 'version_drift')
+    return versions[0]
+
+
+def audit_schema(connection, expected_version=None):
+    version = schema_version(connection)
+    require(expected_version is None or expected_version == version, 'version_drift')
+    expected = json.loads((Path(__file__).parent / PROFILES[version]).read_text())
     require(normalized(snapshot(connection)) == expected, 'schema_drift')
-    require(scalar(connection, "SELECT array_agg(version_num::text ORDER BY version_num) FROM energymap_state_meta.alembic_version") == [VERSION], 'version_drift')
+    require(scalar(connection, "SELECT array_agg(version_num::text ORDER BY version_num) FROM energymap_state_meta.alembic_version") == [version], 'version_drift')
     require(rows(connection, """SELECT n.nspname,c.relname,c.relkind FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
         WHERE n.nspname !~ '^pg_' AND n.nspname<>'information_schema' AND c.relkind NOT IN ('i','I')
         ORDER BY n.nspname,c.relname""") == [(DATA, SHARES, 'r'), (DATA, SAVED, 'r'), (META, 'alembic_version', 'r')], 'schema_drift')

@@ -4,12 +4,14 @@ from datetime import datetime
 from typing import Literal
 from uuid import UUID
 
-from pydantic import Field
+from pydantic import Field, field_validator
 
 from src.building_contract import (
     BuildingKey, BuildingSummaryV1, ContractModel, DisplayName,
     LastKnownBuildingSummaryV1, PersonalBuildingProjectionV1, UtcTime, VersionedV1,
 )
+
+from src.personal_property_contract import PersonalBuildingProjectionV2, VersionedV2
 
 
 class SavedBuildingV1(PersonalBuildingProjectionV1):
@@ -73,3 +75,28 @@ def decode_cursor(value):
         return result
     except Exception:
         raise ValueError('Invalid cursor') from None
+
+
+class SavedBuildingV2(PersonalBuildingProjectionV2):
+    last_known_summary: LastKnownBuildingSummaryV1
+    saved_id: UUID
+    display_name: DisplayName | None
+    revision: int = Field(ge=1)
+    created_at: UtcTime
+    updated_at: UtcTime
+    share_enabled: bool = False
+
+
+class SavedBuildingSummaryV2(SavedBuildingSummaryV1):
+    schema_version: Literal[2] = 2
+    document_schema_version: Literal[1, 2]
+
+    @field_validator('schema_version', mode='before')
+    @classmethod
+    def exact_version(cls, value):
+        return VersionedV2.exact_version(value)
+
+
+class SavedBuildingPageV2(VersionedV2):
+    items: list[SavedBuildingSummaryV2]
+    next_cursor: str | None

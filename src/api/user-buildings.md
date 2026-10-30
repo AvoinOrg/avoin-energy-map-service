@@ -216,13 +216,14 @@ than aliasing owners. One exact owner/key tuple cannot create duplicate rows.
 
 For a **new dedicated state database**, use the guarded isolated
 [personal-state operations contract](../../docs/operations/personal-state-storage.md).
-It provisions the exact narrow grants, runs independent revision
-`es0001_saved_share`, and backs up/restores the **entire dedicated database**,
+It provisions the exact narrow grants, runs the independent lineage through
+`es0002_personal_v2` (historical bootstrap `es0001_saved_share`), and backs up/restores the **entire dedicated database**,
 including independent version metadata and private saved/share rows. Never run
 the source Alembic chain in a new state-only database or stamp its source head.
 
 The original combined-database lineage remains `c7d3e921ab40` (saved) followed by
-`d4e8f021bc63` (shares). Existing combined installations alone use the global
+`d4e8f021bc63` (shares), then the state-only `e5f102acd890` personal-v2
+successor. Existing combined installations alone use the global
 Alembic entry point, with a separately reviewed migration connection and source
 prerequisites. A schema-scoped `pg_dump --schema=energymap_state` from such an
 installation omits public migration metadata and source prerequisites; it is
@@ -249,5 +250,21 @@ owner detail/list (no token/digest). Saves/reset preserve active links. The shar
 migration must be present for state readiness. DELETE cascades shares atomically
 and returns a terminal ETag; DELETE share returns the next usable owner ETag even
 on already-disabled state. Encode entire keys, especially a terminal /share.
-The current migration head is d4e8f021bc63; the owner-only migration/downgrade
+The v1 share prerequisite is d4e8f021bc63; the current combined head is
+e5f102acd890; the owner-only migration/downgrade
 examples above describe its prerequisite, not the share release procedure.
+
+## Personal v2 extension
+
+See [the explicit field/version contract](personal-property-v2.md) for query
+selection, seven sparse personal inputs, strict class/scale and year objects,
+exact dwelling/share EUR cents/year, mixed v1/v2 reads, deliberate promotion and
+409 protection against lossy older writes. Optional class/year do not gate the
+derived four-input completeness policy; valid partial drafts remain saveable.
+[Purpose discovery](purpose-catalog.md) and new non-null purpose validation share
+one adopted seven-code pin, approved on 2026-10-30. Upstream DRAFT is retained
+as metadata; all seven values support discovery and new purpose input in v1/v2,
+including v1 full PUT resubmission. A missing/corrupt/unadopted pin still fails
+closed 503. Reads, independent PATCH, null/unset and deletion remain usable
+during a catalog outage. Local source/disposable support
+establishes no live schema upgrade, serving-binary load or deployed acceptance.

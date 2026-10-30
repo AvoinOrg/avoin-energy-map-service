@@ -32,6 +32,7 @@ class ShareDatabaseTests(unittest.TestCase):
     # Reuse fixture guard/source/auth seams without inheriting all owner tests.
     setUpClass = classmethod(Fixture.setUpClass.__func__)
     setUp = Fixture.setUp
+    fixture_purpose_catalog=Fixture.fixture_purpose_catalog
     source_dependency = Fixture.source_dependency
     provider = Fixture.provider
     merge = Fixture.merge

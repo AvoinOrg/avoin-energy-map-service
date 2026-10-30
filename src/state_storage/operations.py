@@ -18,7 +18,7 @@ from sqlalchemy.pool import NullPool
 from src.db.state import check_state
 from .admin_secret import admin_password
 from .catalog import (audit_acl, audit_schema, audit_source, grant_state, harden,
-                      role_audit, rows, scalar)
+                      role_audit, rows, scalar, schema_version, VERSION, HISTORICAL_VERSION)
 from .config import ROOT
 from .source_entry import audit_policy, entry_probe
 from .private import StorageError, atomic_write, read, read_json, require, write_json
@@ -223,7 +223,9 @@ def verify(target):
     full_audit(target,bundle)
     note,runtime = output_texts(target,bundle)
     require(read(target['note_file']) == note and read(target['runtime_file']) == runtime, 'output_readback')
-    return {'status':'verified','version':'es0001_saved_share'}
+    with connected(target, database=target['database'], read_only=True) as connection:
+        version = schema_version(connection)
+    return {'status':'verified','version':version}
 
 
 def apply(target, *, restore_callback=None):
@@ -331,5 +333,37 @@ def _migrate_and_grant(target,bundle):
                 command.upgrade(config,'head')
                 grant_state(connection.connection.driver_connection,target)
             audit_schema(connection.connection.driver_connection)
+    finally:
+        engine.dispose()
+
+
+def upgrade_personal_v2(target):
+    """Explicit existing-target migration, disposable-only for F004.2 proof.
+
+    apply() remains verification-only for a completed target. This operation
+    never adopts drift or creates new resources/credentials.
+    """
+    require(target['mode'] == 'disposable', 'target_rejected')
+    verify(target)
+    bundle = load_bundle(target)
+    with connected(target) as admin:
+        require(scalar(admin, 'SELECT pg_try_advisory_lock(193847251,1)') is True, 'provision_busy')
+        migrate_personal_v2(target, bundle)
+    return verify(target)
+
+
+def migrate_personal_v2(target, bundle):
+    settings = target.settings(target['migrator'], bundle['migrator_password'], target['database'])
+    engine = create_engine('postgresql+psycopg2://', connect_args=settings.kwargs(), poolclass=NullPool, hide_parameters=True)
+    try:
+        with engine.begin() as connection:
+            raw = connection.connection.driver_connection
+            audit_schema(raw)
+            if schema_version(raw) == HISTORICAL_VERSION:
+                config = Config()
+                config.set_main_option('script_location', str(ROOT / 'state_migrations'))
+                config.attributes['connection'] = connection
+                command.upgrade(config, VERSION)
+            audit_schema(raw, VERSION)
     finally:
         engine.dispose()

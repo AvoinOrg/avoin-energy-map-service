@@ -12,7 +12,7 @@ from .models import Base
 class UserBuilding(Base):
     __tablename__ = 'energymap_user_buildings'
     __table_args__ = (
-        CheckConstraint('schema_version = 1', name='user_buildings_version'),
+        CheckConstraint('schema_version = 1 OR schema_version = 2', name='user_buildings_version'),
         CheckConstraint('revision > 0', name='user_buildings_revision'),
         CheckConstraint("octet_length(building_key) BETWEEN 1 AND 256", name='user_buildings_key'),
         CheckConstraint("length(owner_issuer) > 0 AND length(owner_subject) > 0", name='user_buildings_owner'),

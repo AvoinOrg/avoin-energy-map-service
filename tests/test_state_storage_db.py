@@ -192,7 +192,7 @@ class StateStorageDatabaseTests(unittest.TestCase):
                 connection.exec_driver_sql('ALTER SCHEMA energymap_state RENAME TO retained_state')
                 context=MigrationContext.configure(connection)
                 with Operations.context(context):
-                    for filename in ('c7d3e921ab40_010_owner_saved_buildings.py','d4e8f021bc63_011_building_shares.py'):
+                    for filename in ('c7d3e921ab40_010_owner_saved_buildings.py','d4e8f021bc63_011_building_shares.py','e5f102acd890_012_personal_v2.py'):
                         spec=importlib.util.spec_from_file_location('legacy_'+filename[:12],ROOT/'db_migrations/versions'/filename)
                         module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module);module.upgrade()
                 self.assertTrue(normalized(original)==normalized(snapshot(connection.connection.driver_connection)))

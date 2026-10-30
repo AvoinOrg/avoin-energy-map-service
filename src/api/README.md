@@ -91,3 +91,5 @@ revoke them through the sharing contract below.
 the owner API with conditional rotation/revocation and anonymous allowlisted live
 reads. Use the documented logging configuration for every direct launch and
 custom handler; deployment proxy/APM privacy checks remain operator work.
+
+Personal property v2 and its explicit compatibility limits: [field/version matrix](personal-property-v2.md), [purpose catalog authority/outage contract](purpose-catalog.md), [v2 schemas](personal-property-v2.schema.json) and [typed examples](personal-property-v2.examples.json). This local extension supports the seven personal property inputs, including explicit-scale class, year-only estimate time and individual dwelling/share annual charge. Derived input completeness is separate from saveability. The owner adopted the seven pinned Ryhti purpose choices on 2026-10-30; discovery and v1/v2 purpose writes use that same selectable set while preserving upstream DRAFT metadata. No live upgrade or serving-code activation is claimed.

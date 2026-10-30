@@ -7,9 +7,9 @@ import re
 import subprocess
 import tempfile
 
-from .catalog import (DATA, META, SAVED, SHARES, VERSION, audit_acl, audit_schema, grant_state,
+from .catalog import (DATA, META, SAVED, SHARES, VERSION, HISTORICAL_VERSION, schema_version, audit_acl, audit_schema, grant_state,
                       rows, scalar)
-from .operations import apply, connected, load_bundle, verify
+from .operations import apply, connected, load_bundle, verify, migrate_personal_v2
 from .private import (directory, private_file, read_json, safe_path,
                       require, write_json)
 
@@ -19,6 +19,24 @@ POLICY = {'contract':1, 'version':VERSION, 'database':'CONNECT', 'schema':'USAGE
                      'last_known_summary','revision','updated_at'],
           'public':[], 'default_public_function_execute':False, 'default_public_type_usage':False,
           'roles':'LOGIN NOINHERIT NOSUPERUSER NOCREATEDB NOCREATEROLE NOREPLICATION NOBYPASSRLS; no memberships'}
+
+
+def policy_for(version):
+    require(version in (HISTORICAL_VERSION, VERSION), 'archive_integrity')
+    return dict(POLICY, version=version)
+
+
+def restored_data_matches(connection, manifest):
+    version = schema_version(connection)
+    source_version = manifest['policy']['version']
+    audit_schema(connection)
+    actual = data_fingerprint(connection)
+    if version == source_version:
+        return actual == manifest['data']
+    # Only the explicit additive old->new metadata change is admissible. All
+    # saved/share rows still match exactly, and the complete new schema is audited.
+    return (source_version == HISTORICAL_VERSION and version == VERSION and
+            all(actual[table] == manifest['data'][table] for table in (SAVED, SHARES)))
 
 
 def data_fingerprint(connection):
@@ -127,6 +145,7 @@ def backup(target):
             rows(connection,'SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY')
             rows(connection,"SET TIME ZONE 'UTC'")
             snapshot_id = scalar(connection,'SELECT pg_export_snapshot()')
+            version = schema_version(connection)
             fingerprint = data_fingerprint(connection)
             client(target,'pg_dump',['--no-password','--format=custom','--no-publications','--no-subscriptions',
                    '--snapshot='+snapshot_id,'--file='+temporary],user=target['migrator'],password=bundle['migrator_password'],database=target['database'])
@@ -136,21 +155,21 @@ def backup(target):
         with open(temporary,'rb') as handle:
             os.fsync(handle.fileno())
         os.replace(temporary,archive)
-        manifest = dict(policy=POLICY, archive_sha256=file_hash(archive), data=fingerprint,
+        manifest = dict(policy=policy_for(version), archive_sha256=file_hash(archive), data=fingerprint,
                         source_owner=target['migrator'],source_writer=target['writer'],
                         source_provisioning_id=target['provisioning_id'],source_database=target['database'],
                         postgresql_major=17,client_major=17)
         write_json(destination / 'manifest.json',manifest)
     finally:
         if os.path.exists(temporary): os.unlink(temporary)
-    return {'status':'backup_verified','version':VERSION}
+    return {'status':'backup_verified','version':version}
 
 
 def restore(target):
     origin = directory(target['restore_from'])
     archive = private_file(origin / 'state.dump')
     manifest = read_json(origin / 'manifest.json')
-    require(manifest['policy'] == POLICY and manifest['archive_sha256'] == file_hash(archive) and
+    require(manifest['policy'] == policy_for(manifest['policy']['version']) and manifest['archive_sha256'] == file_hash(archive) and
             manifest['postgresql_major'] == manifest['client_major'] == 17,'archive_integrity')
     require(target['database'] != manifest['source_database'] and target['provisioning_id'] != manifest['source_provisioning_id'] and
             not {target['migrator'],target['writer']} & {manifest['source_owner'],manifest['source_writer']},'restore_target')
@@ -175,7 +194,7 @@ def restore(target):
         with connected(t,database=t['database'],user=t['migrator'],password=bundle['migrator_password']) as connection:
             connection.autocommit=False
             audit_schema(connection)
-            require(data_fingerprint(connection) == manifest['data'],'restore_data')
+            require(restored_data_matches(connection, manifest),'restore_data')
             # PostgreSQL 17 --no-owner can omit the baseline public schema even
             # when it has an archive entry. Rebuild it in the grant transaction
             # after verifying the restored rows, including on a post-commit retry.
@@ -190,7 +209,14 @@ def restore(target):
             grant_state(connection,t)
             audit_acl(connection,t,writer_login=False)
             connection.commit()
+        # NEW managed target, writer still NOLOGIN. Old archive audit and exact
+        # data equality precede migration. A committed-upgrade retry never replays
+        # the archive and compares only the deliberately changed metadata profile.
+        migrate_personal_v2(t, bundle)
+        with connected(t, database=t['database'], read_only=True) as connection:
+            audit_schema(connection, VERSION)
+            require(restored_data_matches(connection, manifest), 'restore_data')
     result = apply(target,restore_callback=recover)
     with connected(target,database=target['database'],read_only=True) as connection:
-        require(data_fingerprint(connection) == manifest['data'],'restore_data')
+        require(restored_data_matches(connection, manifest),'restore_data')
     return result | {'status':'restore_verified'}

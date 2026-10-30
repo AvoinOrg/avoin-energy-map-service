@@ -43,7 +43,7 @@ class InterruptedRestoreDatabaseTests(unittest.TestCase):
             # Reproduce the journal left by the former schema-present return.
             save_bundle(target, pending, 'migrated')
         with connected(target, database=target['database']) as connection:
-            self.assertTrue(recovery.data_fingerprint(connection) == manifest['data'])
+            self.assertTrue(recovery.restored_data_matches(connection, manifest))
             self.assertFalse(scalar(connection, 'SELECT rolcanlogin FROM pg_roles WHERE rolname=%s', (target['writer'],)))
             audit_acl(connection, target, writer_login=False, allow_missing_state_grants=True)
             connection.autocommit = False
@@ -72,7 +72,19 @@ class InterruptedRestoreDatabaseTests(unittest.TestCase):
         with connected(target, database=target['database'], read_only=True) as connection:
             self.assertFalse(scalar(connection, 'SELECT rolcanlogin FROM pg_roles WHERE rolname=%s', (target['writer'],)))
             self.assertFalse(scalar(connection, "SELECT has_schema_privilege(%s,'energymap_state','USAGE')", (target['writer'],)))
-            self.assertTrue(recovery.data_fingerprint(connection) == manifest['data'])
+            self.assertTrue(recovery.restored_data_matches(connection, manifest))
+
+        actual_migrate=recovery.migrate_personal_v2
+        def after_upgrade_commit(t, bundle):
+            actual_migrate(t, bundle)
+            raise RuntimeError('post_upgrade_commit')
+        with patch('src.state_storage.recovery.migrate_personal_v2', side_effect=after_upgrade_commit):
+            with self.assertRaisesRegex(RuntimeError, '^post_upgrade_commit$'):
+                recovery.restore(target)
+        with connected(target, database=target['database'], read_only=True) as connection:
+            self.assertTrue(recovery.restored_data_matches(connection, manifest))
+            self.assertEqual(recovery.schema_version(connection), recovery.VERSION)
+            self.assertFalse(scalar(connection, 'SELECT rolcanlogin FROM pg_roles WHERE rolname=%s', (target['writer'],)))
 
         def no_restore_replay(t, program, args, **kwargs):
             self.assertFalse(program == 'pg_restore' and any(arg.startswith('--dbname=') for arg in args))
@@ -88,7 +100,7 @@ class InterruptedRestoreDatabaseTests(unittest.TestCase):
         with patch.dict(os.environ, dict(line.split('=', 1) for line in runtime.splitlines())):
             self.assertTrue(state_ready())
         with connected(target, database=target['database'], read_only=True) as connection:
-            self.assertTrue(recovery.data_fingerprint(connection) == manifest['data'])
+            self.assertTrue(recovery.restored_data_matches(connection, manifest))
         with patch('src.state_storage.recovery.grant_state', side_effect=AssertionError('completed_target_repair')):
             self.assertEqual(recovery.restore(target)['status'], 'restore_verified')
 

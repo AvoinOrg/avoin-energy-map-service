@@ -216,7 +216,7 @@ class PersonalBuildingPatchV1(VersionedV1):
 
 def personal_document(value: PersonalBuildingPutV1):
     """Persistence-ready full replacement; explicit null leaves are retained."""
-    return {'schema_version': 1, 'display_name': value.display_name,
+    return {'schema_version': value.schema_version, 'display_name': value.display_name,
             'overrides': sparse(value.overrides), 'scenario_inputs': sparse(value.scenario_inputs)}
 
 

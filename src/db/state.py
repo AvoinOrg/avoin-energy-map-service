@@ -9,6 +9,10 @@ from sqlalchemy.exc import SQLAlchemyError
 from sqlalchemy.orm import Session
 
 
+class StateSchemaUpgradeRequired(Exception):
+    """Known historical schema is healthy but cannot store personal v2."""
+
+
 class StateUnavailable(Exception):
     """Sanitized application-state boundary."""
 
@@ -61,7 +65,24 @@ SHARE_CHECK = """
 """
 
 
+def personal_schema_capability(session):
+    definitions = session.execute(text("SELECT pg_get_constraintdef(oid) FROM pg_constraint "
+        "WHERE conrelid=to_regclass('energymap_state.energymap_user_buildings') "
+        "AND conname='user_buildings_version' AND contype='c' AND convalidated")).scalars().all()
+    if definitions == ['CHECK ((schema_version = 1))']:
+        return 1
+    if definitions == ['CHECK (((schema_version = 1) OR (schema_version = 2)))']:
+        return 2
+    raise StateUnavailable
+
+
+def require_personal_schema(session, version):
+    if personal_schema_capability(session) < version:
+        raise StateSchemaUpgradeRequired
+
+
 def check_state(session):
+    personal_schema_capability(session)
     table = 'energymap_state.energymap_user_buildings'
     privileges = session.execute(text("SELECT has_schema_privilege('energymap_state','USAGE') AND " +
         ' AND '.join(f"has_table_privilege(:t,'{p}')" for p in ('SELECT', 'INSERT', 'DELETE')) + ' AND ' +
@@ -110,10 +131,11 @@ def state_session(*, read_only=False):
         raise StateUnavailable from None
 
 
-def state_ready():
+def state_ready(version=1):
     """Read-only schema/privilege probe. No rows created, auth or source access."""
     try:
-        with state_session(read_only=True):
+        with state_session(read_only=True) as session:
+            require_personal_schema(session, version)
             return True
-    except StateUnavailable:
+    except (StateUnavailable, StateSchemaUpgradeRequired):
         return False

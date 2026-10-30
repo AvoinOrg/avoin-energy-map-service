@@ -371,9 +371,10 @@ restore use the existing guarded `tests.state_recovery_probe` helper instead.
 Independent revision `es0001_saved_share` reuses only frozen upgrades
 `c7d3e921ab40` then `d4e8f021bc63`. Its version table lives in
 `energymap_state_meta`; no public/source stamp or source lineage is installed.
-The original global head stays `d4e8f021bc63`. Future changes append explicit
-state revisions and expected catalog definitions. Unknown versions/drift fail;
-no in-place adoption, downgrade or speculative upgrade converter is supported.
+The frozen bootstrap's corresponding global head is `d4e8f021bc63`. Personal v2
+appends `es0002_personal_v2` / combined `e5f102acd890`; see the compatibility
+section below for its explicit disposable-only existing-target upgrade. Unknown
+versions/drift still fail; no in-place adoption or speculative converter is supported.
 Recover a compatible export into a new target. Global metadata create_all and
 source autogeneration must never initialize personal state.
 
@@ -502,3 +503,56 @@ No deployed API, ordinary-human/core login, proxy/header/log/cache, frontend or
 performance acceptance follows. Only the backend manager may dispatch the
 owner-authorized frontend continuation after F003.2 review, live readiness,
 private-note readback and sanitized final handoff; retain remaining release limits.
+
+## Personal v2 compatibility (F004.2 local delivery)
+
+Supported isolated profiles are exactly historical `es0001_saved_share` and current
+`es0002_personal_v2`; the legacy combined successor is `e5f102acd890` after
+`d4e8f021bc63`. Both successors change only the validated state document-version
+check to admit 1 or 2. No columns, source relations, rows, grants, identities,
+indexes or shares are rewritten. Historical migrations/catalog remain frozen;
+`expected_catalog_v2.json` is the independently compared current profile.
+Unknown revisions/constraints/drift still fail closed. No PostGIS is added to the
+isolated database. Writer column/table grants are unchanged.
+
+Default `/readyz/state` recognizes either supported schema. The explicit
+`?personal_schema_version=2` probe requires the actual validated v2 check. On a
+healthy historical schema, v1 continues and v2 writes return sanitized 503
+`personal_schema_upgrade_required` before mutation. The runtime writer neither
+reads isolated migration metadata nor receives migration rights; combined-layout
+readiness uses actual table constraints and privileges.
+
+New `apply` provisioning uses the isolated head. Completed existing targets remain
+verification-only: `apply` never silently upgrades them. `upgrade-personal-v2`
+with the existing private `--config-file` is the explicit migrator operation. In
+this feature it accepts **disposable mode only**. It requires a completed bound
+managed target, credentials/output readback and exact pre/post schema/ACL audits,
+uses the existing advisory lock and a transactional additive migration. The
+feature does not authorize executing it against a live target. Later operator
+release planning must provide an expressly authorized existing-target path.
+
+Backups record the actual known profile/revision. Old v1 archives remain
+restorable into a NEW managed disposable target: restore and audit the old
+profile/full row fingerprint first, reconstruct exact grants with writer NOLOGIN,
+then run the explicit additive migration, audit the new profile and identical
+saved/share data, and only then admit the writer. The intentional metadata-table
+revision change is compared separately from complete saved/share fingerprints.
+A retry after restore or upgrade commit never replays the dump over populated
+data; it validates archive equality and the exact known old/new profile before
+continuing. No arbitrary drift/adoption is allowed. Latest mixed v1/v2 archives
+preserve complete rows and active capability digests.
+
+A downgrade refuses data-bearing v2 rows. Old binaries cannot read format 2;
+migrating the constraint alone does not make a release safe. Load/release a
+compatible backend before enabling any v2 writer. Binary rollback after v2 writes
+requires a compatible reader or a separately reviewed recovery into a NEW target,
+never truncating fields, restamping, or a hidden downgrade. No live migration,
+service restart, deployment or sandbox schema upgrade was performed here.
+
+The same additive v2 constraint accommodates count-only v2 and full property v2
+JSON, including closed grade/assessment-scale, estimate-as-of year and integer
+individual dwelling/share EUR cents/year. No further DDL/grant change is needed
+for those optional leaves. Backup/restore must compare full JSON and active
+capabilities across mixed v1, count-only-v2 and full-v2 rows; neither migration
+nor recovery may drop unknown/null/zero distinctions. Stored structurally valid
+estimate years survive current new-input policy changes and unrelated PATCH.

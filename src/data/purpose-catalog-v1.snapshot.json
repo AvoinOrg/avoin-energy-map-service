@@ -1,0 +1,95 @@
+{
+  "schema_version": 1,
+  "catalog_id": "rytj/avoin_rakennusluokitus",
+  "source_uri": "http://uri.suomi.fi/codelist/rytj/avoin_rakennusluokitus",
+  "provider": "Suomi.fi Interoperability Platform / Ryhti registry",
+  "scheme": "avoin_rakennusluokitus",
+  "upstream_version": null,
+  "upstream_modified_at": "2025-12-19T11:23:26.245Z",
+  "retrieved_at": "2026-10-29T18:46:29.288202+00:00",
+  "freshness_status": "pinned_snapshot",
+  "attribution": "Suomi.fi Codes, Ryhti open building classification; registry contact yhteentoimivuus.ym@gov.fi",
+  "scheme_status": "DRAFT",
+  "choices": [
+    {
+      "code": "01",
+      "label_fi": "Vapaa-ajan asuinrakennus",
+      "label_sv": "Fritidsbostadshus",
+      "label_en": "Free-time residential building",
+      "lifecycle": "unknown",
+      "upstream_status": "DRAFT",
+      "valid_from": null,
+      "valid_until": null,
+      "selectable": true
+    },
+    {
+      "code": "02",
+      "label_fi": "Toimisto-, tuotanto-, yhdyskuntatekniikan tai muut rakennukset",
+      "label_sv": "Kontors-, produktions-, samhällstekniska eller andra byggnader",
+      "label_en": "Office, production, utility and other buildings",
+      "lifecycle": "unknown",
+      "upstream_status": "DRAFT",
+      "valid_from": null,
+      "valid_until": null,
+      "selectable": true
+    },
+    {
+      "code": "03",
+      "label_fi": "Talousrakennus",
+      "label_sv": "Ekonomibyggnad",
+      "label_en": "Outbuilding",
+      "lifecycle": "unknown",
+      "upstream_status": "DRAFT",
+      "valid_from": null,
+      "valid_until": null,
+      "selectable": true
+    },
+    {
+      "code": "04",
+      "label_fi": "Saunarakennus",
+      "label_sv": "Bastubyggnad",
+      "label_en": "Sauna building",
+      "lifecycle": "unknown",
+      "upstream_status": "DRAFT",
+      "valid_from": null,
+      "valid_until": null,
+      "selectable": true
+    },
+    {
+      "code": "05",
+      "label_fi": "Pientalo",
+      "label_sv": "Småhus",
+      "label_en": "Detached or semi-detached house",
+      "lifecycle": "unknown",
+      "upstream_status": "DRAFT",
+      "valid_from": null,
+      "valid_until": null,
+      "selectable": true
+    },
+    {
+      "code": "06",
+      "label_fi": "Kerrostalo",
+      "label_sv": "Flervåningshus",
+      "label_en": "Block of flats",
+      "lifecycle": "unknown",
+      "upstream_status": "DRAFT",
+      "valid_from": null,
+      "valid_until": null,
+      "selectable": true
+    },
+    {
+      "code": "07",
+      "label_fi": "Julkinen rakennus",
+      "label_sv": "Offentlig byggnad",
+      "label_en": "Public building",
+      "lifecycle": "unknown",
+      "upstream_status": "DRAFT",
+      "valid_from": null,
+      "valid_until": null,
+      "selectable": true
+    }
+  ],
+  "catalog_version": "sha256:79cbd736677205cb55d016713667c0199738b8030a76183579c954386bd0aac0",
+  "product_support": "adopted",
+  "approval_reference": ".codex-orch/state/owner-purpose-catalog-adoption-2026-10-30.md"
+}

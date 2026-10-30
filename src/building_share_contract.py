@@ -1,7 +1,7 @@
 """Explicit public serialization boundary, independent of owner metadata."""
 from typing import Literal
 
-from pydantic import Field, field_serializer
+from pydantic import Field, field_serializer, field_validator
 
 from src.building_contract import (
     AvailabilityV1, BuildingKey, BuildingOverridesV1, CertificateV1, CodeLabelsV1,
@@ -11,6 +11,7 @@ from src.building_contract import (
     UtcTime, VersionedV1, project_building, sparse,
 )
 from src import user_buildings as owner
+from src.personal_property_contract import (ScenarioInputsV2, EffectiveV2, InputStatusV2, VersionedV2, NEW_PATHS, ReadPathV2, AvailabilityPathV2, v1_document, project_v2)
 
 
 class ShareCreatedV1(VersionedV1):
@@ -67,6 +68,21 @@ class SharedBuildingV1(VersionedV1):
         return sparse(value)
 
 
+class SharedBuildingV2(SharedBuildingV1):
+    schema_version: Literal[2] = 2
+    document_schema_version: Literal[1, 2]
+    scenario_inputs: ScenarioInputsV2
+    effective: EffectiveV2
+    input_status: InputStatusV2
+    field_provenance: dict[ReadPathV2, FieldProvenanceV1]
+    source_availability: dict[AvailabilityPathV2, AvailabilityV1]
+
+    @field_validator('schema_version', mode='before')
+    @classmethod
+    def exact_version(cls, value):
+        return VersionedV2.exact_version(value)
+
+
 # Map keys/dependencies cannot smuggle internal identifiers into the safe DTO.
 PUBLIC_PROVENANCE = frozenset({f'details.{k}' for k in DetailsV1.model_fields} | {
     'identity.permanent_building_identifier', 'identity.property_identifier',
@@ -75,9 +91,9 @@ PUBLIC_AVAILABILITY = PUBLIC_PROVENANCE | {'geometry', 'source_observed_at'}
 SUMMARY_AVAILABILITY = frozenset({'address_fin', 'postal_code', 'postal_office_fin', 'location', 'main', 'source_observed_at'})
 
 
-def public_provenance(values):
-    return {key: value.model_copy(update={'dependencies': [p for p in value.dependencies if p in PUBLIC_PROVENANCE]})
-            for key, value in values.items() if key in PUBLIC_PROVENANCE}
+def public_provenance(values, allowed=PUBLIC_PROVENANCE):
+    return {key: value.model_copy(update={'dependencies': [p for p in value.dependencies if p in allowed]})
+            for key, value in values.items() if key in allowed}
 
 
 def public_map(values, allowed):
@@ -93,12 +109,18 @@ def public_component(value):
         set(type(value).model_fields) - {'field_availability'})})
 
 
-def shared_projection(row, base, reason):
+def shared_projection(row, base, reason, version=1):
     document = owner.stored_document(row)
     summary = owner.stored_summary(row)
     summary = summary.model_copy(update={'source_availability': public_map(summary.source_availability, SUMMARY_AVAILABILITY)})
-    projection = project_building(base, document.overrides, document.scenario_inputs,
-        building_key=row.building_key, last_known_summary=summary, base_unavailable_reason=reason)
+    if version == 1:
+        document = v1_document(document)
+        projection = project_building(base, document.overrides, document.scenario_inputs,
+            building_key=row.building_key, last_known_summary=summary, base_unavailable_reason=reason)
+    else:
+        projection = project_v2(base, document, building_key=row.building_key,
+            last_known_summary=summary, base_unavailable_reason=reason)
+    allowed = PUBLIC_PROVENANCE if version == 1 else PUBLIC_PROVENANCE | NEW_PATHS | {'display_name'}
     safe_base = None
     if base is not None:
         safe_base = SharedBaseV1(
@@ -117,10 +139,12 @@ def shared_projection(row, base, reason):
         'certificate': public_component(projection.effective.certificate),
         'published_certificate': public_component(projection.effective.published_certificate),
         'model': public_component(projection.effective.model)})
-    return SharedBuildingV1(building_key=row.building_key, display_name=document.display_name,
+    model = SharedBuildingV1 if version == 1 else SharedBuildingV2
+    fields = {} if version == 1 else {'document_schema_version': row.schema_version, 'input_status': projection.input_status}
+    return model(**fields, building_key=row.building_key, display_name=document.display_name,
         revision=row.revision, created_at=row.created_at, updated_at=row.updated_at,
         base_status=projection.base_status, base_unavailable_reason=projection.base_unavailable_reason,
-        base=safe_base, overrides=document.overrides, scenario_inputs=document.scenario_inputs,
-        effective=effective, field_provenance=public_provenance(projection.field_provenance),
-        source_availability=public_map(projection.source_availability, PUBLIC_AVAILABILITY),
+        base=safe_base, overrides=document.overrides, scenario_inputs=projection.scenario_inputs,
+        effective=effective, field_provenance=public_provenance(projection.field_provenance, allowed),
+        source_availability=public_map(projection.source_availability, allowed | {'geometry', 'source_observed_at'}),
         source_observed_at=projection.source_observed_at, last_known_summary=summary)

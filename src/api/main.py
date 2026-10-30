@@ -9,8 +9,9 @@ from src.db.session import SessionLocal, SessionSandbox
 from src.api.building_shares import router as share_router
 from src.api.areas import router as area_router
 from src.api.buildings import router as building_router
+from src.api.building_purposes import router as purpose_router
 from src.api.building_lookup import router as lookup_router, LookupBoundary
-from src.api.user_buildings import router as user_building_router, PrivateBoundary, readiness as state_readiness
+from src.api.user_buildings import router as user_building_router, readiness_router as state_readiness_router, PrivateBoundary
 
 install_log_redaction()
 
@@ -18,9 +19,10 @@ app = FastAPI(title="Energy Map API", description="Canonical building details, b
 app.include_router(area_router)
 app.include_router(building_router)
 app.include_router(lookup_router)
+app.include_router(purpose_router)
 app.include_router(user_building_router)
 app.include_router(share_router)
-app.add_api_route('/readyz/state', state_readiness, methods=['GET'], tags=['Readiness'])
+app.include_router(state_readiness_router)
 
 
 @app.get("/healthz")

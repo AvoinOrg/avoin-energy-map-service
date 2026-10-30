@@ -14,7 +14,8 @@ from src.building_contract import (
 )
 from src.db.state import StateUnavailable
 from src.db.user_building_models import UserBuilding as Row, UserBuildingShare as Share
-from src.user_building_contract import SavedBuildingV1
+from src.user_building_contract import SavedBuildingV1, SavedBuildingV2
+from src.personal_property_contract import PersonalBuildingPutV2, project_v2, v1_document
 
 
 class OwnerFailure(Exception):
@@ -92,9 +93,13 @@ def locked_owned(session, principal, key, headers):
 
 def stored_document(row):
     try:
-        return PersonalBuildingPutV1.model_validate_json(json.dumps({
+        model = {1: PersonalBuildingPutV1, 2: PersonalBuildingPutV2}.get(row.schema_version)
+        if model is None:
+            raise ValueError
+        return model.model_validate_json(json.dumps({
             'schema_version': row.schema_version, 'display_name': row.display_name,
-            'overrides': row.overrides, 'scenario_inputs': row.scenario_inputs}))
+            'overrides': row.overrides, 'scenario_inputs': row.scenario_inputs}),
+            context={'stored_document': True})
     except (ValidationError, ValueError, TypeError):
         raise StateUnavailable from None
 
@@ -159,11 +164,24 @@ def create_owned(session, principal, key, value, base):
     return row
 
 
-def detail(row, base, reason='missing'):
+def require_document_version(row, version):
+    if row is not None and row.schema_version not in (1, 2):
+        raise StateUnavailable
+    if row is not None and version == 1 and row.schema_version == 2:
+        raise OwnerFailure(409, 'personal_document_version_conflict',
+                           'Reload using personal_schema_version=2 before changing this document')
+
+
+def detail(row, base, reason='missing', version=1):
     document = stored_document(row)
-    projection = project_building(base, document.overrides, document.scenario_inputs,
-        building_key=row.building_key, last_known_summary=stored_summary(row), base_unavailable_reason=reason)
-    return SavedBuildingV1(**{name: getattr(projection, name) for name in type(projection).model_fields},
+    options = dict(building_key=row.building_key, last_known_summary=stored_summary(row), base_unavailable_reason=reason)
+    if version == 1:
+        projected = v1_document(document)
+        projection = project_building(base, projected.overrides, projected.scenario_inputs, **options)
+    else:
+        projection = project_v2(base, document, **options)
+    model = SavedBuildingV1 if version == 1 else SavedBuildingV2
+    return model(**{name: getattr(projection, name) for name in type(projection).model_fields},
         saved_id=row.saved_id, display_name=document.display_name, revision=row.revision,
         created_at=row.created_at, updated_at=row.updated_at, share_enabled=bool(row.share_enabled))
 

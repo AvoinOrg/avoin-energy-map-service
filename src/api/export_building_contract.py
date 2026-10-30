@@ -49,7 +49,29 @@ def export():
         model.model_validate_json(json.dumps(value))
         examples[name] = value
     Path('src/api/building-api-v1.examples.json').write_text(json.dumps(examples, indent=2)+'\n')
-    print('Closed schema and 10 complete typed examples validated and exported.')
+    print('Closed v1 schema and 10 complete typed examples validated and exported.')
+    export_property()
+
+
+def export_property():
+    from src.personal_property_contract import PersonalBuildingPutV2, PersonalBuildingPatchV2, PersonalBuildingProjectionV2
+    from src.user_building_contract import SavedBuildingV2, SavedBuildingPageV2, SavedBuildingSummaryV2
+    from src.building_share_contract import SharedBuildingV2
+    from src.purpose_catalog import PurposeCatalogV1
+    from src.api.personal_property_examples import property_examples
+    modes=[(model, 'serialization') for model in (PersonalBuildingProjectionV2, SavedBuildingV2,
+        SavedBuildingPageV2, SavedBuildingSummaryV2, SharedBuildingV2)] + [
+        (model, 'validation') for model in (PersonalBuildingPutV2, PersonalBuildingPatchV2)]
+    _, schema=models_json_schema(modes, title='EnergyMapPersonalPropertyV2')
+    Path('src/api/personal-property-v2.schema.json').write_text(json.dumps(schema,indent=2)+'\n')
+    _, catalog=models_json_schema([(PurposeCatalogV1,'serialization')],title='EnergyMapPurposeCatalogV1')
+    Path('src/api/purpose-catalog-v1.schema.json').write_text(json.dumps(catalog,indent=2)+'\n')
+    examples={}
+    for name, (model, value) in property_examples().items():
+        model.model_validate_json(json.dumps(value))
+        examples[name]=value
+    Path('src/api/personal-property-v2.examples.json').write_text(json.dumps(examples,indent=2)+'\n')
+    print(f'Personal v2 schema, {len(examples)} typed examples and purpose catalog schema exported.')
 
 
 if __name__ == '__main__':

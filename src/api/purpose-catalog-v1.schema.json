@@ -1,0 +1,228 @@
+{
+  "$defs": {
+    "PurposeCatalogV1": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "catalog_id": {
+          "const": "rytj/avoin_rakennusluokitus",
+          "title": "Catalog Id",
+          "type": "string"
+        },
+        "catalog_version": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "title": "Catalog Version",
+          "type": "string"
+        },
+        "source_uri": {
+          "const": "http://uri.suomi.fi/codelist/rytj/avoin_rakennusluokitus",
+          "title": "Source Uri",
+          "type": "string"
+        },
+        "provider": {
+          "title": "Provider",
+          "type": "string"
+        },
+        "scheme": {
+          "const": "avoin_rakennusluokitus",
+          "title": "Scheme",
+          "type": "string"
+        },
+        "upstream_version": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Upstream Version"
+        },
+        "upstream_modified_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Upstream Modified At"
+        },
+        "retrieved_at": {
+          "format": "date-time",
+          "title": "Retrieved At",
+          "type": "string"
+        },
+        "freshness_status": {
+          "const": "pinned_snapshot",
+          "title": "Freshness Status",
+          "type": "string"
+        },
+        "attribution": {
+          "title": "Attribution",
+          "type": "string"
+        },
+        "product_support": {
+          "enum": [
+            "pending",
+            "adopted"
+          ],
+          "title": "Product Support",
+          "type": "string"
+        },
+        "approval_reference": {
+          "anyOf": [
+            {
+              "maxLength": 500,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Approval Reference"
+        },
+        "scheme_status": {
+          "title": "Scheme Status",
+          "type": "string"
+        },
+        "choices": {
+          "items": {
+            "$ref": "#/$defs/PurposeChoiceV1"
+          },
+          "maxItems": 10000,
+          "minItems": 1,
+          "title": "Choices",
+          "type": "array"
+        }
+      },
+      "required": [
+        "catalog_id",
+        "catalog_version",
+        "source_uri",
+        "provider",
+        "scheme",
+        "upstream_version",
+        "upstream_modified_at",
+        "retrieved_at",
+        "freshness_status",
+        "attribution",
+        "product_support",
+        "scheme_status",
+        "choices"
+      ],
+      "title": "PurposeCatalogV1",
+      "type": "object"
+    },
+    "PurposeChoiceV1": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "maxLength": 16,
+          "minLength": 1,
+          "title": "Code",
+          "type": "string"
+        },
+        "label_fi": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Label Fi"
+        },
+        "label_sv": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Label Sv"
+        },
+        "label_en": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Label En"
+        },
+        "lifecycle": {
+          "enum": [
+            "active",
+            "deprecated",
+            "withdrawn",
+            "unknown"
+          ],
+          "title": "Lifecycle",
+          "type": "string"
+        },
+        "upstream_status": {
+          "title": "Upstream Status",
+          "type": "string"
+        },
+        "valid_from": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Valid From"
+        },
+        "valid_until": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Valid Until"
+        },
+        "selectable": {
+          "title": "Selectable",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "code",
+        "label_fi",
+        "label_sv",
+        "label_en",
+        "lifecycle",
+        "upstream_status",
+        "valid_from",
+        "valid_until",
+        "selectable"
+      ],
+      "title": "PurposeChoiceV1",
+      "type": "object"
+    }
+  },
+  "title": "EnergyMapPurposeCatalogV1"
+}
