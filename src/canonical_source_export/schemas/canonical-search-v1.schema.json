@@ -1,0 +1,1919 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.avoin.example/canonical-search-v1.schema.json",
+  "$comment": "Specification only. x-text is mandatory; see contract. Validate named $defs independently.",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/Request"
+    },
+    {
+      "$ref": "#/$defs/Page"
+    },
+    {
+      "$ref": "#/$defs/Error"
+    }
+  ],
+  "$defs": {
+    "Key": {
+      "type": "string",
+      "x-text": {
+        "minBytes": 1,
+        "maxBytes": 256,
+        "nonblank": false
+      }
+    },
+    "PermanentId": {
+      "type": "string",
+      "x-text": {
+        "minBytes": 1,
+        "maxBytes": 256,
+        "nonblank": true
+      }
+    },
+    "PropertyId": {
+      "type": "string",
+      "pattern": "^[0-9]{14}$",
+      "not": {
+        "const": "00000000000000"
+      }
+    },
+    "LabelField": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "anyOf": [
+            {
+              "type": "string",
+              "x-text": {
+                "minBytes": 1,
+                "maxBytes": 512,
+                "nonblank": true
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "available",
+            "missing",
+            "invalid",
+            "not_projected",
+            "unavailable"
+          ]
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "type": "string",
+              "x-text": {
+                "minBytes": 1,
+                "maxBytes": 128,
+                "nonblank": true
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "value",
+        "status",
+        "reason"
+      ],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "available"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "value": {
+                "type": "string",
+                "x-text": {
+                  "minBytes": 1,
+                  "maxBytes": 512,
+                  "nonblank": true
+                }
+              },
+              "reason": {
+                "type": "null"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "reason": {
+                "type": "string",
+                "x-text": {
+                  "minBytes": 1,
+                  "maxBytes": 128,
+                  "nonblank": true
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "enum": [
+                  "missing",
+                  "not_projected",
+                  "unavailable"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "value": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "Fact": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "value": {
+          "anyOf": [
+            {
+              "type": "string",
+              "x-text": {
+                "minBytes": 1,
+                "maxBytes": 256,
+                "nonblank": true
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "available",
+            "missing",
+            "invalid",
+            "not_projected",
+            "unavailable"
+          ]
+        },
+        "reason": {
+          "anyOf": [
+            {
+              "type": "string",
+              "x-text": {
+                "minBytes": 1,
+                "maxBytes": 128,
+                "nonblank": true
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "value",
+        "status",
+        "reason"
+      ],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "available"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "value": {
+                "type": "string",
+                "x-text": {
+                  "minBytes": 1,
+                  "maxBytes": 256,
+                  "nonblank": true
+                }
+              },
+              "reason": {
+                "type": "null"
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "reason": {
+                "type": "string",
+                "x-text": {
+                  "minBytes": 1,
+                  "maxBytes": 128,
+                  "nonblank": true
+                }
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "enum": [
+                  "missing",
+                  "not_projected",
+                  "unavailable"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "value": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "Address": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "namespace": {
+          "type": "string",
+          "x-text": {
+            "minBytes": 1,
+            "maxBytes": 128,
+            "nonblank": true
+          }
+        },
+        "address_key": {
+          "anyOf": [
+            {
+              "type": "string",
+              "x-text": {
+                "minBytes": 1,
+                "maxBytes": 256,
+                "nonblank": false
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "address_edge",
+            "main_display"
+          ]
+        },
+        "fi": {
+          "$ref": "#/$defs/LabelField"
+        },
+        "sv": {
+          "$ref": "#/$defs/LabelField"
+        },
+        "postal_office_fi": {
+          "$ref": "#/$defs/LabelField"
+        },
+        "postal_office_sv": {
+          "$ref": "#/$defs/LabelField"
+        },
+        "postal_code": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/Fact"
+            },
+            {
+              "if": {
+                "properties": {
+                  "status": {
+                    "const": "available"
+                  }
+                }
+              },
+              "then": {
+                "properties": {
+                  "value": {
+                    "type": "string",
+                    "pattern": "^[0-9]{5}$"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "municipality_number": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/Fact"
+            },
+            {
+              "if": {
+                "properties": {
+                  "status": {
+                    "const": "available"
+                  }
+                }
+              },
+              "then": {
+                "properties": {
+                  "value": {
+                    "type": "string",
+                    "pattern": "^[0-9]{3}$"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "required": [
+        "namespace",
+        "address_key",
+        "kind",
+        "fi",
+        "sv",
+        "postal_office_fi",
+        "postal_office_sv",
+        "postal_code",
+        "municipality_number"
+      ]
+    },
+    "SourceCoverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "source": {
+          "type": "string",
+          "enum": [
+            "main",
+            "building",
+            "address",
+            "pelias",
+            "nls"
+          ]
+        },
+        "projection_version": {
+          "type": "string",
+          "x-text": {
+            "minBytes": 1,
+            "maxBytes": 128,
+            "nonblank": true
+          }
+        },
+        "source_version": {
+          "anyOf": [
+            {
+              "type": "string",
+              "x-text": {
+                "minBytes": 1,
+                "maxBytes": 256,
+                "nonblank": true
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "source_version_status": {
+          "type": "string",
+          "enum": [
+            "known",
+            "unknown",
+            "not_applicable"
+          ]
+        },
+        "modes": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "address": {
+              "type": "string",
+              "enum": [
+                "included",
+                "partial",
+                "unsupported",
+                "unavailable"
+              ]
+            },
+            "property_identifier": {
+              "type": "string",
+              "enum": [
+                "included",
+                "partial",
+                "unsupported",
+                "unavailable"
+              ]
+            },
+            "permanent_building_identifier": {
+              "type": "string",
+              "enum": [
+                "included",
+                "partial",
+                "unsupported",
+                "unavailable"
+              ]
+            }
+          },
+          "required": [
+            "address",
+            "property_identifier",
+            "permanent_building_identifier"
+          ]
+        },
+        "membership": {
+          "type": "string",
+          "enum": [
+            "complete_export",
+            "partial",
+            "not_applicable"
+          ]
+        },
+        "address_edges": {
+          "type": "string",
+          "enum": [
+            "complete_export",
+            "partial",
+            "not_projected",
+            "not_applicable"
+          ]
+        },
+        "fi": {
+          "type": "string",
+          "enum": [
+            "available",
+            "partial",
+            "not_projected",
+            "unknown",
+            "not_applicable"
+          ]
+        },
+        "sv": {
+          "type": "string",
+          "enum": [
+            "available",
+            "partial",
+            "not_projected",
+            "unknown",
+            "not_applicable"
+          ]
+        },
+        "omissions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "x-text": {
+              "minBytes": 1,
+              "maxBytes": 256,
+              "nonblank": true
+            }
+          },
+          "maxItems": 16
+        }
+      },
+      "required": [
+        "source",
+        "projection_version",
+        "source_version",
+        "source_version_status",
+        "modes",
+        "membership",
+        "address_edges",
+        "fi",
+        "sv",
+        "omissions"
+      ],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "source_version_status": {
+                "const": "known"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "source_version": {
+                "type": "string",
+                "x-text": {
+                  "minBytes": 1,
+                  "maxBytes": 256,
+                  "nonblank": true
+                }
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "source_version": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "Coverage": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "coverage_version": {
+          "const": "canonical-coverage-v1",
+          "type": "string"
+        },
+        "scope": {
+          "type": "string",
+          "enum": [
+            "synthetic_fixture",
+            "coherent_export",
+            "partial_export"
+          ]
+        },
+        "national_completeness": {
+          "type": "string",
+          "enum": [
+            "unknown",
+            "incomplete",
+            "proven_complete"
+          ]
+        },
+        "national_evidence": {
+          "anyOf": [
+            {
+              "type": "string",
+              "x-text": {
+                "minBytes": 1,
+                "maxBytes": 256,
+                "nonblank": true
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/SourceCoverage"
+          },
+          "maxItems": 8,
+          "minItems": 3
+        },
+        "omissions": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "x-text": {
+              "minBytes": 1,
+              "maxBytes": 256,
+              "nonblank": true
+            }
+          },
+          "maxItems": 16
+        }
+      },
+      "required": [
+        "coverage_version",
+        "scope",
+        "national_completeness",
+        "national_evidence",
+        "sources",
+        "omissions"
+      ],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "scope": {
+                "const": "synthetic_fixture"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "national_completeness": {
+                "const": "unknown"
+              },
+              "national_evidence": {
+                "type": "null"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "national_completeness": {
+                "const": "proven_complete"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "national_evidence": {
+                "type": "string",
+                "x-text": {
+                  "minBytes": 1,
+                  "maxBytes": 256,
+                  "nonblank": true
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "Generation": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "x-text": {
+            "minBytes": 1,
+            "maxBytes": 128,
+            "nonblank": true
+          }
+        },
+        "bundle_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "export_id": {
+          "type": "string",
+          "x-text": {
+            "minBytes": 1,
+            "maxBytes": 128,
+            "nonblank": true
+          }
+        },
+        "provider_generation": {
+          "anyOf": [
+            {
+              "type": "string",
+              "x-text": {
+                "minBytes": 1,
+                "maxBytes": 256,
+                "nonblank": true
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "provider_generation_status": {
+          "type": "string",
+          "enum": [
+            "known",
+            "unknown"
+          ]
+        },
+        "exported_at": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d\\d-\\d\\dT\\d\\d:\\d\\d:\\d\\dZ$"
+        }
+      },
+      "required": [
+        "id",
+        "bundle_sha256",
+        "export_id",
+        "provider_generation",
+        "provider_generation_status",
+        "exported_at"
+      ],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "provider_generation_status": {
+                "const": "known"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "provider_generation": {
+                "type": "string",
+                "x-text": {
+                  "minBytes": 1,
+                  "maxBytes": 256,
+                  "nonblank": true
+                }
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "provider_generation": {
+                "type": "null"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "PeliasFilters": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "countrycodes": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z]{2}$"
+          },
+          "minItems": 1,
+          "maxItems": 8,
+          "uniqueItems": true
+        },
+        "bbox": {
+          "type": "array",
+          "prefixItems": [
+            {
+              "type": "number",
+              "minimum": -180,
+              "maximum": 180
+            },
+            {
+              "type": "number",
+              "minimum": -90,
+              "maximum": 90
+            },
+            {
+              "type": "number",
+              "minimum": -180,
+              "maximum": 180
+            },
+            {
+              "type": "number",
+              "minimum": -90,
+              "maximum": 90
+            }
+          ],
+          "items": false,
+          "minItems": 4,
+          "maxItems": 4
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,64}$"
+          },
+          "minItems": 1,
+          "maxItems": 8,
+          "uniqueItems": true
+        },
+        "layers": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{1,64}$"
+          },
+          "minItems": 1,
+          "maxItems": 8,
+          "uniqueItems": true
+        },
+        "focus": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "lat": {
+              "type": "number",
+              "minimum": -90,
+              "maximum": 90
+            },
+            "lon": {
+              "type": "number",
+              "minimum": -180,
+              "maximum": 180
+            }
+          },
+          "required": [
+            "lat",
+            "lon"
+          ]
+        }
+      },
+      "required": []
+    },
+    "Query": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "mode": {
+              "const": "address",
+              "type": "string"
+            },
+            "text": {
+              "type": "string",
+              "x-text": {
+                "minBytes": 1,
+                "maxBytes": 512,
+                "nonblank": true
+              }
+            },
+            "strategy": {
+              "type": "string",
+              "enum": [
+                "registry_exact",
+                "pelias_link",
+                "normalized_tuple"
+              ]
+            },
+            "postal_code": {
+              "type": "string",
+              "pattern": "^[0-9]{5}$"
+            },
+            "municipality_number": {
+              "type": "string",
+              "pattern": "^[0-9]{3}$"
+            },
+            "pelias_filters": {
+              "$ref": "#/$defs/PeliasFilters"
+            }
+          },
+          "required": [
+            "mode",
+            "text",
+            "strategy"
+          ],
+          "allOf": [
+            {
+              "if": {
+                "required": [
+                  "pelias_filters"
+                ]
+              },
+              "then": {
+                "properties": {
+                  "strategy": {
+                    "const": "pelias_link"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "mode": {
+              "const": "property_identifier",
+              "type": "string"
+            },
+            "property_identifier": {
+              "type": "string",
+              "pattern": "^[0-9]{14}$",
+              "not": {
+                "const": "00000000000000"
+              }
+            }
+          },
+          "required": [
+            "mode",
+            "property_identifier"
+          ]
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "mode": {
+              "const": "permanent_building_identifier",
+              "type": "string"
+            },
+            "permanent_building_identifier": {
+              "$ref": "#/$defs/PermanentId"
+            }
+          },
+          "required": [
+            "mode",
+            "permanent_building_identifier"
+          ]
+        }
+      ]
+    },
+    "Evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "type": "string",
+          "enum": [
+            "identifier_equality",
+            "source_key",
+            "exact_address_tuple"
+          ]
+        },
+        "source": {
+          "type": "string",
+          "enum": [
+            "main",
+            "building",
+            "address"
+          ]
+        },
+        "namespace": {
+          "type": "string",
+          "x-text": {
+            "minBytes": 1,
+            "maxBytes": 128,
+            "nonblank": true
+          }
+        },
+        "source_row_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "x-text": {
+                "minBytes": 1,
+                "maxBytes": 256,
+                "nonblank": false
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "address_key": {
+          "anyOf": [
+            {
+              "type": "string",
+              "x-text": {
+                "minBytes": 1,
+                "maxBytes": 256,
+                "nonblank": false
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "source_modified": {
+          "$ref": "#/$defs/Fact"
+        }
+      },
+      "required": [
+        "kind",
+        "source",
+        "namespace",
+        "source_row_id",
+        "address_key",
+        "source_modified"
+      ]
+    },
+    "Candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "building_key": {
+          "$ref": "#/$defs/Key"
+        },
+        "anchors": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": [
+              "main",
+              "building"
+            ]
+          },
+          "minItems": 1,
+          "maxItems": 2,
+          "uniqueItems": true
+        },
+        "permanent": {
+          "$ref": "#/$defs/Fact"
+        },
+        "property": {
+          "$ref": "#/$defs/PropertyFact"
+        },
+        "requires_explicit_choice": {
+          "const": true,
+          "type": "boolean"
+        },
+        "requires_canonical_confirmation": {
+          "const": true,
+          "type": "boolean"
+        },
+        "identity_conflict": {
+          "const": false,
+          "type": "boolean"
+        },
+        "display_address": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Address"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "display_language": {
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "fi",
+                "sv"
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "language_fallback": {
+          "type": "boolean"
+        },
+        "matching_addresses": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Address"
+          },
+          "maxItems": 4
+        },
+        "address_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100000000
+        },
+        "matching_address_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100000000
+        },
+        "addresses_omitted": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100000000
+        },
+        "evidence": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Evidence"
+          },
+          "minItems": 1,
+          "maxItems": 8
+        },
+        "evidence_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100000000
+        },
+        "evidence_omitted": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100000000
+        },
+        "geometry": {
+          "type": "string",
+          "enum": [
+            "present_unvalidated",
+            "missing_in_scope",
+            "not_projected"
+          ]
+        },
+        "location": {
+          "type": "null"
+        }
+      },
+      "required": [
+        "building_key",
+        "anchors",
+        "permanent",
+        "property",
+        "requires_explicit_choice",
+        "requires_canonical_confirmation",
+        "identity_conflict",
+        "display_address",
+        "display_language",
+        "language_fallback",
+        "matching_addresses",
+        "address_count",
+        "matching_address_count",
+        "addresses_omitted",
+        "evidence",
+        "evidence_count",
+        "evidence_omitted",
+        "geometry",
+        "location"
+      ]
+    },
+    "Context": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "string",
+          "x-text": {
+            "minBytes": 1,
+            "maxBytes": 128,
+            "nonblank": true
+          }
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "unmatched_place",
+            "associated_address",
+            "hypothesis"
+          ]
+        },
+        "label": {
+          "type": "string",
+          "x-text": {
+            "minBytes": 1,
+            "maxBytes": 512,
+            "nonblank": true
+          }
+        },
+        "language": {
+          "anyOf": [
+            {
+              "type": "string",
+              "x-text": {
+                "minBytes": 1,
+                "maxBytes": 32,
+                "nonblank": true
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "association": {
+          "type": "string",
+          "enum": [
+            "none",
+            "source_key",
+            "exact_address_tuple"
+          ]
+        },
+        "building_keys": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Key"
+          },
+          "maxItems": 512
+        },
+        "basis": {
+          "type": "string",
+          "enum": [
+            "source_relation",
+            "fuzzy_text",
+            "point",
+            "polygon",
+            "place"
+          ]
+        },
+        "confidence_is_identity": {
+          "const": false,
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "label",
+        "language",
+        "association",
+        "building_keys",
+        "basis",
+        "confidence_is_identity"
+      ],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "enum": [
+                  "unmatched_place",
+                  "hypothesis"
+                ]
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "association": {
+                "const": "none"
+              },
+              "building_keys": {
+                "maxItems": 0
+              }
+            }
+          },
+          "else": {
+            "properties": {
+              "association": {
+                "enum": [
+                  "source_key",
+                  "exact_address_tuple"
+                ]
+              },
+              "building_keys": {
+                "minItems": 1
+              },
+              "basis": {
+                "const": "source_relation"
+              }
+            }
+          }
+        }
+      ]
+    },
+    "CursorPayload": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "canonical-search-v1",
+          "type": "string"
+        },
+        "matching_policy": {
+          "const": "canonical-match-v1",
+          "type": "string"
+        },
+        "projection_profile": {
+          "const": "energy-identity-address-v1",
+          "type": "string"
+        },
+        "generation_id": {
+          "type": "string",
+          "x-text": {
+            "minBytes": 1,
+            "maxBytes": 128,
+            "nonblank": true
+          }
+        },
+        "bundle_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "query_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "context_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "match_set_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "ordering": {
+          "const": "key-utf8-asc-v1",
+          "type": "string"
+        },
+        "after_key": {
+          "$ref": "#/$defs/Key"
+        },
+        "offset": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 512
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50
+        },
+        "issued_at": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d\\d-\\d\\dT\\d\\d:\\d\\d:\\d\\dZ$"
+        },
+        "expires_at": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d\\d-\\d\\dT\\d\\d:\\d\\d:\\d\\dZ$"
+        }
+      },
+      "required": [
+        "contract_version",
+        "matching_policy",
+        "projection_profile",
+        "generation_id",
+        "bundle_sha256",
+        "query_sha256",
+        "context_sha256",
+        "match_set_sha256",
+        "ordering",
+        "after_key",
+        "offset",
+        "limit",
+        "issued_at",
+        "expires_at"
+      ]
+    },
+    "PropertyFact": {
+      "allOf": [
+        {
+          "$ref": "#/$defs/Fact"
+        },
+        {
+          "if": {
+            "properties": {
+              "status": {
+                "const": "available"
+              }
+            }
+          },
+          "then": {
+            "properties": {
+              "value": {
+                "type": "string",
+                "pattern": "^[0-9]{14}$",
+                "not": {
+                  "const": "00000000000000"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    "Request": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "canonical-search-v1",
+          "type": "string"
+        },
+        "query": {
+          "$ref": "#/$defs/Query"
+        },
+        "language": {
+          "type": "string",
+          "enum": [
+            "fi",
+            "sv"
+          ]
+        },
+        "limit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 50
+        },
+        "cursor": {
+          "anyOf": [
+            {
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]+$",
+              "minLength": 1,
+              "maxLength": 2048
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "contract_version",
+        "query"
+      ]
+    },
+    "Page": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "canonical-search-v1",
+          "type": "string"
+        },
+        "matching_policy": {
+          "const": "canonical-match-v1",
+          "type": "string"
+        },
+        "projection_profile": {
+          "const": "energy-identity-address-v1",
+          "type": "string"
+        },
+        "generation": {
+          "$ref": "#/$defs/Generation"
+        },
+        "query": {
+          "allOf": [
+            {
+              "$ref": "#/$defs/Query"
+            },
+            {
+              "not": {
+                "type": "object",
+                "required": [
+                  "strategy"
+                ],
+                "properties": {
+                  "strategy": {
+                    "const": "normalized_tuple"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "language": {
+          "type": "string",
+          "enum": [
+            "fi",
+            "sv"
+          ]
+        },
+        "outcome": {
+          "type": "string",
+          "enum": [
+            "candidates",
+            "no_match_in_scope"
+          ]
+        },
+        "coverage": {
+          "$ref": "#/$defs/Coverage"
+        },
+        "selection": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "explicit_choice": {
+              "const": true,
+              "type": "boolean"
+            },
+            "independent_canonical_get": {
+              "const": true,
+              "type": "boolean"
+            },
+            "confirmation_status": {
+              "const": "not_performed",
+              "type": "string"
+            }
+          },
+          "required": [
+            "explicit_choice",
+            "independent_canonical_get",
+            "confirmation_status"
+          ]
+        },
+        "candidates": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Candidate"
+          },
+          "maxItems": 50
+        },
+        "context": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Context"
+          },
+          "maxItems": 10
+        },
+        "pagination": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "ordering": {
+              "const": "key-utf8-asc-v1",
+              "type": "string"
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            },
+            "offset": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 512
+            },
+            "total_candidates": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 512
+            },
+            "ambiguity": {
+              "type": "string",
+              "enum": [
+                "no_candidates",
+                "one_candidate",
+                "multiple_candidates"
+              ]
+            },
+            "match_set_sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "query_sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "context_sha256": {
+              "type": "string",
+              "pattern": "^[a-f0-9]{64}$"
+            },
+            "enumeration_complete": {
+              "const": true,
+              "type": "boolean"
+            },
+            "has_more": {
+              "type": "boolean"
+            },
+            "next_cursor": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "pattern": "^[A-Za-z0-9_-]+$",
+                  "minLength": 1,
+                  "maxLength": 2048
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "expires_at": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d\\d-\\d\\dT\\d\\d:\\d\\d:\\d\\dZ$"
+            }
+          },
+          "required": [
+            "ordering",
+            "limit",
+            "offset",
+            "total_candidates",
+            "ambiguity",
+            "match_set_sha256",
+            "query_sha256",
+            "context_sha256",
+            "enumeration_complete",
+            "has_more",
+            "next_cursor",
+            "expires_at"
+          ]
+        }
+      },
+      "required": [
+        "contract_version",
+        "matching_policy",
+        "projection_profile",
+        "generation",
+        "query",
+        "language",
+        "outcome",
+        "coverage",
+        "selection",
+        "candidates",
+        "context",
+        "pagination"
+      ]
+    },
+    "Error": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "contract_version": {
+          "const": "canonical-search-v1",
+          "type": "string"
+        },
+        "error": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "code": {
+              "type": "string",
+              "enum": [
+                "invalid_json",
+                "invalid_cursor",
+                "method_not_allowed",
+                "request_too_large",
+                "unsupported_media_type",
+                "invalid_request",
+                "unsupported_version",
+                "unsupported_filter",
+                "unsupported_language",
+                "query_too_broad",
+                "response_too_large",
+                "identity_conflict",
+                "cursor_query_changed",
+                "context_stale",
+                "generation_retired",
+                "cursor_expired",
+                "generation_unknown",
+                "capability_unsupported",
+                "source_unavailable",
+                "required_input_missing",
+                "source_contract_invalid",
+                "deadline_exceeded",
+                "internal_error"
+              ]
+            },
+            "status": {
+              "type": "integer",
+              "enum": [
+                400,
+                405,
+                413,
+                415,
+                422,
+                409,
+                410,
+                404,
+                503,
+                504,
+                500
+              ]
+            },
+            "message": {
+              "type": "string",
+              "x-text": {
+                "minBytes": 1,
+                "maxBytes": 256,
+                "nonblank": true
+              }
+            },
+            "restart_required": {
+              "type": "boolean"
+            },
+            "retryable": {
+              "type": "boolean"
+            },
+            "generation_id": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "x-text": {
+                    "minBytes": 1,
+                    "maxBytes": 128,
+                    "nonblank": true
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            }
+          },
+          "required": [
+            "code",
+            "status",
+            "message",
+            "restart_required",
+            "retryable",
+            "generation_id"
+          ],
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "code": {
+                    "enum": [
+                      "invalid_json",
+                      "invalid_cursor"
+                    ]
+                  }
+                }
+              },
+              "then": {
+                "properties": {
+                  "status": {
+                    "const": 400
+                  }
+                }
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "code": {
+                    "enum": [
+                      "method_not_allowed"
+                    ]
+                  }
+                }
+              },
+              "then": {
+                "properties": {
+                  "status": {
+                    "const": 405
+                  }
+                }
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "code": {
+                    "enum": [
+                      "request_too_large"
+                    ]
+                  }
+                }
+              },
+              "then": {
+                "properties": {
+                  "status": {
+                    "const": 413
+                  }
+                }
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "code": {
+                    "enum": [
+                      "unsupported_media_type"
+                    ]
+                  }
+                }
+              },
+              "then": {
+                "properties": {
+                  "status": {
+                    "const": 415
+                  }
+                }
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "code": {
+                    "enum": [
+                      "invalid_request",
+                      "unsupported_version",
+                      "unsupported_filter",
+                      "unsupported_language",
+                      "query_too_broad",
+                      "response_too_large"
+                    ]
+                  }
+                }
+              },
+              "then": {
+                "properties": {
+                  "status": {
+                    "const": 422
+                  }
+                }
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "code": {
+                    "enum": [
+                      "identity_conflict",
+                      "cursor_query_changed",
+                      "context_stale"
+                    ]
+                  }
+                }
+              },
+              "then": {
+                "properties": {
+                  "status": {
+                    "const": 409
+                  }
+                }
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "code": {
+                    "enum": [
+                      "generation_retired",
+                      "cursor_expired"
+                    ]
+                  }
+                }
+              },
+              "then": {
+                "properties": {
+                  "status": {
+                    "const": 410
+                  }
+                }
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "code": {
+                    "enum": [
+                      "generation_unknown"
+                    ]
+                  }
+                }
+              },
+              "then": {
+                "properties": {
+                  "status": {
+                    "const": 404
+                  }
+                }
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "code": {
+                    "enum": [
+                      "capability_unsupported",
+                      "source_unavailable",
+                      "required_input_missing",
+                      "source_contract_invalid"
+                    ]
+                  }
+                }
+              },
+              "then": {
+                "properties": {
+                  "status": {
+                    "const": 503
+                  }
+                }
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "code": {
+                    "enum": [
+                      "deadline_exceeded"
+                    ]
+                  }
+                }
+              },
+              "then": {
+                "properties": {
+                  "status": {
+                    "const": 504
+                  }
+                }
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "code": {
+                    "enum": [
+                      "internal_error"
+                    ]
+                  }
+                }
+              },
+              "then": {
+                "properties": {
+                  "status": {
+                    "const": 500
+                  }
+                }
+              }
+            }
+          ]
+        }
+      },
+      "required": [
+        "contract_version",
+        "error"
+      ]
+    }
+  }
+}

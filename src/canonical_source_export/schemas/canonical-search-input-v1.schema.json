@@ -1,0 +1,439 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.avoin.example/canonical-search-input-v1.schema.json",
+  "$defs": {
+    "Manifest": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "input_version": {
+          "const": "canonical-input-v1",
+          "type": "string"
+        },
+        "projection_profile": {
+          "const": "energy-identity-address-v1",
+          "type": "string"
+        },
+        "matching_policy": {
+          "const": "canonical-match-v1",
+          "type": "string"
+        },
+        "generation": {
+          "$ref": "https://schemas.avoin.example/canonical-search-v1.schema.json#/$defs/Generation"
+        },
+        "acquisition": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "interface": {
+              "type": "string",
+              "enum": [
+                "synthetic",
+                "energy-analytical-readonly-export"
+              ]
+            },
+            "publisher_role": {
+              "type": "string",
+              "x-text": {
+                "minBytes": 1,
+                "maxBytes": 128,
+                "nonblank": true
+              }
+            },
+            "snapshot_id": {
+              "type": "string",
+              "x-text": {
+                "minBytes": 1,
+                "maxBytes": 128,
+                "nonblank": true
+              }
+            },
+            "consistency": {
+              "type": "string",
+              "enum": [
+                "synthetic",
+                "repeatable_read"
+              ]
+            },
+            "started_at": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d\\d-\\d\\dT\\d\\d:\\d\\d:\\d\\dZ$"
+            },
+            "completed_at": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d\\d-\\d\\dT\\d\\d:\\d\\d:\\d\\dZ$"
+            },
+            "upstream_snapshot_evidence": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "x-text": {
+                    "minBytes": 1,
+                    "maxBytes": 256,
+                    "nonblank": true
+                  }
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "license_references": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "x-text": {
+                  "minBytes": 1,
+                  "maxBytes": 256,
+                  "nonblank": true
+                }
+              },
+              "maxItems": 8
+            },
+            "upstream_deletions_reconciled": {
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "interface",
+            "publisher_role",
+            "snapshot_id",
+            "consistency",
+            "started_at",
+            "completed_at",
+            "upstream_snapshot_evidence",
+            "license_references",
+            "upstream_deletions_reconciled"
+          ]
+        },
+        "canonical_parity": {
+          "const": "identity_only_confirmation_required",
+          "type": "string"
+        },
+        "streams": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "file": {
+                "type": "string",
+                "enum": [
+                  "main.ndjson",
+                  "building.ndjson",
+                  "address.ndjson"
+                ]
+              },
+              "status": {
+                "type": "string",
+                "enum": [
+                  "complete",
+                  "absent",
+                  "unreadable"
+                ]
+              },
+              "records_expected": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 100000000
+              },
+              "records_actual": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 100000000
+              },
+              "bytes": {
+                "type": "integer",
+                "minimum": 0,
+                "maximum": 85899345920
+              },
+              "sha256": {
+                "anyOf": [
+                  {
+                    "type": "string",
+                    "pattern": "^[a-f0-9]{64}$"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              }
+            },
+            "required": [
+              "file",
+              "status",
+              "records_expected",
+              "records_actual",
+              "bytes",
+              "sha256"
+            ]
+          },
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "statistics": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "main_keys": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100000000
+            },
+            "building_keys": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100000000
+            },
+            "union_keys": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100000000
+            },
+            "main_only": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100000000
+            },
+            "building_only": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100000000
+            },
+            "duplicate_identity_rows": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100000000
+            },
+            "conflicted_keys": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100000000
+            },
+            "address_edges": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100000000
+            },
+            "orphan_edges": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100000000
+            },
+            "missing_geometry_keys": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100000000
+            },
+            "missing_address_keys": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100000000
+            },
+            "missing_permanent_keys": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100000000
+            },
+            "missing_property_keys": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100000000
+            },
+            "missing_sv_edges": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100000000
+            },
+            "rejected_rows": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 100000000
+            }
+          },
+          "required": [
+            "main_keys",
+            "building_keys",
+            "union_keys",
+            "main_only",
+            "building_only",
+            "duplicate_identity_rows",
+            "conflicted_keys",
+            "address_edges",
+            "orphan_edges",
+            "missing_geometry_keys",
+            "missing_address_keys",
+            "missing_permanent_keys",
+            "missing_property_keys",
+            "missing_sv_edges",
+            "rejected_rows"
+          ]
+        },
+        "coverage": {
+          "$ref": "https://schemas.avoin.example/canonical-search-v1.schema.json#/$defs/Coverage"
+        }
+      },
+      "required": [
+        "input_version",
+        "projection_profile",
+        "matching_policy",
+        "generation",
+        "acquisition",
+        "canonical_parity",
+        "streams",
+        "statistics",
+        "coverage"
+      ]
+    },
+    "IdentityRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "component": {
+          "type": "string",
+          "enum": [
+            "main",
+            "building"
+          ]
+        },
+        "building_key": {
+          "$ref": "https://schemas.avoin.example/canonical-search-v1.schema.json#/$defs/Key"
+        },
+        "source_row_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "x-text": {
+                "minBytes": 1,
+                "maxBytes": 256,
+                "nonblank": false
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "permanent": {
+          "$ref": "https://schemas.avoin.example/canonical-search-v1.schema.json#/$defs/Fact"
+        },
+        "property": {
+          "$ref": "https://schemas.avoin.example/canonical-search-v1.schema.json#/$defs/PropertyFact"
+        },
+        "source_modified": {
+          "$ref": "https://schemas.avoin.example/canonical-search-v1.schema.json#/$defs/Fact"
+        },
+        "geometry": {
+          "type": "string",
+          "enum": [
+            "present_unvalidated",
+            "missing_in_scope",
+            "not_projected"
+          ]
+        },
+        "main_display_address": {
+          "anyOf": [
+            {
+              "$ref": "https://schemas.avoin.example/canonical-search-v1.schema.json#/$defs/Address"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "required": [
+        "component",
+        "building_key",
+        "source_row_id",
+        "permanent",
+        "property",
+        "source_modified",
+        "geometry",
+        "main_display_address"
+      ]
+    },
+    "AddressRecord": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "building_key": {
+          "$ref": "https://schemas.avoin.example/canonical-search-v1.schema.json#/$defs/Key"
+        },
+        "source_row_id": {
+          "anyOf": [
+            {
+              "type": "string",
+              "x-text": {
+                "minBytes": 1,
+                "maxBytes": 256,
+                "nonblank": false
+              }
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "address": {
+          "$ref": "https://schemas.avoin.example/canonical-search-v1.schema.json#/$defs/Address"
+        },
+        "source_modified": {
+          "$ref": "https://schemas.avoin.example/canonical-search-v1.schema.json#/$defs/Fact"
+        },
+        "geometry": {
+          "type": "string",
+          "enum": [
+            "present_unvalidated",
+            "missing_in_scope",
+            "not_projected"
+          ]
+        }
+      },
+      "required": [
+        "building_key",
+        "source_row_id",
+        "address",
+        "source_modified",
+        "geometry"
+      ]
+    },
+    "Bundle": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "manifest": {
+          "$ref": "#/$defs/Manifest"
+        },
+        "main": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/IdentityRecord"
+          },
+          "maxItems": 25000000
+        },
+        "building": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/IdentityRecord"
+          },
+          "maxItems": 25000000
+        },
+        "address": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/AddressRecord"
+          },
+          "maxItems": 25000000
+        }
+      },
+      "required": [
+        "manifest",
+        "main",
+        "building",
+        "address"
+      ]
+    }
+  },
+  "$ref": "#/$defs/Bundle"
+}
