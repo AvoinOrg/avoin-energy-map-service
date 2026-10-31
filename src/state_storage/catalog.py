@@ -7,8 +7,9 @@ from psycopg2 import sql
 from .private import require
 
 HISTORICAL_VERSION = 'es0001_saved_share'
-VERSION = 'es0002_personal_v2'
-PROFILES = {HISTORICAL_VERSION: 'expected_catalog.json', VERSION: 'expected_catalog_v2.json'}
+PROPERTY_VERSION = 'es0002_personal_v2'
+VERSION = 'es0003_personal_hvac_v3'
+PROFILES = {HISTORICAL_VERSION: 'expected_catalog.json', PROPERTY_VERSION: 'expected_catalog_v2.json', VERSION: 'expected_catalog_v3.json'}
 DATA = 'energymap_state'
 META = 'energymap_state_meta'
 SAVED = 'energymap_user_buildings'
@@ -56,7 +57,7 @@ def normalized(value):
 
 def schema_version(connection):
     versions = scalar(connection, "SELECT array_agg(version_num::text ORDER BY version_num) FROM energymap_state_meta.alembic_version")
-    require(versions in ([HISTORICAL_VERSION], [VERSION]), 'version_drift')
+    require(versions in [[version] for version in PROFILES], 'version_drift')
     return versions[0]
 
 

@@ -11,6 +11,7 @@ from src.building_contract import (
     UtcTime, VersionedV1, project_building, sparse,
 )
 from src import user_buildings as owner
+from src.personal_hvac_contract import (HeatingSourceProvenanceV3, ScenarioInputsV3, EffectiveV3, InputStatusV3, DefaultResolutionV3, VersionedV3, ReadPathV3, AvailabilityPathV3, SYSTEMS_PATHS, project_v3)
 from src.personal_property_contract import (ScenarioInputsV2, EffectiveV2, InputStatusV2, VersionedV2, NEW_PATHS, ReadPathV2, AvailabilityPathV2, v1_document, project_v2)
 
 
@@ -83,6 +84,23 @@ class SharedBuildingV2(SharedBuildingV1):
         return VersionedV2.exact_version(value)
 
 
+class SharedBuildingV3(SharedBuildingV2):
+    schema_version: Literal[3] = 3
+    document_schema_version: Literal[1, 2, 3]
+    scenario_inputs: ScenarioInputsV3
+    effective: EffectiveV3
+    input_status: InputStatusV3
+    systems_source_provenance: list[HeatingSourceProvenanceV3] = Field(max_length=16)
+    systems_defaults: DefaultResolutionV3
+    field_provenance: dict[ReadPathV3, FieldProvenanceV1]
+    source_availability: dict[AvailabilityPathV3, AvailabilityV1]
+
+    @field_validator('schema_version', mode='before')
+    @classmethod
+    def exact_version(cls, value):
+        return VersionedV3.exact_version(value)
+
+
 # Map keys/dependencies cannot smuggle internal identifiers into the safe DTO.
 PUBLIC_PROVENANCE = frozenset({f'details.{k}' for k in DetailsV1.model_fields} | {
     'identity.permanent_building_identifier', 'identity.property_identifier',
@@ -110,6 +128,7 @@ def public_component(value):
 
 
 def shared_projection(row, base, reason, version=1):
+    owner.require_read_version(row, version)
     document = owner.stored_document(row)
     summary = owner.stored_summary(row)
     summary = summary.model_copy(update={'source_availability': public_map(summary.source_availability, SUMMARY_AVAILABILITY)})
@@ -118,9 +137,11 @@ def shared_projection(row, base, reason, version=1):
         projection = project_building(base, document.overrides, document.scenario_inputs,
             building_key=row.building_key, last_known_summary=summary, base_unavailable_reason=reason)
     else:
-        projection = project_v2(base, document, building_key=row.building_key,
+        projection = (project_v2 if version == 2 else project_v3)(base, document, building_key=row.building_key,
             last_known_summary=summary, base_unavailable_reason=reason)
     allowed = PUBLIC_PROVENANCE if version == 1 else PUBLIC_PROVENANCE | NEW_PATHS | {'display_name'}
+    if version == 3:
+        allowed |= SYSTEMS_PATHS
     safe_base = None
     if base is not None:
         safe_base = SharedBaseV1(
@@ -139,8 +160,11 @@ def shared_projection(row, base, reason, version=1):
         'certificate': public_component(projection.effective.certificate),
         'published_certificate': public_component(projection.effective.published_certificate),
         'model': public_component(projection.effective.model)})
-    model = SharedBuildingV1 if version == 1 else SharedBuildingV2
+    model = {1: SharedBuildingV1, 2: SharedBuildingV2, 3: SharedBuildingV3}[version]
     fields = {} if version == 1 else {'document_schema_version': row.schema_version, 'input_status': projection.input_status}
+    if version == 3:
+        fields['systems_defaults'] = projection.systems_defaults
+        fields['systems_source_provenance'] = projection.systems_source_provenance
     return model(**fields, building_key=row.building_key, display_name=document.display_name,
         revision=row.revision, created_at=row.created_at, updated_at=row.updated_at,
         base_status=projection.base_status, base_unavailable_reason=projection.base_unavailable_reason,

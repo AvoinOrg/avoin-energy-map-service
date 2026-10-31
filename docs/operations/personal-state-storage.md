@@ -556,3 +556,30 @@ for those optional leaves. Backup/restore must compare full JSON and active
 capabilities across mixed v1, count-only-v2 and full-v2 rows; neither migration
 nor recovery may drop unknown/null/zero distinctions. Stored structurally valid
 estimate years survive current new-input policy changes and unrelated PATCH.
+
+## Personal v3 reader and recovery boundary
+
+The additive isolated head is es0003_personal_hvac_v3 (combined lineage
+f6a213bde901). Exact profiles es0001_saved_share and es0002_personal_v2 remain
+recognized; no frozen migration is edited. New head only extends the private
+recognized format check to1/2/3; tables, JSONB storage and narrow grants stay the
+same. `upgrade-personal-v2` still targets exactly2 and refuses a downgrade from3.
+New `upgrade-personal-v3` upgrades either historical profile on an explicitly
+guarded disposable target only. No live activation is authorized by this tooling.
+
+Backup manifests bind their actual profile. NEW-target restore verifies the
+archive's exact historical catalog and complete row fingerprints before upgrading
+to3, admitting only explicit1→2/1→3/2→3 metadata transitions. Saved/share data
+must remain byte-equivalent. Upgrade/recovery interruption leaves the writer
+disabled until exact schema/grants/data verification completes; retry does not
+replay an accepted archive. Downgrade refuses v3 rows rather than erasing fields.
+
+Deploy read-capable consumers before enabling v3 saves. Older binaries cannot
+serve the new stored format; rollback after v3 writes requires a compatible
+reader/NEW compatible recovery target. V2 views of3 intentionally conflict409;
+see [the API compatibility contract](../../src/api/personal-hvac-v3.md). This
+feature's evidence is disposable/local only; full structured JSONB fields are
+covered by the v3 fingerprint/recovery suite. Coefficients are deliberately
+deferred. Independent review, actual ordinary-user/deployed/UI acceptance and
+normal-runtime activation remain separate. No extra columns/grants are needed
+for the structured inputs.

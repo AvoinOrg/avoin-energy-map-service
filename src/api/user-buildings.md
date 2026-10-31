@@ -268,3 +268,15 @@ including v1 full PUT resubmission. A missing/corrupt/unadopted pin still fails
 closed 503. Reads, independent PATCH, null/unset and deletion remain usable
 during a catalog outage. Local source/disposable support
 establishes no live schema upgrade, serving-binary load or deployed acceptance.
+
+## Explicit personal v3 contract
+
+[Personal HVAC v3](personal-hvac-v3.md) adds opt-in3 with atomic personal systems
+sources/shares, four heated quantities, multiple cooling/ventilation and
+self-reported equipment. Discovery uses explicit envelope2; coefficients remain
+deferred. Optional HVAC answers never expand the four-field completion policy. V1 remains default. V2's
+closed stored-version enum is preserved: v2 detail/shared reads and a requested
+list page containing a v3 row return409 personal_document_version_conflict,
+requiring view3. V1 retains its scalar projection. Older writers cannot mutate
+or delete3, including empty3, after owner/precondition checks. Share management
+remains version independent. No full HVAC form or live activation is implied.

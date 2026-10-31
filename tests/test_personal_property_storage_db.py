@@ -15,7 +15,7 @@ from src.db.state import state_ready, state_session, StateSchemaUpgradeRequired,
 from src import user_buildings as owner, building_shares as shares
 from src.building_share_contract import shared_projection
 from src.state_storage import operations, recovery
-from src.state_storage.catalog import VERSION, HISTORICAL_VERSION, audit_schema, audit_acl, rows, scalar
+from src.state_storage.catalog import PROPERTY_VERSION as VERSION, VERSION as CURRENT_VERSION, HISTORICAL_VERSION, audit_schema, audit_acl, rows, scalar
 from src.state_storage.operations import apply, connected, load_bundle, verify, upgrade_personal_v2
 from src.state_storage.private import StorageError
 from tests.test_state_storage_db import guarded, runtime_environment
@@ -95,9 +95,12 @@ class PropertyStorageDatabaseTests(unittest.TestCase):
         self.assertEqual(recovery.backup(t)['version'],VERSION)
         self.assertEqual(recovery.restore(r)['status'],'restore_verified')
         with connected(t,database=t['database'],read_only=True) as source,connected(r,database=r['database'],read_only=True) as recovered:
-            self.assertEqual(recovery.data_fingerprint(source),recovery.data_fingerprint(recovered))
+            fingerprint=recovery.data_fingerprint(source)
+            restored=recovery.data_fingerprint(recovered)
+            self.assertEqual({k:v for k,v in fingerprint.items() if k!='alembic_version'},
+                             {k:v for k,v in restored.items() if k!='alembic_version'})
             self.assertEqual(rows(recovered,'SELECT schema_version FROM energymap_state.energymap_user_buildings ORDER BY schema_version'),[(1,),(2,),(2,)])
-            audit_schema(recovered,VERSION);audit_acl(recovered,r)
+            audit_schema(recovered,CURRENT_VERSION);audit_acl(recovered,r)
         bundle=load_bundle(r)
         with runtime_environment(r,bundle):
             self.assertTrue(state_ready(2))

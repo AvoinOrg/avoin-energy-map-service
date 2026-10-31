@@ -74,11 +74,11 @@ class InterruptedRestoreDatabaseTests(unittest.TestCase):
             self.assertFalse(scalar(connection, "SELECT has_schema_privilege(%s,'energymap_state','USAGE')", (target['writer'],)))
             self.assertTrue(recovery.restored_data_matches(connection, manifest))
 
-        actual_migrate=recovery.migrate_personal_v2
+        actual_migrate=recovery.migrate_personal_v3
         def after_upgrade_commit(t, bundle):
             actual_migrate(t, bundle)
             raise RuntimeError('post_upgrade_commit')
-        with patch('src.state_storage.recovery.migrate_personal_v2', side_effect=after_upgrade_commit):
+        with patch('src.state_storage.recovery.migrate_personal_v3', side_effect=after_upgrade_commit):
             with self.assertRaisesRegex(RuntimeError, '^post_upgrade_commit$'):
                 recovery.restore(target)
         with connected(target, database=target['database'], read_only=True) as connection:

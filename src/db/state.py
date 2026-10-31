@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 
 
 class StateSchemaUpgradeRequired(Exception):
-    """Known historical schema is healthy but cannot store personal v2."""
+    """Known historical schema is healthy but cannot store the requested personal format."""
 
 
 class StateUnavailable(Exception):
@@ -73,6 +73,8 @@ def personal_schema_capability(session):
         return 1
     if definitions == ['CHECK (((schema_version = 1) OR (schema_version = 2)))']:
         return 2
+    if definitions == ['CHECK (((schema_version = 1) OR (schema_version = 2) OR (schema_version = 3)))']:
+        return 3
     raise StateUnavailable
 
 

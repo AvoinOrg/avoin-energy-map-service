@@ -231,7 +231,7 @@ class PersonalPropertyTests(unittest.TestCase):
         row.schema_version=1
         row.scenario_inputs={'resident_count':1}
         self.assertEqual(shared_projection(row, None, 'missing', 2).document_schema_version, 1)
-        row.schema_version=3
+        row.schema_version=4
         from src.db.state import StateUnavailable
         with self.assertRaises(StateUnavailable): user_buildings.stored_document(row)
 
@@ -355,7 +355,7 @@ class PersonalVersionHttpTests(OwnerHttpBoundaryTests):
         invalid_queries = (
             ('personal_schema_version=REDACTION_SENTINEL', ['query', 'personal_schema_version']),
             ('personal_schema_version=0', ['query', 'personal_schema_version']),
-            ('personal_schema_version=3', ['query', 'personal_schema_version']),
+            ('personal_schema_version=4', ['query', 'personal_schema_version']),
             ('personal_schema_version=01', ['query', 'personal_schema_version']),
             ('personal_schema_version=1.0', ['query', 'personal_schema_version']),
             ('personal_schema_version=', ['query', 'personal_schema_version']),
@@ -377,7 +377,7 @@ class PersonalVersionHttpTests(OwnerHttpBoundaryTests):
             state_ready.assert_not_called()
 
     def test_readiness_default_v1_v2_and_unavailable_state(self):
-        for query, version in (('', 1), ('?personal_schema_version=1', 1), ('?personal_schema_version=2', 2)):
+        for query, version in (('', 1), ('?personal_schema_version=1', 1), ('?personal_schema_version=2', 2), ('?personal_schema_version=3', 3)):
             for available, status in ((True, 200), (False, 503)):
                 with self.subTest(query=query, available=available), patch(
                         'src.api.user_buildings.state_ready', return_value=available) as state_ready:
@@ -388,7 +388,7 @@ class PersonalVersionHttpTests(OwnerHttpBoundaryTests):
                     state_ready.assert_called_once_with(version)
 
     def test_version_query_body_closed_errors(self):
-        for query in ('personal_schema_version=3','personal_schema_version=2&personal_schema_version=2',
+        for query in ('personal_schema_version=4','personal_schema_version=2&personal_schema_version=2',
                       'personal_schema_version=01','personal_schema_version=1.0','unknown=2'):
             for method in ('get','delete'):
                 self.check(getattr(self.client,method)('/energy-data/user/buildings/key?'+query,headers=self.auth),422)

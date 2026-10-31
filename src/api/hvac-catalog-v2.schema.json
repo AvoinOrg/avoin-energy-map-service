@@ -1,0 +1,462 @@
+{
+  "$defs": {
+    "DeferredCoefficientsV2": {
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "const": "deferred",
+          "default": "deferred",
+          "title": "Status",
+          "type": "string"
+        },
+        "reason": {
+          "const": "owner_deferred",
+          "default": "owner_deferred",
+          "title": "Reason",
+          "type": "string"
+        },
+        "editable": {
+          "const": false,
+          "default": false,
+          "title": "Editable",
+          "type": "boolean"
+        },
+        "numeric_defaults": {
+          "default": null,
+          "title": "Numeric Defaults",
+          "type": "null"
+        },
+        "attribution_editable": {
+          "const": false,
+          "default": false,
+          "title": "Attribution Editable",
+          "type": "boolean"
+        },
+        "reset_available": {
+          "const": false,
+          "default": false,
+          "title": "Reset Available",
+          "type": "boolean"
+        },
+        "required_for_save": {
+          "const": false,
+          "default": false,
+          "title": "Required For Save",
+          "type": "boolean"
+        },
+        "required_for_completion": {
+          "const": false,
+          "default": false,
+          "title": "Required For Completion",
+          "type": "boolean"
+        }
+      },
+      "title": "DeferredCoefficientsV2",
+      "type": "object"
+    },
+    "EquipmentChoiceV2": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "enum": [
+            "geothermal_installed",
+            "solar_panels_installed",
+            "energy_storage_ready"
+          ],
+          "title": "Code",
+          "type": "string"
+        },
+        "label_fi": {
+          "title": "Label Fi",
+          "type": "string"
+        },
+        "label_sv": {
+          "default": null,
+          "title": "Label Sv",
+          "type": "null"
+        },
+        "label_en": {
+          "default": null,
+          "title": "Label En",
+          "type": "null"
+        },
+        "source_uri": {
+          "title": "Source Uri",
+          "type": "string"
+        },
+        "meaning": {
+          "enum": [
+            "self_reported_installation",
+            "self_reported_readiness"
+          ],
+          "title": "Meaning",
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "label_fi",
+        "source_uri",
+        "meaning"
+      ],
+      "title": "EquipmentChoiceV2",
+      "type": "object"
+    },
+    "HvacCatalogV2": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": 2,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "personal_schema_version": {
+          "const": 3,
+          "title": "Personal Schema Version",
+          "type": "integer"
+        },
+        "capability_version": {
+          "const": "hvac-inputs-2026-10-31.1",
+          "title": "Capability Version",
+          "type": "string"
+        },
+        "catalog_id": {
+          "const": "energy-personal-hvac",
+          "title": "Catalog Id",
+          "type": "string"
+        },
+        "catalog_version": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "title": "Catalog Version",
+          "type": "string"
+        },
+        "coverage": {
+          "const": "product_supported_choices_not_national_coverage",
+          "title": "Coverage",
+          "type": "string"
+        },
+        "freshness": {
+          "const": "pinned_snapshot_not_live",
+          "title": "Freshness",
+          "type": "string"
+        },
+        "evidence_verified_on": {
+          "const": "2026-10-31",
+          "title": "Evidence Verified On",
+          "type": "string"
+        },
+        "upstream_version": {
+          "title": "Upstream Version",
+          "type": "null"
+        },
+        "attribution": {
+          "title": "Attribution",
+          "type": "string"
+        },
+        "defaults_version": {
+          "const": "hvac-inputs-2026-10-31.1",
+          "title": "Defaults Version",
+          "type": "string"
+        },
+        "accepted_defaults_versions": {
+          "items": {
+            "enum": [
+              "hvac-inputs-2026-10-31.1",
+              "hvac-defaults-2026-10-30.1"
+            ],
+            "type": "string"
+          },
+          "maxItems": 2,
+          "minItems": 2,
+          "title": "Accepted Defaults Versions",
+          "type": "array"
+        },
+        "heating_namespace": {
+          "const": "ryhti:heating_energy_source",
+          "title": "Heating Namespace",
+          "type": "string"
+        },
+        "heating_multiplicity": {
+          "const": "unique_choices_optional_primary",
+          "title": "Heating Multiplicity",
+          "type": "string"
+        },
+        "heating_share_basis": {
+          "const": "annual_useful_space_heat_excluding_domestic_hot_water",
+          "title": "Heating Share Basis",
+          "type": "string"
+        },
+        "heating_choices": {
+          "items": {
+            "$ref": "#/$defs/HvacChoiceV2"
+          },
+          "maxItems": 16,
+          "minItems": 1,
+          "title": "Heating Choices",
+          "type": "array"
+        },
+        "cooling_namespace": {
+          "const": "energy:cooling",
+          "title": "Cooling Namespace",
+          "type": "string"
+        },
+        "cooling_multiplicity": {
+          "const": "multiple_or_none",
+          "title": "Cooling Multiplicity",
+          "type": "string"
+        },
+        "cooling_choices": {
+          "items": {
+            "$ref": "#/$defs/HvacChoiceV2"
+          },
+          "maxItems": 14,
+          "minItems": 1,
+          "title": "Cooling Choices",
+          "type": "array"
+        },
+        "ventilation_namespace": {
+          "const": "energy_certificate/ilmanvaihtotyyppi",
+          "title": "Ventilation Namespace",
+          "type": "string"
+        },
+        "ventilation_multiplicity": {
+          "const": "single_multiple_or_none",
+          "title": "Ventilation Multiplicity",
+          "type": "string"
+        },
+        "ventilation_choices": {
+          "items": {
+            "$ref": "#/$defs/VentilationChoiceV1"
+          },
+          "maxItems": 9,
+          "minItems": 1,
+          "title": "Ventilation Choices",
+          "type": "array"
+        },
+        "equipment_choices": {
+          "items": {
+            "$ref": "#/$defs/EquipmentChoiceV2"
+          },
+          "maxItems": 3,
+          "minItems": 3,
+          "title": "Equipment Choices",
+          "type": "array"
+        },
+        "coefficients": {
+          "$ref": "#/$defs/DeferredCoefficientsV2"
+        },
+        "unavailable_capabilities": {
+          "items": {
+            "const": "coefficients",
+            "type": "string"
+          },
+          "maxItems": 1,
+          "minItems": 1,
+          "title": "Unavailable Capabilities",
+          "type": "array"
+        }
+      },
+      "required": [
+        "schema_version",
+        "personal_schema_version",
+        "capability_version",
+        "catalog_id",
+        "catalog_version",
+        "coverage",
+        "freshness",
+        "evidence_verified_on",
+        "upstream_version",
+        "attribution",
+        "defaults_version",
+        "accepted_defaults_versions",
+        "heating_namespace",
+        "heating_multiplicity",
+        "heating_share_basis",
+        "heating_choices",
+        "cooling_namespace",
+        "cooling_multiplicity",
+        "cooling_choices",
+        "ventilation_namespace",
+        "ventilation_multiplicity",
+        "ventilation_choices",
+        "equipment_choices",
+        "coefficients",
+        "unavailable_capabilities"
+      ],
+      "title": "HvacCatalogV2",
+      "type": "object"
+    },
+    "HvacChoiceV2": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9_:-]+$",
+          "title": "Code",
+          "type": "string"
+        },
+        "namespace": {
+          "title": "Namespace",
+          "type": "string"
+        },
+        "label_fi": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Label Fi"
+        },
+        "label_sv": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Label Sv"
+        },
+        "label_en": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Label En"
+        },
+        "source_uri": {
+          "title": "Source Uri",
+          "type": "string"
+        },
+        "upstream_code": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Upstream Code"
+        },
+        "upstream_status": {
+          "enum": [
+            "VALID",
+            "unknown"
+          ],
+          "title": "Upstream Status",
+          "type": "string"
+        },
+        "lifecycle": {
+          "enum": [
+            "current",
+            "deprecated",
+            "unknown"
+          ],
+          "title": "Lifecycle",
+          "type": "string"
+        },
+        "selectable": {
+          "title": "Selectable",
+          "type": "boolean"
+        },
+        "applicability_note": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Applicability Note"
+        }
+      },
+      "required": [
+        "code",
+        "namespace",
+        "label_fi",
+        "label_sv",
+        "label_en",
+        "source_uri",
+        "upstream_code",
+        "upstream_status",
+        "lifecycle",
+        "selectable",
+        "applicability_note"
+      ],
+      "title": "HvacChoiceV2",
+      "type": "object"
+    },
+    "VentilationChoiceV1": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "maxLength": 64,
+          "minLength": 1,
+          "title": "Code",
+          "type": "string"
+        },
+        "label_fi": {
+          "title": "Label Fi",
+          "type": "string"
+        },
+        "label_sv": {
+          "title": "Label Sv",
+          "type": "string"
+        },
+        "label_en": {
+          "default": null,
+          "title": "Label En",
+          "type": "null"
+        },
+        "lifecycle": {
+          "const": "unknown",
+          "default": "unknown",
+          "title": "Lifecycle",
+          "type": "string"
+        },
+        "upstream_status": {
+          "const": "not_supplied",
+          "default": "not_supplied",
+          "title": "Upstream Status",
+          "type": "string"
+        },
+        "selectable": {
+          "title": "Selectable",
+          "type": "boolean"
+        },
+        "applicability_note": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Applicability Note"
+        }
+      },
+      "required": [
+        "code",
+        "label_fi",
+        "label_sv",
+        "selectable",
+        "applicability_note"
+      ],
+      "title": "VentilationChoiceV1",
+      "type": "object"
+    }
+  },
+  "title": "EnergyMapHvacCatalogV2"
+}

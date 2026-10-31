@@ -1,0 +1,127 @@
+{
+  "schema_version": 1,
+  "personal_schema_version": 3,
+  "catalog_id": "energy-personal-hvac-supported-subset",
+  "coverage": "partial",
+  "ventilation_namespace": "energy_certificate/ilmanvaihtotyyppi",
+  "ventilation_multiplicity": "single_detailed_code",
+  "source_uri": "https://www.energiatodistusrekisteri.fi/api/public/energiatodistukset/ilmanvaihtotyyppi",
+  "evidence_verified_on": "2026-09-15",
+  "upstream_version": null,
+  "freshness": "pinned_snapshot_not_live",
+  "attribution": "Finnish Energy Certificate Register ventilation type snapshot; FI/SV labels verified 2026-09-15.",
+  "product_support": "supported_single_code_subset",
+  "support_reference": "personal-hvac-v3: evidenced single detailed certificate-code subset, not designed multiple-system combinations",
+  "ventilation_choices": [
+    {
+      "code": "0",
+      "label_fi": "Painovoimainen ilmanvaihtojärjestelmä",
+      "label_sv": "Självdragsventilationssystem",
+      "label_en": null,
+      "lifecycle": "unknown",
+      "upstream_status": "not_supplied",
+      "selectable": true,
+      "applicability_note": null
+    },
+    {
+      "code": "1",
+      "label_fi": "Koneellinen poistoilmanvaihtojärjestelmä",
+      "label_sv": "Maskinellt frånluftsventilationssystem",
+      "label_en": null,
+      "lifecycle": "unknown",
+      "upstream_status": "not_supplied",
+      "selectable": true,
+      "applicability_note": null
+    },
+    {
+      "code": "2",
+      "label_fi": "Koneellinen tulo- ja poistoilmanvaihtojärjestelmä",
+      "label_sv": "Maskinellt till- och frånluftsventilationssystem",
+      "label_en": null,
+      "lifecycle": "unknown",
+      "upstream_status": "not_supplied",
+      "selectable": true,
+      "applicability_note": null
+    },
+    {
+      "code": "3",
+      "label_fi": "Poistoilmalämpöpumppu (vain käyttötarkoitusluokka 1)",
+      "label_sv": "Frånluftsvärmepump (endast användningsklass 1)",
+      "label_en": null,
+      "lifecycle": "unknown",
+      "upstream_status": "not_supplied",
+      "selectable": true,
+      "applicability_note": "Upstream label restricts this type to certificate purpose class 1; no equivalence to registry purpose codes is asserted."
+    },
+    {
+      "code": "4",
+      "label_fi": "Painovoimainen/koneellinen poisto",
+      "label_sv": "Naturlig/maskinell frånluftsventilation",
+      "label_en": null,
+      "lifecycle": "unknown",
+      "upstream_status": "not_supplied",
+      "selectable": true,
+      "applicability_note": null
+    },
+    {
+      "code": "5",
+      "label_fi": "Painovoimainen/koneellinen tulo- ja poisto",
+      "label_sv": "Naturlig/maskinell till- och frånluftsventilation",
+      "label_en": null,
+      "lifecycle": "unknown",
+      "upstream_status": "not_supplied",
+      "selectable": true,
+      "applicability_note": null
+    },
+    {
+      "code": "6",
+      "label_fi": "Muu ilmanvaihtojärjestelmä",
+      "label_sv": "Annat ventilationssystem",
+      "label_en": null,
+      "lifecycle": "unknown",
+      "upstream_status": "not_supplied",
+      "selectable": true,
+      "applicability_note": null
+    },
+    {
+      "code": "7",
+      "label_fi": "Koneellinen poistoilmanvaihtojärjestelmä lämmöntalteenotolla",
+      "label_sv": "Mekaniskt frånluftsventilationssystem med värmeåtervinning",
+      "label_en": null,
+      "lifecycle": "unknown",
+      "upstream_status": "not_supplied",
+      "selectable": true,
+      "applicability_note": null
+    },
+    {
+      "code": "8",
+      "label_fi": "Koneellinen tulo- ja poistoilmanvaihtojärjestelmä lämmöntalteenotolla",
+      "label_sv": "Mekaniskt till- och frånluftsventilationssystem med värmeåtervinning",
+      "label_en": null,
+      "lifecycle": "unknown",
+      "upstream_status": "not_supplied",
+      "selectable": true,
+      "applicability_note": null
+    }
+  ],
+  "unavailable_capabilities": [
+    "heating_sources_and_shares",
+    "heated_quantities",
+    "cooling",
+    "equipment",
+    "coefficients"
+  ],
+  "defaults": {
+    "defaults_version": "hvac-defaults-2026-10-30.1",
+    "behavior": "pinned_no_scientific_defaults",
+    "unavailable_capabilities": [
+      "heating_sources_and_shares",
+      "heated_quantities",
+      "cooling",
+      "equipment",
+      "coefficients"
+    ],
+    "reason": "domain_contract_unsettled"
+  },
+  "catalog_version": "sha256:668faeb5682fa32ccab74a01a75e663886ec1bc033cca3d7a95b402b7f1af6f8"
+}

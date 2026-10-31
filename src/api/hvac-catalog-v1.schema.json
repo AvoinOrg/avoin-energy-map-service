@@ -1,0 +1,226 @@
+{
+  "$defs": {
+    "HvacCatalogV1": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "personal_schema_version": {
+          "const": 3,
+          "default": 3,
+          "title": "Personal Schema Version",
+          "type": "integer"
+        },
+        "catalog_id": {
+          "const": "energy-personal-hvac-supported-subset",
+          "title": "Catalog Id",
+          "type": "string"
+        },
+        "catalog_version": {
+          "pattern": "^sha256:[0-9a-f]{64}$",
+          "title": "Catalog Version",
+          "type": "string"
+        },
+        "coverage": {
+          "const": "partial",
+          "title": "Coverage",
+          "type": "string"
+        },
+        "ventilation_namespace": {
+          "const": "energy_certificate/ilmanvaihtotyyppi",
+          "title": "Ventilation Namespace",
+          "type": "string"
+        },
+        "ventilation_multiplicity": {
+          "const": "single_detailed_code",
+          "title": "Ventilation Multiplicity",
+          "type": "string"
+        },
+        "source_uri": {
+          "const": "https://www.energiatodistusrekisteri.fi/api/public/energiatodistukset/ilmanvaihtotyyppi",
+          "title": "Source Uri",
+          "type": "string"
+        },
+        "evidence_verified_on": {
+          "const": "2026-09-15",
+          "title": "Evidence Verified On",
+          "type": "string"
+        },
+        "upstream_version": {
+          "default": null,
+          "title": "Upstream Version",
+          "type": "null"
+        },
+        "freshness": {
+          "const": "pinned_snapshot_not_live",
+          "title": "Freshness",
+          "type": "string"
+        },
+        "attribution": {
+          "title": "Attribution",
+          "type": "string"
+        },
+        "product_support": {
+          "const": "supported_single_code_subset",
+          "title": "Product Support",
+          "type": "string"
+        },
+        "support_reference": {
+          "title": "Support Reference",
+          "type": "string"
+        },
+        "ventilation_choices": {
+          "items": {
+            "$ref": "#/$defs/VentilationChoiceV1"
+          },
+          "maxItems": 100,
+          "minItems": 1,
+          "title": "Ventilation Choices",
+          "type": "array"
+        },
+        "unavailable_capabilities": {
+          "items": {
+            "enum": [
+              "heating_sources_and_shares",
+              "heated_quantities",
+              "cooling",
+              "equipment",
+              "coefficients"
+            ],
+            "type": "string"
+          },
+          "title": "Unavailable Capabilities",
+          "type": "array"
+        },
+        "defaults": {
+          "$ref": "#/$defs/HvacDefaultsV1"
+        }
+      },
+      "required": [
+        "catalog_id",
+        "catalog_version",
+        "coverage",
+        "ventilation_namespace",
+        "ventilation_multiplicity",
+        "source_uri",
+        "evidence_verified_on",
+        "freshness",
+        "attribution",
+        "product_support",
+        "support_reference",
+        "ventilation_choices",
+        "unavailable_capabilities",
+        "defaults"
+      ],
+      "title": "HvacCatalogV1",
+      "type": "object"
+    },
+    "HvacDefaultsV1": {
+      "additionalProperties": false,
+      "properties": {
+        "defaults_version": {
+          "const": "hvac-defaults-2026-10-30.1",
+          "title": "Defaults Version",
+          "type": "string"
+        },
+        "behavior": {
+          "const": "pinned_no_scientific_defaults",
+          "title": "Behavior",
+          "type": "string"
+        },
+        "unavailable_capabilities": {
+          "items": {
+            "enum": [
+              "heating_sources_and_shares",
+              "heated_quantities",
+              "cooling",
+              "equipment",
+              "coefficients"
+            ],
+            "type": "string"
+          },
+          "title": "Unavailable Capabilities",
+          "type": "array"
+        },
+        "reason": {
+          "const": "domain_contract_unsettled",
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "defaults_version",
+        "behavior",
+        "unavailable_capabilities",
+        "reason"
+      ],
+      "title": "HvacDefaultsV1",
+      "type": "object"
+    },
+    "VentilationChoiceV1": {
+      "additionalProperties": false,
+      "properties": {
+        "code": {
+          "maxLength": 64,
+          "minLength": 1,
+          "title": "Code",
+          "type": "string"
+        },
+        "label_fi": {
+          "title": "Label Fi",
+          "type": "string"
+        },
+        "label_sv": {
+          "title": "Label Sv",
+          "type": "string"
+        },
+        "label_en": {
+          "default": null,
+          "title": "Label En",
+          "type": "null"
+        },
+        "lifecycle": {
+          "const": "unknown",
+          "default": "unknown",
+          "title": "Lifecycle",
+          "type": "string"
+        },
+        "upstream_status": {
+          "const": "not_supplied",
+          "default": "not_supplied",
+          "title": "Upstream Status",
+          "type": "string"
+        },
+        "selectable": {
+          "title": "Selectable",
+          "type": "boolean"
+        },
+        "applicability_note": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Applicability Note"
+        }
+      },
+      "required": [
+        "code",
+        "label_fi",
+        "label_sv",
+        "selectable",
+        "applicability_note"
+      ],
+      "title": "VentilationChoiceV1",
+      "type": "object"
+    }
+  },
+  "title": "EnergyMapHvacCatalogV1Partial"
+}

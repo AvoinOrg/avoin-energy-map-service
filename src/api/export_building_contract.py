@@ -74,5 +74,36 @@ def export_property():
     print(f'Personal v2 schema, {len(examples)} typed examples and purpose catalog schema exported.')
 
 
+
+
+def export_hvac():
+    """Export v3 independently; never regenerate/widen historical artifacts."""
+    from src.personal_hvac_contract import PersonalBuildingPutV3, PersonalBuildingPatchV3, PersonalBuildingProjectionV3
+    from src.user_building_contract import SavedBuildingV3, SavedBuildingPageV3, SavedBuildingSummaryV3
+    from src.building_share_contract import SharedBuildingV3
+    from src.hvac_catalog import HvacCatalogV2
+    from src.api.personal_hvac_examples import hvac_examples
+    modes=[(m,'serialization') for m in (PersonalBuildingProjectionV3,SavedBuildingV3,
+        SavedBuildingPageV3,SavedBuildingSummaryV3,SharedBuildingV3)] + [
+        (m,'validation') for m in (PersonalBuildingPutV3,PersonalBuildingPatchV3)]
+    _,schema=models_json_schema(modes,title='EnergyMapPersonalHvacV3')
+    Path('src/api/personal-hvac-v3.schema.json').write_text(json.dumps(schema,indent=2)+'\n')
+    _,catalog=models_json_schema([(HvacCatalogV2,'serialization')],title='EnergyMapHvacCatalogV2')
+    Path('src/api/hvac-catalog-v2.schema.json').write_text(json.dumps(catalog,indent=2)+'\n')
+    examples={}
+    for name,(model,value) in hvac_examples().items():
+        model.model_validate_json(json.dumps(value))
+        examples[name]=value
+    Path('src/api/personal-hvac-v3.examples.json').write_text(json.dumps(examples,indent=2)+'\n')
+    print(f'Structured HVAC v3 schemas and {len(examples)} typed examples exported.')
+
+
 if __name__ == '__main__':
-    export()
+    import sys
+    if sys.argv[1:] == ['--hvac-only']:
+        export_hvac()
+    elif not sys.argv[1:]:
+        export()
+        export_hvac()
+    else:
+        raise SystemExit('Usage: python -m src.api.export_building_contract [--hvac-only]')

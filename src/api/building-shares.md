@@ -278,3 +278,13 @@ saved UUID, address_key or digest is exposed. V1 views omit new fields without
 mutating storage. The adopted purpose pin qualifies all seven supported codes.
 An unavailable catalog or unknown/retired saved code affects qualification
 status, preserving capability readability and revocation.
+
+## Version3 compatibility
+
+The [personal HVAC v3 contract](personal-hvac-v3.md) is explicitly
+selectable with personal_schema_version=3. A shared v3 view intentionally exposes
+its structured sources/shares, quantities, cooling/ventilation, equipment, stable
+per-source provenance, technical pin, deferred-coefficient metadata and input status, while retaining the
+existing metadata allowlist. V1 safely projects scalars from3; v2 must return409
+for3 rather than widen its closed DTO. The latest-read/revoke race boundary and
+version-independent owner rotation/revocation remain unchanged.
