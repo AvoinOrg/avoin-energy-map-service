@@ -80,10 +80,99 @@ any fixture DDL. It creates only the synthetic Main/Building/Address tables and
 uses separate maintenance/reader credentials. The producer verifies configured
 reader/database, UTF-8, effective isolation/read-only state, relation/type shape,
 privileges and fixture OID/server version. Source relations must be ordinary
-non-RLS tables. A reader cannot own them, write columns/tables, create schemas,
-create temporary objects, or SELECT unrelated user relations. PostGIS's
+non-RLS tables without inheritance. A reader cannot own them, write columns/tables,
+create in any schema, or SELECT unrelated user relations, including column-only
+grants and sequences. PostGIS's
 extension-owned `spatial_ref_sys` metadata privilege is allowed but never read.
 Do not relax these checks to make broad existing credentials pass.
+
+## Version 2: reviewed inherited PUBLIC TEMP
+
+F006 amends F005 base `df76c0fcb69cfd87b99f5302f819bb0f7f3b01ea`.
+The reviewed amendment commit, exact product hashes and fixture/receiver evidence
+belong in `.codex-orch/state/canonical-source-export-delivery.md`. Until the
+manager records independent review and the real amendment commit there, this is
+an implementation candidate, not a qualified source-reader delivery.
+
+Version 1 retains exactly its seven fields and refuses effective TEMP. No
+automatic migration or environment/CLI override exists. Version 2 requires the
+same fields plus exactly `database_temp_policy`. Its strict form is
+`{"mode":"deny"}`. Its only exception is this closed shape (example identities
+are placeholders, never qualified values):
+
+```json
+{
+  "mode": "allow-inherited-public-temp",
+  "database_name": "REVIEWED_DATABASE",
+  "database_oid": 12345,
+  "reader_name": "REVIEWED_NARROW_READER",
+  "reader_oid": 23456,
+  "server_version_num": 170005,
+  "evidence_reference": "reviewed-preflight/dated-nonsecret-reference"
+}
+```
+
+Unknown/missing keys, duplicate JSON keys, unknown modes/versions, booleans used
+as integers, null or malformed evidence, and identity/version mismatches refuse.
+Names must match the explicit connection before connecting; database/reader OIDs
+and exact server version must match catalog identity. The reference is a bounded
+identifier (letters/digits and `._:/-`, no URL), kept out of bundle metadata and
+diagnostics. It identifies evidence; it does not establish approval by itself.
+Only exact PostgreSQL **17.2 (`170002`) and 17.5 (`170005`)** are admitted by this
+candidate. The supervising operator identified the actual source patch as 17.2;
+matching fixture proof does not qualify that source reader. No other patch/major
+or actual source account is qualified by fixture success. A deployed
+version outside this set requires matching doctor-owned fixture proof and an
+independently reviewed support amendment before admission.
+
+Database CREATE and TEMP are assessed separately. The reader expands
+`COALESCE(datacl, pg_catalog.acldefault('d', datdba))`, so NULL ACL means PostgreSQL
+defaults, including PUBLIC CONNECT/TEMP. It reconciles effective privileges with
+their provenance and permits TEMP only from PUBLIC without grant option and with
+the database owner as grantor. Direct reader TEMP remains a refusal even when
+PUBLIC also grants it. Other normal accounts' grants do not confer reader rights.
+Admission also refuses if PUBLIC TEMP has disappeared; prepare a newly reviewed
+strict descriptor rather than silently reusing the exception after ACL drift.
+Every role membership is refused, including non-inherited, nested, ADMIN and
+SET-capable paths; database ownership (and implicit `pg_database_owner`), elevated
+flags, schema ownership/CREATE, source ownership/writes and grant options, excess
+table/column SELECT and sequence capabilities remain refusals. Applicable
+database/role settings are refused except exact `default_transaction_read_only=on`
+and `search_path=pg_catalog`. Privileged server-loaded code/configuration remains
+part of the independently reviewed server trust boundary; the reader is never
+granted `pg_read_all_settings` to inspect protected preload parameters.
+
+PUBLIC TEMP means the login can generally create temporary objects in another
+transaction. The exception protects the fixed exporter execution path: a fresh
+non-pooled verify-full session, no existing temp namespace/prepared statements/
+cursors/listeners, fixed `pg_catalog` search path, UTF-8, row_security on and a
+verified READ ONLY REPEATABLE READ snapshot before source catalogs/projections.
+Finite statement/lock/idle timeouts, identity, settings, transaction status and
+the original snapshot are checked before each source operation. No exporter input
+accepts SQL, transaction controls or temporary-object staging. Trusted Python code
+that deliberately accesses a raw connection is outside this execution boundary.
+[PostgreSQL's read-only rules](https://www.postgresql.org/docs/17/sql-set-transaction.html)
+forbid CREATE and source DML but allow writes to already existing temp tables;
+therefore both freshness and fixed SQL are required alongside narrow ACLs.
+
+For later authorized actual-source qualification, supervising operators must:
+
+1. Independently review read-only catalog/TLS/settings evidence for the exact
+   dedicated reader and database. Record names/OIDs/version, database owner,
+   explicit or default PUBLIC TEMP provenance, no direct TEMP/grant option,
+   membership/elevation/settings, every schema's CREATE/ownership and every user
+   relation's read/write/ownership privileges. Inspect no private values and run
+   no mutation probes on source. A broad existing application reader is unsuitable.
+2. Bind a non-secret evidence reference to that reviewed identity and exact
+   supported version. Create a new protected version-2 descriptor deliberately;
+   do not edit source ACLs, revoke shared PUBLIC rights or auto-discover admission.
+3. Run `preflight` with that protected descriptor: catalog checks plus at most one
+   bounded projected row per relation, no full COUNT/export or mutation probes.
+   Requalify after role/ACL/settings/database recreation or version drift.
+4. Keep license/lineage, operational budgets/capacity, full-source export, private
+   transfer, load/activation and deployment with the supervising operator. Pin
+   both F005 and the independently reviewed F006 amendment; fixture proof does
+   not settle these remaining gates or establish a usable public API.
 
 ## Commands and publication
 
@@ -104,7 +193,8 @@ only guarded synthetic source tables; do not call other features' reset helpers.
 ```bash
 poetry check --lock
 poetry run python -m unittest tests.test_canonical_source_export -v
-poetry run python -m tests.run_canonical_source_export_checks --fixture-config .codex-orch/runtime/f005-canonical-source-export-private/fixture.json --infra-root /home/xbexbex/git/avoin-server-infra/secondary/avoin-map-geocoding
+poetry run python -m tests.run_canonical_source_export_checks --fixture-config .codex-orch/runtime/f005-canonical-source-export-private/fixture.json --infra-root .codex-orch/runtime/f005-canonical-source-export-private/f006-receiver-305dfc6-6625af3/secondary/avoin-map-geocoding --infra-git-root /home/xbexbex/git/avoin-server-infra
+poetry run python -m tests.run_canonical_source_export_checks --fixture-config .codex-orch/runtime/f006-canonical-source-export-pg170002-private/fixture.json --infra-root .codex-orch/runtime/f005-canonical-source-export-private/f006-receiver-305dfc6-6625af3/secondary/avoin-map-geocoding --infra-git-root /home/xbexbex/git/avoin-server-infra
 poetry run python -m src.canonical_source_export preflight --config-file .codex-orch/runtime/f005-canonical-source-export-private/source.json
 ```
 
@@ -268,11 +358,38 @@ space for another owner.
 ## Acceptance boundary
 
 Required checks fail on missing fixture/dependency/infra validator and run DB
-mutation cases serially. Emitted fixture files pass the actual infra
-`readManifest`/`consumeBundle`; current uncommitted validator hashes are recorded
-without claiming reviewed infra delivery. Its92-test pinned baseline alone is
-not emitted-output proof. Fixtures contain synthetic data even though PostgreSQL
-is real. No main6900/6903 runtime or browser is needed/operated.
+mutation cases serially. The doctor supplies the protected reusable
+`--with-f006-variant NAME -- COMMAND` bridge on its existing fixture helper; it
+serializes ACL/role variants and restores strict ACLs and synthetic data after
+each child. Its closed `--fixture-version {170002,170005}` selects one of two
+separate marked fixtures; the launcher binds that selector to the exact checked
+descriptor/server version. The 17.2 fixture has a distinct loopback endpoint,
+database, reader/maintenance identities, container, marker and CA root. Both
+descriptor paths are fixed; cross-profile identities, copied descriptors and
+untested patches are refused before fixture DDL. Export outputs retain the
+existing protected F005 root. Run the launchers serially on both exact patches.
+The 17.2 image derives from pinned
+`postgres@sha256:3267c505060a0052e5aa6e5175a7b41ab6b04da2f8c4540fc6e98a37210aa2d3`
+with doctor-pinned PostGIS; exact image identities and final per-version proof
+belong in the stable delivery receipt. Product workers use that bridge rather than manage fixture roles or
+services. The launcher repeats the complete real-path suite with explicit PUBLIC
+TEMP and NULL/default ACLs, runs refusal variants and checks clean strict export
+after restoration. Actual-Reader probes are savepoint-protected and confined to
+the fixture. A fixture marker or TLS failure is a failed check, never a skip.
+
+The isolated read-only receiver above deliberately composes the original
+`305dfc61867e4602d2156dc1e547a80481f5028a` schema/example/92-test corpus with
+the executable `readManifest`/`consumeBundle` and package lock from reviewed
+F009.3 commit `6625af3577f0797221456aaa65750b2f144c871c`. The contract commit
+itself contains no executable validator. The launcher pins both groups against
+Git objects and checks installed dependency bytes before/after; bridge evidence
+records every executed transitive AJV module hash as well. It neither changes
+infra's active files nor silently repins the contract test to an in-flight F011
+version. The 92-test contract baseline alone is not emitted-output proof; newly
+emitted synthetic bundles must pass the actual receiver, and adversarial bundles
+must fail. F011 final delivery and live-data readiness remain separate.
+Fixtures contain synthetic data even though PostgreSQL is real. No main6900/6903
+runtime or browser is needed/operated.
 
 Local producer delivery does not prove or perform national/full-source or bilingual
 coverage, actual-source export/transfer, operational capacity/cadence/retention,

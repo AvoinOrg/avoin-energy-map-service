@@ -277,6 +277,81 @@ class ConfigAndCorruptionTests(Work):
                 'user':'fixture_reader','password':'SYNTHETIC_PASSWORD_CANARY','sslmode':'disable'},
                 'fixture':{'marker':'energymap_f005_canonical_export_test','database_oid':123,'server_version_num':170002},
                 'output_root':str(self.root),'publisher_role':'fixture','license_references':['synthetic'], 'limits':{}}
+    def policy_dict(self):
+        return {'mode':'allow-inherited-public-temp','database_name':'energymap_f005_canonical_export_test',
+                'database_oid':123,'reader_name':'fixture_reader','reader_oid':456,'server_version_num':170005,
+                'evidence_reference':'synthetic-reviewed-fixture-only'}
+
+    def test_versioned_temp_policy_closed_and_strict_default(self):
+        from src.canonical_source_export.config import DatabaseTempPolicy
+        p=self.root/'source.json'
+        bundle.write_exclusive(p,encode(self.config_dict()))
+        self.assertEqual(load_config(p).database_temp_policy,DatabaseTempPolicy())
+        d=self.config_dict();d.update(version=2,database_temp_policy={'mode':'deny'})
+        p.write_bytes(encode(d));self.assertEqual(load_config(p).database_temp_policy,DatabaseTempPolicy())
+        # Production transport in this parser-only test; never connect anywhere.
+        d['connection'].update(sslmode='verify-full',sslrootcert=str(p))
+        d['database_temp_policy']=self.policy_dict()
+        for version in (170002,170005):
+            d['database_temp_policy']['server_version_num']=version
+            d['fixture']['server_version_num']=version
+            p.write_bytes(encode(d));cfg=load_config(p)
+            self.assertEqual(cfg.database_temp_policy.reader_oid,456)
+            self.assertEqual(cfg.database_temp_policy.server_version_num,version)
+        bad=[]
+        for field in self.policy_dict():
+            v=copy.deepcopy(d);del v['database_temp_policy'][field];bad.append(v)
+            v=copy.deepcopy(d);v['database_temp_policy'][field]=None;bad.append(v)
+        for field,value in [('mode','allow'),('unknown',1),('database_oid',True),('reader_oid',False),
+                            ('reader_oid',0),('database_oid',4294967296),
+                            ('server_version_num',True),('database_name','recreated'),('reader_name','other'),
+                            ('evidence_reference',''),('evidence_reference',' '),('evidence_reference','x'*193),
+                            ('evidence_reference','https://example.invalid'),('evidence_reference','secret\n')]:
+            v=copy.deepcopy(d);v['database_temp_policy'][field]=value;bad.append(v)
+        for version in (160005,170001,170003,170004,170006,180000):
+            v=copy.deepcopy(d);v['database_temp_policy']['server_version_num']=version;bad.append(v)
+        for version in (1,3,True,None,'2'):
+            v=copy.deepcopy(d);v['version']=version;bad.append(v)
+        for policy in ({'mode':'deny','reader_oid':456},None,[],{},True):
+            v=copy.deepcopy(d);v['database_temp_policy']=policy;bad.append(v)
+        v=copy.deepcopy(d);del v['database_temp_policy'];bad.append(v)
+        v=copy.deepcopy(d);v['connection']['sslmode']='disable';bad.append(v)
+        for i,v in enumerate(bad):
+            with self.subTest(case=i):
+                p.write_bytes(encode(v))
+                with self.assertRaises(ExportError):load_config(p)
+        p.write_bytes(encode(d).replace(b'"reader_oid":456',b'"reader_oid":456,"reader_oid":456'))
+        with self.assertRaises(ExportError):load_config(p)
+
+    def test_fixed_fixture_profiles_reject_mixed_identity_and_version_drift(self):
+        from tests.canonical_source_export_fixture import FIXTURES, descriptor, guarded
+        for version,profile in FIXTURES.items():
+            d={'version':1,'fixture_marker':profile['marker'],'database':profile['database'],
+               'container_name':profile['container'],'endpoint':{'host':'localhost','port':profile['port']},
+               'postgres_server_version_num':version,'server_identity':'synthetic-test-identity'}
+            for account in ('reader','maintenance'):
+                d[account]={'host':'localhost','port':profile['port'],'dbname':profile['database'],
+                    'user':profile[account],'password':'SYNTHETIC_PASSWORD_CANARY','sslmode':'verify-full',
+                    'sslrootcert':str(profile['root']/'tls/ca.crt')}
+            path=profile['root']/'fixture.json'
+            with patch('tests.canonical_source_export_fixture.private_read',return_value=encode(d)):
+                self.assertEqual(descriptor(path),d)
+                with self.assertRaisesRegex(ExportError,'fixture_guard'):descriptor(self.root/'copied-fixture.json')
+            other=FIXTURES[170005 if version==170002 else 170002]
+            for field,value in (('postgres_server_version_num',170003),('postgres_server_version_num',True),
+                                ('fixture_marker',other['marker']),('database',other['database']),
+                                ('container_name',other['container']),('endpoint',{'host':'localhost','port':other['port']}),
+                                ('reader',dict(d['reader'],user=other['reader'])),
+                                ('maintenance',dict(d['maintenance'],sslrootcert=str(other['root']/'tls/ca.crt')))):
+                mixed=dict(d,**{field:value})
+                with patch('tests.canonical_source_export_fixture.private_read',return_value=encode(mixed)),self.assertRaisesRegex(ExportError,'fixture_guard'):
+                    descriptor(path)
+            with patch('tests.canonical_source_export_fixture.connect') as connect:
+                conn=connect.return_value;q=conn.cursor.return_value.__enter__.return_value
+                q.fetchall.return_value=[(profile['marker'],d['server_identity'])]
+                q.fetchone.return_value=(profile['database'],profile['maintenance'],version+1,123)
+                with self.assertRaisesRegex(ExportError,'fixture_identity'):guarded(d)
+                conn.close.assert_called_once()
     def test_protected_closed_config_and_environment(self):
         p=self.root/'source.json';bundle.write_exclusive(p,encode(self.config_dict()))
         self.assertEqual(load_config(p).connection['dbname'],'energymap_f005_canonical_export_test')

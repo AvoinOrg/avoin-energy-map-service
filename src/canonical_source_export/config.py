@@ -16,6 +16,46 @@ DEFAULTS = dict(MAXIMA, rows=1000000, total_bytes=4*1024**3, buffer_bytes=1024**
                 overall_seconds=900, statement_ms=30000, connect_seconds=5,
                 disk_bytes=16*1024**3, scratch_bytes=8*1024**3, reserve_bytes=2*1024**3)
 
+# Admission is qualified per exact fixture-proven patch, never per major version.
+PUBLIC_TEMP_VERSIONS = frozenset({170002, 170005})
+FIXTURE_DATABASES = frozenset({'energymap_f005_canonical_export_test',
+                               'energymap_f006_canonical_export_pg170002_test'})
+
+
+@dataclass(frozen=True)
+class DatabaseTempPolicy:
+    mode: str = 'deny'
+    database_name: str | None = None
+    database_oid: int | None = None
+    reader_name: str | None = None
+    reader_oid: int | None = None
+    server_version_num: int | None = None
+    evidence_reference: str | None = None
+
+
+def temp_policy(value, connection):
+    if not isinstance(value, dict):
+        raise ExportError('temp_policy_invalid')
+    if value == {'mode': 'deny'}:
+        return DatabaseTempPolicy()
+    fields = set(DatabaseTempPolicy.__dataclass_fields__)
+    if set(value) != fields or value['mode'] != 'allow-inherited-public-temp':
+        raise ExportError('temp_policy_invalid')
+    for field in ('database_oid', 'reader_oid', 'server_version_num'):
+        if type(value[field]) is not int or not 0 < value[field] <= 4294967295:
+            raise ExportError('temp_policy_invalid')
+    for field, bound in (('database_name', 'dbname'), ('reader_name', 'user')):
+        if not text_ok(value[field], 63, True) or value[field] != connection[bound]:
+            raise ExportError('temp_policy_identity')
+    # A reference identifier, never a URL/DSN, free-form note or secret payload.
+    evidence = value['evidence_reference']
+    if (not isinstance(evidence, str) or not re.fullmatch(r'[A-Za-z0-9][A-Za-z0-9._:/-]{0,191}', evidence)
+        or '://' in evidence):
+        raise ExportError('temp_policy_invalid')
+    if value['server_version_num'] not in PUBLIC_TEMP_VERSIONS:
+        raise ExportError('temp_policy_version')
+    return DatabaseTempPolicy(**value)
+
 
 def safe_path(path):
     p = Path(os.path.abspath(path))
@@ -75,11 +115,14 @@ class Config:
     license_references: list
     fixture: dict | None
     limits: dict
+    database_temp_policy: DatabaseTempPolicy = DatabaseTempPolicy()
 
 
 def load_config(path):
     c = strict_json(private_read(path))
-    if not isinstance(c, dict) or set(c) != {'version', 'connection', 'output_root', 'publisher_role', 'license_references', 'fixture', 'limits'} or type(c['version']) is not int or c['version'] != 1:
+    fields = {'version', 'connection', 'output_root', 'publisher_role', 'license_references', 'fixture', 'limits'}
+    if (not isinstance(c, dict) or type(c.get('version')) is not int or c['version'] not in (1, 2)
+        or set(c) != fields | ({'database_temp_policy'} if c['version'] == 2 else set())):
         raise ExportError('config_invalid')
     conn = c['connection']
     required = {'host', 'port', 'dbname', 'user', 'password', 'sslmode'}
@@ -92,7 +135,7 @@ def load_config(path):
     fixture = c['fixture']
     if fixture is not None:
         if (not isinstance(fixture, dict) or set(fixture) != {'marker', 'database_oid', 'server_version_num'}
-            or fixture['marker'] != 'energymap_f005_canonical_export_test'
+            or not isinstance(fixture['marker'], str) or fixture['marker'] not in FIXTURE_DATABASES
             or conn['dbname'] != fixture['marker'] or conn['host'] not in ('127.0.0.1','localhost')
             or type(fixture['database_oid']) is not int or type(fixture['server_version_num']) is not int):
             raise ExportError('fixture_invalid')
@@ -103,6 +146,9 @@ def load_config(path):
         raise ExportError('tls_root_required')
     if any(k.startswith('PG') for k in os.environ):
         raise ExportError('ambient_pg_environment')
+    policy = temp_policy(c['database_temp_policy'], conn) if c['version'] == 2 else DatabaseTempPolicy()
+    if policy.mode != 'deny' and conn['sslmode'] != 'verify-full':
+        raise ExportError('tls_required')
     if not text_ok(c['publisher_role'], 128, True) or not isinstance(c['license_references'], list) or not 1 <= len(c['license_references']) <= 8 or any(not text_ok(v, 256, True) for v in c['license_references']):
         raise ExportError('publisher_evidence_required')
     cap = DEFAULTS.copy()
@@ -116,7 +162,7 @@ def load_config(path):
     # at fetch size one. SQLite cache is separately bounded local audit memory.
     if cap['buffer_bytes'] < 256*1024 or cap['scratch_bytes'] > cap['disk_bytes'] or cap['record']*16 > cap['buffer_bytes']:
         raise ExportError('limits_invalid')
-    return Config(dict(conn), protected_root(c['output_root']), c['publisher_role'], c['license_references'], fixture, cap)
+    return Config(dict(conn), protected_root(c['output_root']), c['publisher_role'], c['license_references'], fixture, cap, policy)
 
 
 def generation_id(value):

@@ -7,22 +7,40 @@ import sys
 import time
 import unittest
 import uuid
+from dataclasses import replace
 from pathlib import Path
 from unittest.mock import patch
 import psycopg2
 from src.canonical_source_export import bundle
-from src.canonical_source_export.config import Config, load_config
+from src.canonical_source_export.config import DatabaseTempPolicy, load_config
 from src.canonical_source_export.validation import ExportError
+from src.canonical_source_export.reader import Reader
+from src.canonical_source_export.resources import Budget
 from tests.test_canonical_source_export import Work, sample, raw
 from tests.canonical_source_export_fixture import descriptor, reset, config, guarded, connect, state_digest, write_config, PRIVATE
 
 
-class PostgreSQLTests(Work):
+class DatabaseWork(Work):
     @classmethod
     def setUpClass(cls):
         cls.fixture=descriptor(os.environ['F005_FIXTURE_CONFIG'])
     def setUp(self):
-        super().setUp();reset(self.fixture);self.cfg=config(self.fixture,self.root)
+        super().setUp()
+        # The doctor transfers this already-synthetic table before the child.
+        # Recreating it here would erase the ownership condition under test.
+        if os.environ.get('F006_FIXTURE_VARIANT')!='source-table-ownership':reset(self.fixture)
+        self.cfg=config(self.fixture,self.root)
+        self.reader=self.fixture['reader']['user']  # One of the two fixed fixture identifiers.
+    def admitted(self):
+        c,version,oid=guarded(self.fixture)
+        try:
+            with c.cursor() as q:
+                q.execute("SELECT oid FROM pg_catalog.pg_roles WHERE rolname=%s",(self.cfg.connection['user'],))
+                reader_oid=q.fetchone()[0]
+        finally:c.close()
+        return replace(self.cfg,database_temp_policy=DatabaseTempPolicy('allow-inherited-public-temp',
+            self.cfg.connection['dbname'],oid,self.cfg.connection['user'],reader_oid,version,
+            'synthetic-doctor-owned-fixture-not-source-qualification'))
     def emit(self,g=None,hook=None):
         g=g or 'db-'+uuid.uuid4().hex
         return g,bundle.export(self.cfg,g,hook)
@@ -33,12 +51,29 @@ class PostgreSQLTests(Work):
             c.commit()
         finally:c.close()
     def no_backend(self):
-        c,_,_=guarded(self.fixture)
-        try:
-            with c.cursor() as q:
-                q.execute("SELECT count(*) FROM pg_stat_activity WHERE datname=current_database() AND application_name='energy-f005-canonical-export'")
-                self.assertEqual(q.fetchone()[0],0)
-        finally:c.close()
+        # libpq close precedes server-side backend removal. Use a fresh stats
+        # snapshot per attempt, while still failing any persistent backend leak.
+        until=time.monotonic()+5
+        while True:
+            c,_,_=guarded(self.fixture)
+            try:
+                with c.cursor() as q:
+                    q.execute("SELECT count(*) FROM pg_catalog.pg_stat_activity WHERE datname=pg_catalog.current_database() AND application_name='energy-f005-canonical-export'")
+                    remaining=q.fetchone()[0]
+            finally:c.close()
+            if remaining==0 or time.monotonic()>=until:
+                self.assertEqual(remaining,0);return
+            time.sleep(.02)
+
+
+class PostgreSQLTests(DatabaseWork):
+    def test_explicit_admission_requires_actual_public_temp(self):
+        if self.cfg.database_temp_policy.mode=='deny':
+            with self.assertRaisesRegex(ExportError,'temp_policy_provenance'):bundle.preflight(self.admitted())
+        else:
+            self.assertTrue(bundle.preflight(self.admitted())['narrow_reader'])
+        self.no_backend()
+
     def test_real_snapshot_roundtrip_source_unchanged_and_private_excluded(self):
         before=state_digest(self.fixture);g,r=self.emit();self.assertEqual(state_digest(self.fixture),before)
         self.assertTrue(bundle.verify(self.root/g,self.cfg.limits)['verified']);self.assertEqual(r['records'],13)
@@ -87,21 +122,20 @@ class PostgreSQLTests(Work):
     def test_required_table_column_type_permission_and_rls_fail_closed(self):
         for sql in ('DROP TABLE public.addresses','ALTER TABLE public.main DROP COLUMN postal_code',
                     'ALTER TABLE public.main ALTER COLUMN building_key TYPE int USING 1',
-                    'REVOKE SELECT ON public.addresses FROM energymap_f005_reader','ALTER TABLE public.main ENABLE ROW LEVEL SECURITY'):
+                    f'REVOKE SELECT ON public.addresses FROM {self.reader}','ALTER TABLE public.main ENABLE ROW LEVEL SECURITY'):
             reset(self.fixture);self.write(sql);g='shape-'+uuid.uuid4().hex
             with self.assertRaises(ExportError):self.emit(g)
             self.assertFalse((self.root/g).exists());self.no_backend()
     def test_role_privilege_drift_fails_before_source(self):
-        self.write('GRANT SELECT ON f005_fixture_control.private_sentinel TO energymap_f005_reader')
+        self.write(f'GRANT SELECT ON f005_fixture_control.private_sentinel TO {self.reader}')
         try:
             with self.assertRaisesRegex(ExportError,'reader_excess_select'):self.emit('excess')
-        finally:self.write('REVOKE SELECT ON f005_fixture_control.private_sentinel FROM energymap_f005_reader')
+        finally:self.write(f'REVOKE SELECT ON f005_fixture_control.private_sentinel FROM {self.reader}')
     def test_statement_lock_and_overall_deadline_cleanup(self):
         for overall,statement,lock in ((5,200,100),(1,5000,1000)):
             c,_,_=guarded(self.fixture)
             with c.cursor() as q:q.execute('LOCK TABLE public.main IN ACCESS EXCLUSIVE MODE')
-            cfg=Config(self.cfg.connection,self.root,self.cfg.publisher,self.cfg.license_references,self.cfg.fixture,
-                       dict(self.cfg.limits,overall_seconds=overall,statement_ms=statement,lock_ms=lock))
+            cfg=replace(self.cfg,limits=dict(self.cfg.limits,overall_seconds=overall,statement_ms=statement,lock_ms=lock))
             start=time.monotonic()
             try:
                 with self.assertRaises(ExportError):bundle.export(cfg,'lock-'+uuid.uuid4().hex)
@@ -112,8 +146,7 @@ class PostgreSQLTests(Work):
         # production SQL never executes provider functions or sleeps.
         from src.canonical_source_export.reader import Reader
         from src.canonical_source_export.resources import Budget
-        cfg=Config(self.cfg.connection,self.root,self.cfg.publisher,self.cfg.license_references,self.cfg.fixture,
-                   dict(self.cfg.limits,statement_ms=100))
+        cfg=replace(self.cfg,limits=dict(self.cfg.limits,statement_ms=100))
         with Budget(self.root,cfg.limits) as b:
             with self.assertRaises(psycopg2.Error) as e:
                 with Reader(cfg,b) as r:
@@ -134,7 +167,7 @@ class PostgreSQLTests(Work):
         (PRIVATE/'resource-evidence.json').write_bytes(bundle.encode(evidence));(PRIVATE/'resource-evidence.json').chmod(0o600)
         for lower,code in (({'rows':100},'row_limit'),({'total_bytes':1000},'byte_limit'),
                            ({'scratch_bytes':32768},'operation_failed'),({'buffer_bytes':1000},'buffer_limit')):
-            cfg=Config(self.cfg.connection,self.root,self.cfg.publisher,self.cfg.license_references,self.cfg.fixture,dict(self.cfg.limits,**lower))
+            cfg=replace(self.cfg,limits=dict(self.cfg.limits,**lower))
             gid='cap-'+uuid.uuid4().hex
             with self.assertRaisesRegex(ExportError,'^'+code+'$'):bundle.export(cfg,gid)
             self.assertFalse((self.root/gid).exists())
@@ -165,12 +198,7 @@ export(cfg,sys.argv[2],hook)
             finally:
                 if child.poll() is None:child.kill();child.communicate(timeout=10)
             marker.unlink(missing_ok=True)
-            until=time.monotonic()+5
-            while True:
-                try:self.no_backend();break
-                except AssertionError:
-                    if time.monotonic()>until:raise
-                    time.sleep(.02)
+            self.no_backend()
             self.assertFalse((self.root/g).exists());self.assertTrue((self.root/('.claim-'+g)).exists())
             if signum==signal.SIGKILL:
                 self.assertTrue(bundle.cleanup(self.root,g)['cleaned_owned_staging'])
@@ -234,6 +262,199 @@ bundle.export(load_config(sys.argv[1]),'after-rename')
                 m['streams'][0]['bytes']=len(raw);m['streams'][0]['sha256']=digest(raw);m['generation']['bundle_sha256']=bundle_digest(m['streams'])
             mp.write_bytes(bundle.encode(m));self.assertNotEqual(run().returncode,0,change)
         g3,_=self.emit();path=self.root/g3;self.assertNotEqual(run({'rows':1}).returncode,0)
+        self.no_backend()
+
+    def test_column_only_private_reads_and_writes_refused(self):
+        for privilege,reason in (('SELECT(value)','reader_excess_select'),
+                                 ('UPDATE(value)','reader_not_narrow'),('REFERENCES(value)','reader_not_narrow')):
+            with self.subTest(privilege=privilege):
+                self.write('GRANT '+privilege+' ON f005_fixture_control.private_sentinel TO '+self.reader)
+                try:
+                    with self.assertRaisesRegex(ExportError,reason):self.emit()
+                finally:self.write('REVOKE '+privilege+' ON f005_fixture_control.private_sentinel FROM '+self.reader)
+        self.no_backend()
+
+    def test_unrelated_views_sequences_public_reads_and_source_column_writes_refused(self):
+        self.write('CREATE VIEW f005_fixture_control.f006_view AS SELECT value FROM f005_fixture_control.private_sentinel')
+        self.write('CREATE SEQUENCE f005_fixture_control.f006_sequence')
+        cases=[('SELECT','f005_fixture_control.f006_view','PUBLIC','reader_excess_select'),
+               ('USAGE','f005_fixture_control.f006_sequence',self.reader,'reader_excess_select'),
+               ('UPDATE(private_canary)','public.main',self.reader,'reader_not_narrow'),
+               ('INSERT','public.addresses',self.reader,'reader_not_narrow'),
+               ('MAINTAIN','public.buildings',self.reader,'reader_not_narrow')]
+        try:
+            for privilege,table,role,reason in cases:
+                with self.subTest(privilege=privilege):
+                    self.write('GRANT '+privilege+' ON '+table+' TO '+role)
+                    try:
+                        with self.assertRaisesRegex(ExportError,reason):self.emit()
+                    finally:self.write('REVOKE '+privilege+' ON '+table+' FROM '+role)
+        finally:
+            self.write('DROP VIEW f005_fixture_control.f006_view')
+            self.write('DROP SEQUENCE f005_fixture_control.f006_sequence')
+        self.no_backend()
+
+    def test_fixture_marker_tls_and_bound_identity_failures(self):
+        good=self.cfg
+        cases=[replace(good,fixture=dict(good.fixture,database_oid=good.fixture['database_oid']+1)),
+               replace(good,fixture=dict(good.fixture,marker='invalid-marker')),
+               replace(good,fixture=dict(good.fixture,server_version_num=good.fixture['server_version_num']+1)),
+               replace(good,connection=dict(good.connection,sslrootcert=str(self.root/'absent-ca')))]
+        bad_ca=self.root/'invalid-ca';bad_ca.write_text('synthetic invalid CA')
+        cases.append(replace(good,connection=dict(good.connection,sslrootcert=str(bad_ca))))
+        for i,cfg in enumerate(cases):
+            with self.subTest(case=i),self.assertRaises(ExportError):bundle.preflight(cfg)
+        actual_connect=psycopg2.connect
+        def wrong_tls_name(**kwargs):
+            # Pin the same guarded loopback transport, with an unmatched TLS name.
+            return actual_connect(**dict(kwargs,host='f006-wrong-host.invalid',hostaddr='127.0.0.1'))
+        with patch.object(psycopg2,'connect',wrong_tls_name),self.assertRaises(ExportError):bundle.preflight(good)
+        self.no_backend()
+
+    def test_exporter_rejects_transaction_and_settings_drift(self):
+        for action in ('commit','rollback','search_path','row_security','statement_timeout','lock_timeout',
+                       'idle_in_transaction_session_timeout'):
+            def hook(point,source):
+                if point!='snapshot':return
+                if action in ('commit','rollback'):getattr(source.conn,action)()
+                else:
+                    with source.conn.cursor() as q:
+                        # Test invariant refusal without racing timeout expiry;
+                        # short cancellation/deadline proofs are separate cases.
+                        value={'search_path':'public','row_security':'off'}.get(action,'12345')
+                        q.execute('SELECT pg_catalog.set_config(%s,%s,true)',(action,value))
+            with self.subTest(action=action),self.assertRaisesRegex(ExportError,'source_session'):self.emit(hook=hook)
+        self.no_backend()
+
+    def test_inheritance_and_read_grant_option_refused(self):
+        self.write('CREATE TABLE f005_fixture_control.f006_child () INHERITS (public.main)')
+        try:
+            with self.assertRaisesRegex(ExportError,'required_relation'):self.emit()
+        finally:self.write('DROP TABLE f005_fixture_control.f006_child')
+        self.write(f'GRANT SELECT ON public.main TO {self.reader} WITH GRANT OPTION')
+        try:
+            with self.assertRaisesRegex(ExportError,'reader_not_narrow'):self.emit()
+        finally:self.write(f'REVOKE GRANT OPTION FOR SELECT ON public.main FROM {self.reader}')
+        self.no_backend()
+
+    def test_fixed_exporter_components_admit_no_caller_sql(self):
+        before=state_digest(self.fixture)
+        with Budget(self.root,self.cfg.limits) as budget,Reader(self.cfg,budget) as source:
+            for invalid in ('main; COMMIT; CREATE TEMP TABLE f006_escape(x int)', 'private_sentinel', '../main'):
+                with self.assertRaises(KeyError):source.count(invalid)
+                with self.assertRaises(KeyError):list(source.rows(invalid))
+            self.assertEqual(source.count('main'),5)
+        self.assertEqual(state_digest(self.fixture),before);self.no_backend()
+
+
+class PublicTempPostgreSQLTests(PostgreSQLTests):
+    """Repeat the entire coherence/integrity/cancellation/receiver matrix admitted."""
+    def setUp(self):
+        super().setUp()
+        if os.environ.get('F006_FIXTURE_VARIANT') not in ('public-only-temp','public-default-acl-temp'):
+            raise ExportError('fixture_variant_required')
+        self.cfg=self.admitted()
+
+    def test_exact_public_acl_provenance_and_bounded_preflight(self):
+        c,_,_=guarded(self.fixture)
+        try:
+            with c.cursor() as q:
+                q.execute("""SELECT d.datacl IS NULL,
+                  EXISTS(SELECT 1 FROM pg_catalog.aclexplode(COALESCE(d.datacl,pg_catalog.acldefault('d',d.datdba))) a
+                    WHERE a.grantee=0 AND a.grantor=d.datdba AND a.privilege_type='TEMPORARY' AND NOT a.is_grantable),
+                  EXISTS(SELECT 1 FROM pg_catalog.aclexplode(COALESCE(d.datacl,pg_catalog.acldefault('d',d.datdba))) a
+                    JOIN pg_catalog.pg_roles r ON r.oid=a.grantee
+                    WHERE r.rolname=%s AND a.privilege_type='TEMPORARY')
+                  FROM pg_catalog.pg_database d WHERE d.datname=pg_catalog.current_database()""",(self.cfg.connection['user'],))
+                self.assertEqual(q.fetchone(),(os.environ['F006_FIXTURE_VARIANT']=='public-default-acl-temp',True,False))
+        finally:c.close()
+        with patch.object(Reader,'count',side_effect=AssertionError('preflight must not COUNT')):
+            result=bundle.preflight(self.cfg)
+        self.assertTrue(result['narrow_reader']);self.no_backend()
+
+    def test_narrow_role_denies_writes_private_and_temp(self):
+        before=state_digest(self.fixture);probed=[]
+        def probe(point,source):
+            if point!='snapshot':return
+            snapshot=source.snapshot
+            with source.conn.cursor() as q:
+                q.execute("SELECT pg_catalog.has_database_privilege(pg_catalog.current_database(),'TEMP')")
+                self.assertTrue(q.fetchone()[0])  # General capability exists.
+                for statement,expected in (
+                    ('CREATE TEMP TABLE f006_must_fail(x int)','25006'),
+                    ('CREATE TABLE public.f006_must_fail(x int)','25006'),
+                    ("INSERT INTO public.main(building_key) VALUES('f006_must_fail')",'25006'),
+                    ("UPDATE public.main SET building_key='f006_must_fail'",'25006'),
+                    ('DELETE FROM public.addresses','25006'),
+                    ('SELECT * FROM f005_fixture_control.private_sentinel','42501'),
+                    ('SET TRANSACTION ISOLATION LEVEL READ COMMITTED','25001'),
+                    ('SET TRANSACTION READ WRITE','25001')):
+                    q.execute('SAVEPOINT f006_probe')
+                    try:
+                        with self.assertRaises(psycopg2.Error) as failure:q.execute(statement)
+                        self.assertEqual(failure.exception.pgcode,expected)
+                        probed.append(expected)
+                    finally:
+                        q.execute('ROLLBACK TO SAVEPOINT f006_probe')
+                        q.execute('RELEASE SAVEPOINT f006_probe')
+                q.execute("SELECT pg_catalog.pg_my_temp_schema(),pg_catalog.to_regclass('public.f006_must_fail'),pg_catalog.pg_current_snapshot()::text")
+                self.assertEqual(q.fetchone(),(0,None,snapshot))
+            self.assertEqual(source.count('main'),5)
+        g,_=self.emit(hook=probe)
+        self.assertEqual(len(probed),8);self.assertTrue(bundle.verify(self.root/g,self.cfg.limits)['verified'])
+        self.assertEqual(state_digest(self.fixture),before);self.no_backend()
+
+    def test_strict_policy_refuses_public_temp_before_source(self):
+        strict=replace(self.cfg,database_temp_policy=DatabaseTempPolicy())
+        with patch.object(Reader,'catalog',side_effect=AssertionError('must not reach source catalog')):
+            with self.assertRaisesRegex(ExportError,'reader_not_narrow'):bundle.preflight(strict)
+        # Version 1 and version 2 deny have the identical strict in-memory policy.
+        p=self.root/'strict.json';write_config(strict,p)
+        for version in (1,2):
+            d=json.loads(p.read_bytes());d['version']=version
+            if version==2:d['database_temp_policy']={'mode':'deny'}
+            p.write_bytes(bundle.encode(d))
+            with self.assertRaisesRegex(ExportError,'reader_not_narrow'):bundle.preflight(load_config(p))
+        self.no_backend()
+
+    def test_polluted_fresh_session_rejected_and_closed(self):
+        actual_connect=psycopg2.connect
+        for sql in ('CREATE TEMP TABLE f006_polluted(x int)','PREPARE f006_polluted AS SELECT 1',
+                    'LISTEN f006_polluted','SET search_path=public'):
+            def dirty(**kwargs):
+                conn=actual_connect(**kwargs)
+                try:
+                    conn.set_session(readonly=False)
+                    with conn.cursor() as q:q.execute(sql)
+                    conn.commit();return conn
+                except BaseException:
+                    conn.close();raise
+            with self.subTest(state=sql),patch.object(psycopg2,'connect',dirty):
+                with self.assertRaisesRegex(ExportError,'source_session'):bundle.preflight(self.cfg)
+            self.no_backend()
+        c,_,_=guarded(self.fixture)
+        try:
+            with c.cursor() as q:
+                q.execute("SELECT count(*) FROM pg_catalog.pg_class WHERE relname IN ('f006_polluted','f006_must_fail')")
+                self.assertEqual(q.fetchone()[0],0)
+        finally:c.close()
+
+    def test_policy_oid_binding_refuses_recreated_identities(self):
+        for field in ('database_oid','reader_oid'):
+            changed=replace(self.cfg.database_temp_policy,**{field:getattr(self.cfg.database_temp_policy,field)+1})
+            with self.subTest(field=field),self.assertRaisesRegex(ExportError,'temp_policy_identity'):
+                bundle.preflight(replace(self.cfg,database_temp_policy=changed))
+        self.no_backend()
+
+
+class PolicyPostgreSQLTests(DatabaseWork):
+    def test_unapproved_privilege_topology_refused(self):
+        from tests.run_canonical_source_export_checks import NEGATIVE_VARIANTS
+        if os.environ.get('F006_FIXTURE_VARIANT') not in NEGATIVE_VARIANTS:
+            raise ExportError('fixture_variant_required')
+        self.cfg=self.admitted()
+        with patch.object(Reader,'catalog',side_effect=AssertionError('must not reach source catalog')):
+            with self.assertRaisesRegex(ExportError,'reader_not_narrow'):bundle.preflight(self.cfg)
         self.no_backend()
 
 
