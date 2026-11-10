@@ -1,4 +1,5 @@
 """Explicit public serialization boundary, independent of owner metadata."""
+from src.personal_utilities_contract import (ScenarioInputsV5, EffectiveV5, VersionedV5, ReadPathV5, AvailabilityPathV5, UTILITIES_PATHS, project_v5)
 from typing import Literal
 
 from pydantic import Field, field_serializer, field_validator
@@ -116,6 +117,21 @@ class SharedBuildingV4(SharedBuildingV3):
         return VersionedV4.exact_version(value)
 
 
+class SharedBuildingV5(SharedBuildingV3):
+    schema_version: Literal[5] = 5
+    document_schema_version: Literal[1, 2, 3, 4, 5]
+    scenario_inputs: ScenarioInputsV5
+    effective: EffectiveV5
+    field_provenance: dict[ReadPathV5, FieldProvenanceV1]
+    source_availability: dict[AvailabilityPathV5, AvailabilityV1]
+
+    @field_validator('schema_version', mode='before')
+    @classmethod
+    def exact_version(cls, value):
+        return VersionedV5.exact_version(value)
+
+
+
 # Map keys/dependencies cannot smuggle internal identifiers into the safe DTO.
 PUBLIC_PROVENANCE = frozenset({f'details.{k}' for k in DetailsV1.model_fields} | {
     'identity.permanent_building_identifier', 'identity.property_identifier',
@@ -152,13 +168,15 @@ def shared_projection(row, base, reason, version=1):
         projection = project_building(base, document.overrides, document.scenario_inputs,
             building_key=row.building_key, last_known_summary=summary, base_unavailable_reason=reason)
     else:
-        projection = {2: project_v2, 3: project_v3, 4: project_v4}[version](base, document, building_key=row.building_key,
+        projection = {2: project_v2, 3: project_v3, 4: project_v4, 5: project_v5}[version](base, document, building_key=row.building_key,
             last_known_summary=summary, base_unavailable_reason=reason)
     allowed = PUBLIC_PROVENANCE if version == 1 else PUBLIC_PROVENANCE | NEW_PATHS | {'display_name'}
-    if version in (3, 4):
+    if version in (3, 4, 5):
         allowed |= SYSTEMS_PATHS
-    if version == 4:
+    if version in (4, 5):
         allowed |= RENOVATIONS_PATHS
+    if version == 5:
+        allowed |= UTILITIES_PATHS
     safe_base = None
     if base is not None:
         safe_base = SharedBaseV1(
@@ -177,9 +195,9 @@ def shared_projection(row, base, reason, version=1):
         'certificate': public_component(projection.effective.certificate),
         'published_certificate': public_component(projection.effective.published_certificate),
         'model': public_component(projection.effective.model)})
-    model = {1: SharedBuildingV1, 2: SharedBuildingV2, 3: SharedBuildingV3, 4: SharedBuildingV4}[version]
+    model = {1: SharedBuildingV1, 2: SharedBuildingV2, 3: SharedBuildingV3, 4: SharedBuildingV4, 5: SharedBuildingV5}[version]
     fields = {} if version == 1 else {'document_schema_version': row.schema_version, 'input_status': projection.input_status}
-    if version in (3, 4):
+    if version in (3, 4, 5):
         fields['systems_defaults'] = projection.systems_defaults
         fields['systems_source_provenance'] = projection.systems_source_provenance
     return model(**fields, building_key=row.building_key, display_name=document.display_name,

@@ -116,10 +116,30 @@ def export_renovations():
     Path('src/api/personal-renovations-v4.examples.json').write_text(json.dumps(examples, indent=2) + '\n')
     print(f'Candidate renovations v4 schema and {len(examples)} typed examples exported; added-layer thickness in mm supported.')
 
+def export_utilities():
+    """Export only the closed v5 successor; historical artifacts stay frozen."""
+    from src.personal_utilities_contract import PersonalBuildingPutV5, PersonalBuildingPatchV5, PersonalBuildingProjectionV5
+    from src.user_building_contract import SavedBuildingV5, SavedBuildingPageV5, SavedBuildingSummaryV5
+    from src.building_share_contract import SharedBuildingV5
+    from src.api.personal_utilities_examples import utilities_examples
+    modes = [(m, 'serialization') for m in (PersonalBuildingProjectionV5, SavedBuildingV5,
+        SavedBuildingPageV5, SavedBuildingSummaryV5, SharedBuildingV5)] + [
+        (m, 'validation') for m in (PersonalBuildingPutV5, PersonalBuildingPatchV5)]
+    _, schema = models_json_schema(modes, title='EnergyMapPersonalUtilitiesV5Closed')
+    Path('src/api/personal-utilities-v5.schema.json').write_text(json.dumps(schema, indent=2) + '\n')
+    examples = {}
+    for name, (model, value) in utilities_examples().items():
+        model.model_validate_json(json.dumps(value))
+        examples[name] = value
+    Path('src/api/personal-utilities-v5.examples.json').write_text(json.dumps(examples, indent=2) + '\n')
+    print(f'Closed utilities v5 schema and {len(examples)} typed examples exported.')
+
 
 if __name__ == '__main__':
     import sys
-    if sys.argv[1:] == ['--renovations-only']:
+    if sys.argv[1:] == ['--utilities-only']:
+        export_utilities()
+    elif sys.argv[1:] == ['--renovations-only']:
         export_renovations()
     elif sys.argv[1:] == ['--hvac-only']:
         export_hvac()
@@ -127,4 +147,4 @@ if __name__ == '__main__':
         export()
         export_hvac()
     else:
-        raise SystemExit('Usage: python -m src.api.export_building_contract [--hvac-only|--renovations-only]')
+        raise SystemExit('Usage: python -m src.api.export_building_contract [--hvac-only|--renovations-only|--utilities-only]')

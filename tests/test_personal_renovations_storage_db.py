@@ -1,4 +1,4 @@
-"""Historical/mixed-v4 archives and NEW-target recovery on owned PostgreSQL pairs."""
+"""Historical/mixed-v5 archives and NEW-target recovery on owned PostgreSQL pairs."""
 from concurrent.futures import ThreadPoolExecutor
 import json
 import os
@@ -21,32 +21,37 @@ from src.building_share_contract import shared_projection
 from src.db.state import state_session, state_ready
 from src import user_buildings as owner, building_shares as shares
 from src.state_storage import operations, recovery
-from src.state_storage.catalog import (HISTORICAL_VERSION, PROPERTY_VERSION, HVAC_VERSION, VERSION,
+from src.state_storage.catalog import (HISTORICAL_VERSION, PROPERTY_VERSION, HVAC_VERSION, RENOVATIONS_VERSION, VERSION,
     audit_schema, audit_acl, rows, scalar)
 from src.state_storage.private import StorageError, read_json
 from tests.personal_state_fixture import state_pair, migrator_connection
 from tests.test_state_storage_db import runtime_environment
 from tests.test_personal_hvac import full_systems
 from tests.test_personal_renovations import all_renovations
-from state_migrations.versions.es0004_renovations_v4 import definition
+from state_migrations.versions.es0005_utilities_v5 import definition
+from src.personal_utilities_contract import PersonalBuildingPutV5
+from tests.test_personal_utilities import utilities
 
-PROFILES = (HISTORICAL_VERSION, PROPERTY_VERSION, HVAC_VERSION, VERSION)
+PROFILES = (HISTORICAL_VERSION, PROPERTY_VERSION, HVAC_VERSION, RENOVATIONS_VERSION, VERSION)
 PRINCIPAL = AuthenticatedPrincipal('https://synthetic.invalid', 'renovations-owner')
 
 
 def seed(target, profile):
-    models = (PersonalBuildingPutV1, PersonalBuildingPutV2, PersonalBuildingPutV3, PersonalBuildingPutV4)
+    models = (PersonalBuildingPutV1, PersonalBuildingPutV2, PersonalBuildingPutV3, PersonalBuildingPutV4, PersonalBuildingPutV5)
     base = CanonicalBuildingV1.model_validate_json(json.dumps(public_example()))
     tokens = []
     with runtime_environment(target, operations.load_bundle(target)), state_session() as session:
         selected = models[:PROFILES.index(profile) + 1]
-        if profile == VERSION: selected += (PersonalBuildingPutV4,) * 3
+        if profile == VERSION: selected += (PersonalBuildingPutV5,) * 3
         for index, model in enumerate(selected, 1):
-            version = min(index, 4)
+            version = min(index, 5)
             scenario = {'resident_count': 2}
             if version >= 2: scenario |= {'apartment_studio_count': 0, 'apartment_two_room_count': None}
             if version >= 3: scenario['systems'] = full_systems()
-            if version >= 4: scenario['renovations'] = all_renovations((230.5, 0, None, ...)[index - 4])
+            if version >= 4: scenario['renovations'] = all_renovations((230.5, 0, None, ...)[(index - 4) % 4])
+            if version >= 5:
+                scenario['utilities'] = utilities((12345.5, 0, None, None)[index - 5])
+                if index == 8: scenario['utilities'] = {'water': {}}
             value = model.model_validate({'schema_version': version, 'overrides': {'floor_area': 0, 'total_area': None}, 'scenario_inputs': scenario})
             key = 'synthetic-v' + str(index)
             row = owner.create_owned(session, PRINCIPAL, key, value, base.model_copy(update={'building_key': key}))
@@ -55,7 +60,7 @@ def seed(target, profile):
     return tokens
 
 
-@unittest.skipUnless(os.getenv('RUN_PERSONAL_RENOVATIONS_DB_TESTS') == '1', 'requires explicit owned 55433 fixtures')
+@unittest.skipUnless(os.getenv('RUN_PERSONAL_RENOVATIONS_DB_TESTS') == '1' or os.getenv('RUN_PERSONAL_UTILITIES_DB_TESTS') == '1', 'requires explicit owned 55433 fixtures')
 class RenovationsStorageTests(unittest.TestCase):
     def test_all_archive_profiles_upgrade_retry_fingerprints_and_capabilities(self):
         for profile in PROFILES:
@@ -67,7 +72,7 @@ class RenovationsStorageTests(unittest.TestCase):
                     self.assertEqual(operations.apply(target)['version'], profile)
                 tokens = seed(target, profile)
                 with runtime_environment(target, operations.load_bundle(target)):
-                    for version in (1, 2, 3, 4):
+                    for version in (1, 2, 3, 4, 5):
                         self.assertEqual(state_ready(version), version <= PROFILES.index(profile) + 1)
                 with operations.connected(target, database=target['database'], read_only=True) as c:
                     before = recovery.data_fingerprint(c); audit_schema(c, profile); audit_acl(c, target)
@@ -76,8 +81,9 @@ class RenovationsStorageTests(unittest.TestCase):
                 if profile in (HISTORICAL_VERSION, PROPERTY_VERSION):
                     self.assertEqual(operations.upgrade_personal_v3(target)['version'], HVAC_VERSION)
                 if profile != VERSION:
-                    self.assertEqual(operations.upgrade_personal_v4(target)['version'], VERSION)
-                for old_upgrade in (operations.upgrade_personal_v2, operations.upgrade_personal_v3):
+                    self.assertEqual(operations.upgrade_personal_v4(target)['version'], RENOVATIONS_VERSION)
+                self.assertEqual(operations.upgrade_personal_v5(target)['version'], VERSION)
+                for old_upgrade in (operations.upgrade_personal_v2, operations.upgrade_personal_v3, operations.upgrade_personal_v4):
                     with self.assertRaises(StorageError): old_upgrade(target)
                 with operations.connected(target, database=target['database'], read_only=True) as c:
                     after = recovery.data_fingerprint(c)
@@ -85,8 +91,8 @@ class RenovationsStorageTests(unittest.TestCase):
                                      {k: v for k, v in after.items() if k != 'alembic_version'})
                 # First interruption: pg_restore committed, grants transaction has
                 # committed, upgrade has NOT run. Writer remains disabled.
-                original_migrate = recovery.migrate_personal_v4
-                with patch('src.state_storage.recovery.migrate_personal_v4', side_effect=RuntimeError('test_before_upgrade')):
+                original_migrate = recovery.migrate_personal_v5
+                with patch('src.state_storage.recovery.migrate_personal_v5', side_effect=RuntimeError('test_before_upgrade')):
                     with self.assertRaisesRegex(RuntimeError, 'test_before_upgrade'): recovery.restore(restored)
                 with operations.connected(restored, database=restored['database'], read_only=True) as c:
                     self.assertFalse(scalar(c, 'SELECT rolcanlogin FROM pg_roles WHERE rolname=%s', (restored['writer'],)))
@@ -94,7 +100,7 @@ class RenovationsStorageTests(unittest.TestCase):
                 def interrupted(t, bundle):
                     original_migrate(t, bundle)
                     raise RuntimeError('test_after_upgrade_commit')
-                with patch('src.state_storage.recovery.migrate_personal_v4', side_effect=interrupted):
+                with patch('src.state_storage.recovery.migrate_personal_v5', side_effect=interrupted):
                     with self.assertRaisesRegex(RuntimeError, 'test_after_upgrade_commit'): recovery.restore(restored)
                 with operations.connected(restored, database=restored['database'], read_only=True) as c:
                     audit_schema(c, VERSION)
@@ -110,19 +116,22 @@ class RenovationsStorageTests(unittest.TestCase):
                     audit_schema(c, VERSION); audit_acl(c, restored)
                     self.assertTrue(recovery.restored_data_matches(c, read_json(Path(target['backup_dir'])/'manifest.json')))
                 with runtime_environment(restored, operations.load_bundle(restored)):
-                    self.assertTrue(state_ready(4))
+                    self.assertTrue(state_ready(5))
                     with state_session(read_only=True) as s:
                         for index, token in enumerate(tokens, 1):
-                            version = min(index, 4)
+                            version = min(index, 5)
                             row = shares.lookup(s, token)
-                            read = owner.detail(row, None, version=4)
-                            shared = shared_projection(row, None, 'source_unavailable', 4)
+                            read = owner.detail(row, None, version=5)
+                            shared = shared_projection(row, None, 'source_unavailable', 5)
                             self.assertEqual(read.document_schema_version, version)
                             self.assertEqual(shared.scenario_inputs, read.scenario_inputs)
-                            if version == 4:
-                                expected = all_renovations((230.5, 0, None, ...)[index - 4])
+                            if version >= 4:
+                                expected = all_renovations((230.5, 0, None, ...)[(index - 4) % 4])
                                 self.assertEqual(personal_document(owner.stored_document(row))['scenario_inputs']['renovations'], expected)
                                 self.assertEqual(sparse(read.scenario_inputs)['renovations'], expected)
+                            if version == 5:
+                                expected_u = {'water': {}} if index == 8 else utilities((12345.5, 0, None)[index - 5])
+                                self.assertEqual(sparse(read.scenario_inputs)['utilities'], expected_u)
                     with state_session() as s:
                         row = shares.lookup(s, tokens[-1]); rotated = shares.rotate(s, row); s.commit()
                     with state_session() as s:
@@ -151,8 +160,8 @@ class RenovationsStorageTests(unittest.TestCase):
                 if program == 'pg_dump' and '--version' not in args and not changed:
                     changed = True
                     with runtime_environment(target, operations.load_bundle(target)), state_session() as session:
-                        row = shares.lookup(session, tokens[3]); owner.bump_revision(row)
-                        row.scenario_inputs = dict(row.scenario_inputs, renovations=all_renovations(99))
+                        row = shares.lookup(session, tokens[4]); owner.bump_revision(row)
+                        row.scenario_inputs = dict(row.scenario_inputs, utilities=utilities(99))
                         session.commit()
                 return original_client(t, program, args, **kwargs)
             with patch('src.state_storage.recovery.client', side_effect=concurrent_save): recovery.backup(target)
@@ -165,7 +174,7 @@ class RenovationsStorageTests(unittest.TestCase):
             with operations.connected(restored, database=restored['database'], read_only=True) as c:
                 self.assertEqual(recovery.data_fingerprint(c), before)
 
-    def test_downgrade_waits_for_insert_then_refuses_v4(self):
+    def test_downgrade_waits_for_insert_then_refuses_v5(self):
         with state_pair() as (target, _):
             operations.apply(target)
             base = CanonicalBuildingV1.model_validate_json(json.dumps(public_example()))
@@ -176,7 +185,7 @@ class RenovationsStorageTests(unittest.TestCase):
                     entered.set()
                     with Operations.context(MigrationContext.configure(c)): definition().downgrade()
             with runtime_environment(target, operations.load_bundle(target)), state_session() as session:
-                owner.create_owned(session, PRINCIPAL, base.building_key, PersonalBuildingPutV4(schema_version=4), base)
+                owner.create_owned(session, PRINCIPAL, base.building_key, PersonalBuildingPutV5(schema_version=5), base)
                 with ThreadPoolExecutor(max_workers=1) as pool:
                     task = pool.submit(downgrade)
                     try:
@@ -194,7 +203,7 @@ class RenovationsStorageTests(unittest.TestCase):
                     with self.assertRaisesRegex(RuntimeError, 'downgrade refused'): task.result(timeout=15)
             with operations.connected(target, database=target['database'], read_only=True) as c:
                 audit_schema(c, VERSION)
-                self.assertEqual(scalar(c, 'SELECT schema_version FROM energymap_state.energymap_user_buildings'), 4)
+                self.assertEqual(scalar(c, 'SELECT schema_version FROM energymap_state.energymap_user_buildings'), 5)
 
     def test_wrong_ownership_and_restore_to_origin_refuse_without_mutation(self):
         from uuid import uuid4
@@ -212,6 +221,34 @@ class RenovationsStorageTests(unittest.TestCase):
             with operations.connected(target, database=target['database'], read_only=True) as c:
                 self.assertEqual(recovery.data_fingerprint(c), before)
                 audit_schema(c, VERSION); audit_acl(c, target)
+
+    def test_archive_integrity_and_advisory_lock_reject_before_new_resources(self):
+        with state_pair() as (target, restored):
+            operations.apply(target); seed(target, VERSION); recovery.backup(target)
+            archive = Path(target['backup_dir']) / 'state.dump'
+            original = archive.read_bytes()
+            archive.write_bytes(original + b'tampered')
+            try:
+                with self.assertRaises(StorageError) as failure: recovery.restore(restored)
+                self.assertEqual(failure.exception.category, 'archive_integrity')
+            finally:
+                archive.write_bytes(original)
+            manifest_path = Path(target['backup_dir']) / 'manifest.json'
+            manifest = manifest_path.read_text()
+            altered = json.loads(manifest); altered['policy']['version'] = 'unknown-format'
+            manifest_path.write_text(json.dumps(altered))
+            try:
+                with self.assertRaises(StorageError) as failure: recovery.restore(restored)
+                self.assertEqual(failure.exception.category, 'archive_integrity')
+            finally:
+                manifest_path.write_text(manifest)
+            with operations.connected(target) as lock:
+                self.assertTrue(scalar(lock, 'SELECT pg_try_advisory_lock(193847251,1)'))
+                with self.assertRaises(StorageError) as failure: recovery.restore(restored)
+                self.assertEqual(failure.exception.category, 'provision_busy')
+                self.assertFalse(scalar(lock, 'SELECT EXISTS(SELECT 1 FROM pg_database WHERE datname=%s)', (restored['database'],)))
+                self.assertFalse(scalar(lock, 'SELECT EXISTS(SELECT 1 FROM pg_roles WHERE rolname IN (%s,%s))', (restored['migrator'], restored['writer'])))
+            self.assertFalse((Path(restored['private_dir']) / 'bundle.json').exists())
 
     def test_fixture_finalizer_cleans_after_intentional_failure(self):
         target = None

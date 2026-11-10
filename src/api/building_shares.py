@@ -3,7 +3,7 @@ from fastapi import APIRouter
 
 from src.api.building_examples import shared_example
 from src.api.user_buildings import OwnerRoute, error, observe, PersonalVersion
-from src.building_share_contract import SharedBuildingV1, SharedBuildingV2, SharedBuildingV3, SharedBuildingV4, shared_projection
+from src.building_share_contract import SharedBuildingV1, SharedBuildingV2, SharedBuildingV3, SharedBuildingV4, SharedBuildingV5, shared_projection
 from src.building_shares import ShareNotFound, TOKEN_PATTERN, lookup
 from src.db.state import state_session
 from src.user_building_contract import OwnerErrorV1
@@ -17,7 +17,7 @@ def missing_shared_token():
     return error(404, 'shared_building_not_found', 'Shared building not found')
 
 
-@router.get('/{share_token:path}', response_model=SharedBuildingV1 | SharedBuildingV2 | SharedBuildingV3 | SharedBuildingV4, responses={
+@router.get('/{share_token:path}', response_model=SharedBuildingV1 | SharedBuildingV2 | SharedBuildingV3 | SharedBuildingV4 | SharedBuildingV5, responses={
     200: {'content': {'application/json': {'example': shared_example()}}},
     404: {'model': OwnerErrorV1, 'description': 'Share not found'},
     503: {'model': OwnerErrorV1, 'description': 'Personal state unavailable'},

@@ -10,6 +10,7 @@ from pathlib import Path
 import re
 import shutil
 import tempfile
+import time
 from uuid import uuid4
 
 from psycopg2 import sql
@@ -55,7 +56,12 @@ def cleanup_target(target):
         require(all(not values or values == [(target.marker,)] for values in roles.values()), 'fixture_cleanup_identity')
         if db:
             # Never terminate/adopt unknown sessions or FORCE away uncertain work.
-            require(scalar(connection, 'SELECT count(*) FROM pg_stat_activity WHERE datname=%s', (target['database'],)) == 0, 'fixture_cleanup_busy')
+            # Client/pool closure can precede server-side disconnect visibility.
+            # Wait briefly without terminating/adopting any remaining sessions.
+            deadline = time.monotonic() + 3
+            while scalar(connection, 'SELECT count(*) FROM pg_stat_activity WHERE datname=%s', (target['database'],)):
+                require(time.monotonic() < deadline, 'fixture_cleanup_busy')
+                time.sleep(0.02)
             rows(connection, sql.SQL('DROP DATABASE {}').format(sql.Identifier(target['database'])))
         for name, values in roles.items():
             if values:

@@ -40,7 +40,12 @@ class RenovationsDatabaseTests(unittest.TestCase):
         # Cleanup stack registered before provision; fixtures never clear old data.
         self.stack = ExitStack(); self.addCleanup(self.stack.close)
         self.target, _ = self.stack.enter_context(state_pair())
-        apply(self.target)
+        # This historical suite exercises the exact v4 profile, not latest head.
+        from src.state_storage import operations
+        upgrade = operations.command.upgrade
+        with patch('src.state_storage.operations.command.upgrade',
+                side_effect=lambda c, r: upgrade(c, 'es0004_renovations_v4')):
+            apply(self.target)
         http_fixture.OwnerHttpBoundaryTests.setUp(self)
         self.enterContext(runtime_environment(self.target, load_bundle(self.target)))
         self.base = CanonicalBuildingV1.model_validate_json(json.dumps(public_example())).model_copy(update={'building_key': 'synthetic/opaque'})

@@ -627,3 +627,60 @@ compatible reader or recover to a verified NEW compatible target. Actual
 ordinary-user save/reload/reopen, expiry/failure/ownership and report acceptance
 remain separate from synthetic local auth/source tests. No deployment, live
 private migration or public personal layer is performed by this feature.
+
+## Personal utilities v5 candidate (not activated)
+
+[Personal utilities v5](../../src/api/personal-utilities-v5.md) adds only optional
+whole-building annual grid-import kWh and supplied-water m³ observations with
+independent optional completed calendar years. Reviewed renovations v4 remains
+frozen; v5 preserves all eight categories and conditional added-layer thickness.
+No values are source-prefilled or converted to effects.
+
+Latest isolated head is `es0005_utilities_v5`, combined `b825df0a431c` after
+`a714cf9e320b`. The only DDL change is the exact validated recognized-version
+check admitting 1–5. No rows, grants, columns or sources change. All four old
+catalog profiles/migrations remain immutable; `RENOVATIONS_VERSION` explicitly
+pins es0004 and latest `VERSION` is es0005. Old upgrade commands still target
+exactly es0002/es0003/es0004 and refuse newer-target downgrade.
+
+`python -m src.state_storage upgrade-personal-v5 --config-file <private-path>`
+is explicit, audited, advisory-locked and **disposable-only**. It neither
+activates normal/live private storage nor grants release authority. Completed
+`apply` remains verification-only. Readiness recognizes only the exact validated
+version constraint; historical healthy checks return upgrade-required503 for
+requested5. Downgrade takes ACCESS EXCLUSIVE before checking and refuses every
+v5 row, including empty/reset U; never strip answers or stamp old metadata.
+
+Full dumps bind actual historical1–4/latest5 catalog and complete saved/share
+fingerprints. NEW-target recovery restores/audits the exact archive profile,
+reconstructs narrow grants, then upgrades only metadata to5. Every saved row's
+version/JSON, UUID, timestamps, owner and share digest remains identical. Writer
+stays NOLOGIN through final verification. Retrying committed restore/upgrade does
+not replay pg_restore; unsafe targets, tampered archives and unknown catalogs
+remain refusals. Retain protected 0700/0600 archives/bundles, never in Git.
+
+Ordinary serial checks reuse the installed development Python/dependencies and
+existing guarded127.0.0.1:55433 service:
+
+```sh
+env -i PATH=/usr/bin:/bin PYTHONPATH="$PWD:$PWD/src" PYTHONDONTWRITEBYTECODE=1 \
+  .codex-orch/runtime/envs/avoin-energy-map-service-5iS2udd1-py3.12/bin/python \
+  -m tests.run_personal_utilities_checks
+```
+
+Coder and functional reviewer run this same checked-in setup/test/teardown;
+static review runs no tests or fixture preparation. `state_pair` registers
+cleanup before provision and removes only unique marked owned DB/roles and
+private directories, after owned clients/pools close. Shared services, historic
+fixtures, source probe and uncertain outcomes are preserved. There is no
+per-feature container or browser fixture. Unknown cleanup fails and retains
+protected retry descriptors. Runtime doctor is for a concrete environment
+failure, not routine test execution.
+
+Before future activation, install compatible readers and separately review
+private schema/config/routing, protected backup/recovery and rollout. Old binaries
+are unsafe rollback writers after v5 exists; use compatible readers or verified
+NEW-target recovery. Local synthetic auth/source and real disposable database
+proof does not establish real Zitadel login, a deployed private origin, frontend
+save/reset/reopen/session/ownership/report acceptance or calculated effects.
+Normal6900/6903, sandbox live state and deployed public F007 are unchanged.

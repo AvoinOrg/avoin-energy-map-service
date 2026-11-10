@@ -9,8 +9,9 @@ from .private import require
 HISTORICAL_VERSION = 'es0001_saved_share'
 PROPERTY_VERSION = 'es0002_personal_v2'
 HVAC_VERSION = 'es0003_personal_hvac_v3'
-VERSION = 'es0004_renovations_v4'
-PROFILES = {HISTORICAL_VERSION: 'expected_catalog.json', PROPERTY_VERSION: 'expected_catalog_v2.json', HVAC_VERSION: 'expected_catalog_v3.json', VERSION: 'expected_catalog_v4.json'}
+RENOVATIONS_VERSION = 'es0004_renovations_v4'
+VERSION = 'es0005_utilities_v5'
+PROFILES = {HISTORICAL_VERSION: 'expected_catalog.json', PROPERTY_VERSION: 'expected_catalog_v2.json', HVAC_VERSION: 'expected_catalog_v3.json', RENOVATIONS_VERSION: 'expected_catalog_v4.json', VERSION: 'expected_catalog_v5.json'}
 DATA = 'energymap_state'
 META = 'energymap_state_meta'
 SAVED = 'energymap_user_buildings'

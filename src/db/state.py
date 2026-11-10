@@ -77,6 +77,8 @@ def personal_schema_capability(session):
         return 3
     if definitions == ['CHECK (((schema_version = 1) OR (schema_version = 2) OR (schema_version = 3) OR (schema_version = 4)))']:
         return 4
+    if definitions == ['CHECK (((schema_version = 1) OR (schema_version = 2) OR (schema_version = 3) OR (schema_version = 4) OR (schema_version = 5)))']:
+        return 5
     raise StateUnavailable
 
 

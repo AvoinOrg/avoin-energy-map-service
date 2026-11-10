@@ -1,6 +1,7 @@
 """Closed owner-only metadata and bounded keyset cursor contract."""
 import base64
 from datetime import datetime
+from src.personal_utilities_contract import (PersonalBuildingProjectionV5, VersionedV5)
 from typing import Literal
 from uuid import UUID
 
@@ -153,4 +154,29 @@ class SavedBuildingSummaryV4(SavedBuildingSummaryV1):
 
 class SavedBuildingPageV4(VersionedV4):
     items: list[SavedBuildingSummaryV4]
+    next_cursor: str | None
+
+
+class SavedBuildingV5(PersonalBuildingProjectionV5):
+    last_known_summary: LastKnownBuildingSummaryV1
+    saved_id: UUID
+    display_name: DisplayName | None
+    revision: int = Field(ge=1)
+    created_at: UtcTime
+    updated_at: UtcTime
+    share_enabled: bool = False
+
+
+class SavedBuildingSummaryV5(SavedBuildingSummaryV1):
+    schema_version: Literal[5] = 5
+    document_schema_version: Literal[1, 2, 3, 4, 5]
+
+    @field_validator('schema_version', mode='before')
+    @classmethod
+    def exact_version(cls, value):
+        return VersionedV5.exact_version(value)
+
+
+class SavedBuildingPageV5(VersionedV5):
+    items: list[SavedBuildingSummaryV5]
     next_cursor: str | None

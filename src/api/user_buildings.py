@@ -9,6 +9,7 @@ from starlette.routing import Match as RouteMatch
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 from pydantic import ValidationError
+from pydantic_core import PydanticCustomError
 
 from src.api.auth import AuthenticatedPrincipal, require_principal
 from src.building_contract import (
@@ -24,6 +25,7 @@ from src.user_building_contract import (
     SavedBuildingPageV2, SavedBuildingSummaryV2, SavedBuildingV2,
     SavedBuildingPageV3, SavedBuildingSummaryV3, SavedBuildingV3,
     SavedBuildingPageV4, SavedBuildingSummaryV4, SavedBuildingV4,
+    SavedBuildingPageV5, SavedBuildingSummaryV5, SavedBuildingV5,
     decode_cursor, encode_cursor,
 )
 from src import user_buildings as service
@@ -35,6 +37,7 @@ from src.building_contract import CodeCatalog, ContractModel
 from src.personal_property_contract import PersonalBuildingPutV2, PersonalBuildingPatchV2, replace_v2, patch_v2
 from src.personal_hvac_contract import PersonalBuildingPutV3, PersonalBuildingPatchV3, replace_v3, patch_v3, validate_source_identity
 from src.personal_renovations_contract import PersonalBuildingPutV4, PersonalBuildingPatchV4, replace_v4, patch_v4
+from src.personal_utilities_contract import PersonalBuildingPutV5, PersonalBuildingPatchV5, replace_v5, patch_v5
 from src.hvac_catalog import HvacCatalogUnavailable
 
 
@@ -123,7 +126,8 @@ class OwnerRoute(APIRoute):
                 names = ('function-after[bounded(), PersonalBuildingPutV1]', 'function-after[bounded(), PersonalBuildingPutV2]',
                          'function-after[operations(), PersonalBuildingPatchV1]', 'function-after[operations(), PersonalBuildingPatchV2]',
                          'function-after[bounded(), PersonalBuildingPutV3]', 'function-after[operations(), PersonalBuildingPatchV3]',
-                         'function-after[bounded(), PersonalBuildingPutV4]', 'function-after[operations(), PersonalBuildingPatchV4]')
+                         'function-after[bounded(), PersonalBuildingPutV4]', 'function-after[operations(), PersonalBuildingPatchV4]',
+                         'function-after[bounded(), PersonalBuildingPutV5]', 'function-after[operations(), PersonalBuildingPatchV5]')
                 selected_issues = []
                 for issue in issues:
                     if issue['type'] in ('union_tag_invalid', 'union_tag_not_found'):
@@ -141,6 +145,10 @@ class OwnerRoute(APIRoute):
                             issue = dict(issue, loc=[*loc[:index], *loc[index + 1:]])
                     selected_issues.append(issue)
                 return JSONResponse(status_code=422, content={'detail': selected_issues})
+            except PydanticCustomError as failure:
+                if failure.type == 'payload_too_large':
+                    return error(413, 'payload_too_large', 'Personal payload exceeds 32 KiB UTF-8')
+                raise
             except HvacCatalogUnavailable:
                 return error(503, 'hvac_catalog_unavailable', 'Supported HVAC choices or default manifest are temporarily unavailable')
             except PurposeCatalogUnavailable:
@@ -175,21 +183,21 @@ NoneMatch = Annotated[str | None, Header(alias='If-None-Match', description='Use
 
 
 def select_personal_version(request: Request,
-        personal_schema_version: Annotated[int, Query(ge=1, le=4)] = 1):
+        personal_schema_version: Annotated[int, Query(ge=1, le=5)] = 1):
     allowed = {'personal_schema_version'}
     if request.scope.get('route') and request.scope['route'].path == '/energy-data/user/buildings':
         allowed |= {'limit', 'cursor'}
     if any(k not in allowed or len(request.query_params.getlist(k)) != 1 for k in request.query_params):
         raise RequestValidationError([{'loc': ['query'], 'type': 'extra_forbidden', 'msg': 'Unsupported or duplicate query parameter'}])
     raw = request.query_params.get('personal_schema_version', '1')
-    if raw not in ('1', '2', '3', '4'):
-        raise RequestValidationError([{'loc': ['query', 'personal_schema_version'], 'type': 'personal_schema_version', 'msg': 'Expected 1, 2, 3 or 4'}])
+    if raw not in ('1', '2', '3', '4', '5'):
+        raise RequestValidationError([{'loc': ['query', 'personal_schema_version'], 'type': 'personal_schema_version', 'msg': 'Expected 1, 2, 3, 4 or 5'}])
     return int(raw)
 
 
 PersonalVersion = Annotated[int, Depends(select_personal_version)]
-SavedResponse = SavedBuildingV1 | SavedBuildingV2 | SavedBuildingV3 | SavedBuildingV4
-PageResponse = SavedBuildingPageV1 | SavedBuildingPageV2 | SavedBuildingPageV3 | SavedBuildingPageV4
+SavedResponse = SavedBuildingV1 | SavedBuildingV2 | SavedBuildingV3 | SavedBuildingV4 | SavedBuildingV5
+PageResponse = SavedBuildingPageV1 | SavedBuildingPageV2 | SavedBuildingPageV3 | SavedBuildingPageV4 | SavedBuildingPageV5
 
 
 def require_body_version(value, version):
@@ -258,14 +266,14 @@ def list_buildings(request: Request, principal: Principal, version: PersonalVers
         service.require_read_version(row, version)
         result = summaries.get(row.building_key)
         current = result.value if result else None
-        summary_model = {1: SavedBuildingSummaryV1, 2: SavedBuildingSummaryV2, 3: SavedBuildingSummaryV3, 4: SavedBuildingSummaryV4}[version]
+        summary_model = {1: SavedBuildingSummaryV1, 2: SavedBuildingSummaryV2, 3: SavedBuildingSummaryV3, 4: SavedBuildingSummaryV4, 5: SavedBuildingSummaryV5}[version]
         version_fields = {} if version == 1 else {'document_schema_version': row.schema_version}
         items.append(summary_model(**version_fields, saved_id=row.saved_id, building_key=row.building_key,
             display_name=row.display_name, revision=row.revision, created_at=row.created_at, updated_at=row.updated_at,
             base_status='available' if current else 'unavailable',
             base_unavailable_reason=None if current else result.status if result else 'source_unavailable',
             current_summary=current, last_known_summary=service.stored_summary(row), share_enabled=row.share_enabled))
-    return {1: SavedBuildingPageV1, 2: SavedBuildingPageV2, 3: SavedBuildingPageV3, 4: SavedBuildingPageV4}[version](items=items, next_cursor=encode_cursor(rows[-1].updated_at, rows[-1].saved_id) if more else None)
+    return {1: SavedBuildingPageV1, 2: SavedBuildingPageV2, 3: SavedBuildingPageV3, 4: SavedBuildingPageV4, 5: SavedBuildingPageV5}[version](items=items, next_cursor=encode_cursor(rows[-1].updated_at, rows[-1].saved_id) if more else None)
 
 
 @router.post('/{building_key:path}/share', status_code=201, response_model=ShareCreatedV1, responses={201: {'content': {'application/json': {'example': share_created_example()}}}})
@@ -305,7 +313,7 @@ def get_building(building_key: BuildingKey, principal: Principal, response: Resp
 
 
 @router.put('/{building_key:path}', response_model=SavedResponse, responses={status: {'model': SavedResponse, 'description': description, 'content': {'application/json': {'example': saved_example()}}} for status, description in ((200, 'Replaced'), (201, 'Explicitly created'))})
-def put_building(building_key: BuildingKey, value: Annotated[PersonalBuildingPutV1 | PersonalBuildingPutV2 | PersonalBuildingPutV3 | PersonalBuildingPutV4, Body(openapi_examples={
+def put_building(building_key: BuildingKey, value: Annotated[PersonalBuildingPutV1 | PersonalBuildingPutV2 | PersonalBuildingPutV3 | PersonalBuildingPutV4 | PersonalBuildingPutV5, Body(openapi_examples={
     'save': {'summary': 'Explicit personal save', 'value': {'schema_version': 1, 'display_name': 'Home', 'overrides': {'floor_area': 0, 'total_area': None}, 'scenario_inputs': {'resident_count': 2}}},
     'reset': {'summary': 'Replace with an intentionally empty saved document', 'value': {}},
 })], principal: Principal,
@@ -319,7 +327,7 @@ def put_building(building_key: BuildingKey, value: Annotated[PersonalBuildingPut
         service.require_document_version(row, version)
         require_personal_schema(state, version)
         base, reason, catalog = observe(building_key, needs_catalog(value.overrides))
-        value = {1: replace_personal, 2: replace_v2, 3: replace_v3, 4: replace_v4}[version](value, catalog)
+        value = {1: replace_personal, 2: replace_v2, 3: replace_v3, 4: replace_v4, 5: replace_v5}[version](value, catalog)
         row = service.load_owned(state, principal, building_key, lock=True, required=False)
         service.preconditions(request.headers, row, create=True)
         service.require_document_version(row, version)
@@ -332,7 +340,7 @@ def put_building(building_key: BuildingKey, value: Annotated[PersonalBuildingPut
             response.status_code = 201
         else:
             previous = service.stored_document(row)
-            if version in (3, 4):
+            if version in (3, 4, 5):
                 validate_source_identity(value.scenario_inputs.systems, getattr(previous.scenario_inputs, 'systems', None))
             service.stored_summary(row)
             service.bump_revision(row)
@@ -343,7 +351,7 @@ def put_building(building_key: BuildingKey, value: Annotated[PersonalBuildingPut
 
 
 @router.patch('/{building_key:path}', response_model=SavedResponse, responses={200: {'content': {'application/json': {'example': saved_example()}}}})
-def patch_building(building_key: BuildingKey, value: Annotated[PersonalBuildingPatchV1 | PersonalBuildingPatchV2 | PersonalBuildingPatchV3 | PersonalBuildingPatchV4, Body(openapi_examples={
+def patch_building(building_key: BuildingKey, value: Annotated[PersonalBuildingPatchV1 | PersonalBuildingPatchV2 | PersonalBuildingPatchV3 | PersonalBuildingPatchV4 | PersonalBuildingPatchV5, Body(openapi_examples={
     'edit': {'summary': 'Clear name, mark an area unknown, and restore a source fallback', 'value': {'display_name': None, 'set': {'overrides': {'heated_net_area': None}}, 'unset': ['overrides.floor_area']}},
 })], principal: Principal,
                    request: Request, response: Response, version: PersonalVersion, if_match: Match = None, if_none_match: NoneMatch = None):
@@ -358,7 +366,7 @@ def patch_building(building_key: BuildingKey, value: Annotated[PersonalBuildingP
         row = service.locked_owned(state, principal, building_key, request.headers)
         service.require_document_version(row, version)
         require_personal_schema(state, version)
-        updated = {1: apply_personal_patch, 2: patch_v2, 3: patch_v3, 4: patch_v4}[version](service.stored_document(row), value, catalog)
+        updated = {1: apply_personal_patch, 2: patch_v2, 3: patch_v3, 4: patch_v4, 5: patch_v5}[version](service.stored_document(row), value, catalog)
         service.stored_summary(row)
         service.bump_revision(row)
         service.store_document(row, updated, base)

@@ -18,7 +18,7 @@ from sqlalchemy.pool import NullPool
 from src.db.state import check_state
 from .admin_secret import admin_password
 from .catalog import (audit_acl, audit_schema, audit_source, grant_state, harden,
-                      role_audit, rows, scalar, schema_version, VERSION, HISTORICAL_VERSION, PROPERTY_VERSION, HVAC_VERSION)
+                      role_audit, rows, scalar, schema_version, VERSION, HISTORICAL_VERSION, PROPERTY_VERSION, HVAC_VERSION, RENOVATIONS_VERSION)
 from .config import ROOT
 from .source_entry import audit_policy, entry_probe
 from .private import StorageError, atomic_write, read, read_json, require, write_json
@@ -372,7 +372,7 @@ def upgrade_personal_v3(target):
 
 
 def migrate_personal_v4(target, bundle):
-    return migrate_personal_schema(target, bundle, VERSION)
+    return migrate_personal_schema(target, bundle, RENOVATIONS_VERSION)
 
 
 def upgrade_personal_v4(target):
@@ -386,6 +386,21 @@ def upgrade_personal_v4(target):
     return verify(target)
 
 
+def migrate_personal_v5(target, bundle):
+    return migrate_personal_schema(target, bundle, VERSION)
+
+
+def upgrade_personal_v5(target):
+    """Explicit v5 existing-target upgrade; disposable-only until activation review."""
+    require(target['mode'] == 'disposable', 'target_rejected')
+    verify(target)
+    bundle = load_bundle(target)
+    with connected(target) as admin:
+        require(scalar(admin, 'SELECT pg_try_advisory_lock(193847251,1)') is True, 'provision_busy')
+        migrate_personal_v5(target, bundle)
+    return verify(target)
+
+
 def migrate_personal_schema(target, bundle, destination):
     settings = target.settings(target['migrator'], bundle['migrator_password'], target['database'])
     engine = create_engine('postgresql+psycopg2://', connect_args=settings.kwargs(), poolclass=NullPool, hide_parameters=True)
@@ -393,7 +408,7 @@ def migrate_personal_schema(target, bundle, destination):
         with engine.begin() as connection:
             raw = connection.connection.driver_connection
             audit_schema(raw)
-            versions = (HISTORICAL_VERSION, PROPERTY_VERSION, HVAC_VERSION, VERSION)
+            versions = (HISTORICAL_VERSION, PROPERTY_VERSION, HVAC_VERSION, RENOVATIONS_VERSION, VERSION)
             current = schema_version(raw)
             require(versions.index(current) <= versions.index(destination), 'version_drift')
             if current != destination:

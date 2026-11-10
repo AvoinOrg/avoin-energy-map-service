@@ -77,12 +77,12 @@ class HvacStorageDatabaseTests(unittest.TestCase):
                                  {k:v for k,v in after.items() if k!='alembic_version'})
         # A committed metadata-upgrade interruption cannot return ready early,
         # replay the archive or lose grants on retry.
-        actual=recovery.migrate_personal_v4
+        actual=recovery.migrate_personal_v5
         def interrupted(t,b):
             actual(t,b)
             raise RuntimeError('synthetic_post_upgrade_commit')
         if profile!=VERSION:
-            with patch('src.state_storage.recovery.migrate_personal_v4',side_effect=interrupted):
+            with patch('src.state_storage.recovery.migrate_personal_v5',side_effect=interrupted):
                 with self.assertRaisesRegex(RuntimeError,'synthetic_post_upgrade_commit'): recovery.restore(restore)
             with connected(restore,database=restore['database'],read_only=True) as connection:
                 audit_schema(connection,CURRENT_VERSION)

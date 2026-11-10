@@ -14,10 +14,12 @@ from src.building_contract import (
 )
 from src.db.state import StateUnavailable
 from src.db.user_building_models import UserBuilding as Row, UserBuildingShare as Share
-from src.user_building_contract import SavedBuildingV1, SavedBuildingV2, SavedBuildingV3, SavedBuildingV4
+from src.user_building_contract import SavedBuildingV1, SavedBuildingV2, SavedBuildingV3, SavedBuildingV4, SavedBuildingV5
 from src.personal_property_contract import PersonalBuildingPutV2, project_v2, v1_document
 from src.personal_hvac_contract import PersonalBuildingPutV3, project_v3
 from src.personal_renovations_contract import PersonalBuildingPutV4, project_v4
+
+from src.personal_utilities_contract import PersonalBuildingPutV5, project_v5
 
 
 class OwnerFailure(Exception):
@@ -95,7 +97,7 @@ def locked_owned(session, principal, key, headers):
 
 def stored_document(row):
     try:
-        model = {1: PersonalBuildingPutV1, 2: PersonalBuildingPutV2, 3: PersonalBuildingPutV3, 4: PersonalBuildingPutV4}.get(row.schema_version)
+        model = {1: PersonalBuildingPutV1, 2: PersonalBuildingPutV2, 3: PersonalBuildingPutV3, 4: PersonalBuildingPutV4, 5: PersonalBuildingPutV5}.get(row.schema_version)
         if model is None:
             raise ValueError
         return model.model_validate_json(json.dumps({
@@ -167,7 +169,7 @@ def create_owned(session, principal, key, value, base):
 
 
 def require_document_version(row, version):
-    if row is not None and row.schema_version not in (1, 2, 3, 4):
+    if row is not None and row.schema_version not in (1, 2, 3, 4, 5):
         raise StateUnavailable
     if row is not None and version < row.schema_version:
         raise OwnerFailure(409, 'personal_document_version_conflict',
@@ -182,8 +184,8 @@ def detail(row, base, reason='missing', version=1):
         projection = project_building(base, projected.overrides, projected.scenario_inputs, **options)
     else:
         require_read_version(row, version)
-        projection = {2: project_v2, 3: project_v3, 4: project_v4}[version](base, document, **options)
-    model = {1: SavedBuildingV1, 2: SavedBuildingV2, 3: SavedBuildingV3, 4: SavedBuildingV4}[version]
+        projection = {2: project_v2, 3: project_v3, 4: project_v4, 5: project_v5}[version](base, document, **options)
+    model = {1: SavedBuildingV1, 2: SavedBuildingV2, 3: SavedBuildingV3, 4: SavedBuildingV4, 5: SavedBuildingV5}[version]
     return model(**{name: getattr(projection, name) for name in type(projection).model_fields},
         saved_id=row.saved_id, display_name=document.display_name, revision=row.revision,
         created_at=row.created_at, updated_at=row.updated_at, share_enabled=bool(row.share_enabled))
@@ -201,8 +203,8 @@ def page_query(principal, limit, cursor):
 
 
 def require_read_version(row, version):
-    if row.schema_version not in (1, 2, 3, 4):
+    if row.schema_version not in (1, 2, 3, 4, 5):
         raise StateUnavailable
-    if version in (2, 3) and row.schema_version > version:
+    if version in (2, 3, 4) and row.schema_version > version:
         raise OwnerFailure(409, 'personal_document_version_conflict',
                            f'Reload using personal_schema_version={row.schema_version} to read this document')
