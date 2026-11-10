@@ -13,7 +13,7 @@ from src.db.state import state_session, state_ready
 from src import user_buildings as owner, building_shares as shares
 from src.building_share_contract import shared_projection
 from src.state_storage import operations, recovery
-from src.state_storage.catalog import HISTORICAL_VERSION, PROPERTY_VERSION, VERSION, audit_schema, audit_acl, rows
+from src.state_storage.catalog import HISTORICAL_VERSION, PROPERTY_VERSION, HVAC_VERSION as VERSION, VERSION as CURRENT_VERSION, audit_schema, audit_acl, rows
 from src.state_storage.config import load_target
 from src.state_storage.operations import connected, apply, load_bundle, upgrade_personal_v3
 from tests.test_state_storage_db import guarded, runtime_environment
@@ -77,19 +77,19 @@ class HvacStorageDatabaseTests(unittest.TestCase):
                                  {k:v for k,v in after.items() if k!='alembic_version'})
         # A committed metadata-upgrade interruption cannot return ready early,
         # replay the archive or lose grants on retry.
-        actual=recovery.migrate_personal_v3
+        actual=recovery.migrate_personal_v4
         def interrupted(t,b):
             actual(t,b)
             raise RuntimeError('synthetic_post_upgrade_commit')
         if profile!=VERSION:
-            with patch('src.state_storage.recovery.migrate_personal_v3',side_effect=interrupted):
+            with patch('src.state_storage.recovery.migrate_personal_v4',side_effect=interrupted):
                 with self.assertRaisesRegex(RuntimeError,'synthetic_post_upgrade_commit'): recovery.restore(restore)
             with connected(restore,database=restore['database'],read_only=True) as connection:
-                audit_schema(connection,VERSION)
+                audit_schema(connection,CURRENT_VERSION)
                 self.assertFalse(recovery.scalar(connection,'SELECT rolcanlogin FROM pg_roles WHERE rolname=%s',(restore['writer'],)))
         self.assertEqual(recovery.restore(restore)['status'],'restore_verified')
         with connected(restore,database=restore['database'],read_only=True) as connection:
-            audit_schema(connection,VERSION);audit_acl(connection,restore)
+            audit_schema(connection,CURRENT_VERSION);audit_acl(connection,restore)
             actual_rows=recovery.data_fingerprint(connection)
             self.assertEqual({k:v for k,v in actual_rows.items() if k!='alembic_version'},
                              {k:v for k,v in before.items() if k!='alembic_version'})

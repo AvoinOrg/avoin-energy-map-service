@@ -7,9 +7,9 @@ import re
 import subprocess
 import tempfile
 
-from .catalog import (DATA, META, SAVED, SHARES, VERSION, HISTORICAL_VERSION, PROPERTY_VERSION, schema_version, audit_acl, audit_schema, grant_state,
+from .catalog import (DATA, META, SAVED, SHARES, VERSION, HISTORICAL_VERSION, PROPERTY_VERSION, HVAC_VERSION, schema_version, audit_acl, audit_schema, grant_state,
                       rows, scalar)
-from .operations import apply, connected, load_bundle, verify, migrate_personal_v3
+from .operations import apply, connected, load_bundle, verify, migrate_personal_v4
 from .private import (directory, private_file, read_json, safe_path,
                       require, write_json)
 
@@ -22,7 +22,7 @@ POLICY = {'contract':1, 'version':VERSION, 'database':'CONNECT', 'schema':'USAGE
 
 
 def policy_for(version):
-    require(version in (HISTORICAL_VERSION, PROPERTY_VERSION, VERSION), 'archive_integrity')
+    require(version in (HISTORICAL_VERSION, PROPERTY_VERSION, HVAC_VERSION, VERSION), 'archive_integrity')
     return dict(POLICY, version=version)
 
 
@@ -35,7 +35,9 @@ def restored_data_matches(connection, manifest):
         return actual == manifest['data']
     # Only the explicit additive old->new metadata change is admissible. All
     # saved/share rows still match exactly, and the complete new schema is audited.
-    return ((source_version, version) in ((HISTORICAL_VERSION, PROPERTY_VERSION), (HISTORICAL_VERSION, VERSION), (PROPERTY_VERSION, VERSION)) and
+    return ((source_version, version) in ((HISTORICAL_VERSION, PROPERTY_VERSION), (HISTORICAL_VERSION, HVAC_VERSION),
+            (PROPERTY_VERSION, HVAC_VERSION), (HISTORICAL_VERSION, VERSION),
+            (PROPERTY_VERSION, VERSION), (HVAC_VERSION, VERSION)) and
             all(actual[table] == manifest['data'][table] for table in (SAVED, SHARES)))
 
 
@@ -212,7 +214,7 @@ def restore(target):
         # NEW managed target, writer still NOLOGIN. Old archive audit and exact
         # data equality precede migration. A committed-upgrade retry never replays
         # the archive and compares only the deliberately changed metadata profile.
-        migrate_personal_v3(t, bundle)
+        migrate_personal_v4(t, bundle)
         with connected(t, database=t['database'], read_only=True) as connection:
             audit_schema(connection, VERSION)
             require(restored_data_matches(connection, manifest), 'restore_data')

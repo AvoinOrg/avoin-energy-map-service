@@ -98,12 +98,33 @@ def export_hvac():
     print(f'Structured HVAC v3 schemas and {len(examples)} typed examples exported.')
 
 
+def export_renovations():
+    """Export only the provisional v4 successor; historical artifacts stay frozen."""
+    from src.personal_renovations_contract import PersonalBuildingPutV4, PersonalBuildingPatchV4, PersonalBuildingProjectionV4
+    from src.user_building_contract import SavedBuildingV4, SavedBuildingPageV4, SavedBuildingSummaryV4
+    from src.building_share_contract import SharedBuildingV4
+    from src.api.personal_renovations_examples import renovations_examples
+    modes = [(m, 'serialization') for m in (PersonalBuildingProjectionV4, SavedBuildingV4,
+        SavedBuildingPageV4, SavedBuildingSummaryV4, SharedBuildingV4)] + [
+        (m, 'validation') for m in (PersonalBuildingPutV4, PersonalBuildingPatchV4)]
+    _, schema = models_json_schema(modes, title='EnergyMapPersonalRenovationsV4Candidate')
+    Path('src/api/personal-renovations-v4.schema.json').write_text(json.dumps(schema, indent=2) + '\n')
+    examples = {}
+    for name, (model, value) in renovations_examples().items():
+        model.model_validate_json(json.dumps(value))
+        examples[name] = value
+    Path('src/api/personal-renovations-v4.examples.json').write_text(json.dumps(examples, indent=2) + '\n')
+    print(f'Candidate renovations v4 schema and {len(examples)} typed examples exported; added-layer thickness in mm supported.')
+
+
 if __name__ == '__main__':
     import sys
-    if sys.argv[1:] == ['--hvac-only']:
+    if sys.argv[1:] == ['--renovations-only']:
+        export_renovations()
+    elif sys.argv[1:] == ['--hvac-only']:
         export_hvac()
     elif not sys.argv[1:]:
         export()
         export_hvac()
     else:
-        raise SystemExit('Usage: python -m src.api.export_building_contract [--hvac-only]')
+        raise SystemExit('Usage: python -m src.api.export_building_contract [--hvac-only|--renovations-only]')

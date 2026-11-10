@@ -13,6 +13,7 @@ from src.building_contract import (
 
 from src.personal_property_contract import PersonalBuildingProjectionV2, VersionedV2
 from src.personal_hvac_contract import PersonalBuildingProjectionV3, VersionedV3
+from src.personal_renovations_contract import PersonalBuildingProjectionV4, VersionedV4
 
 
 class SavedBuildingV1(PersonalBuildingProjectionV1):
@@ -127,4 +128,29 @@ class SavedBuildingSummaryV3(SavedBuildingSummaryV1):
 
 class SavedBuildingPageV3(VersionedV3):
     items: list[SavedBuildingSummaryV3]
+    next_cursor: str | None
+
+
+class SavedBuildingV4(PersonalBuildingProjectionV4):
+    last_known_summary: LastKnownBuildingSummaryV1
+    saved_id: UUID
+    display_name: DisplayName | None
+    revision: int = Field(ge=1)
+    created_at: UtcTime
+    updated_at: UtcTime
+    share_enabled: bool = False
+
+
+class SavedBuildingSummaryV4(SavedBuildingSummaryV1):
+    schema_version: Literal[4] = 4
+    document_schema_version: Literal[1, 2, 3, 4]
+
+    @field_validator('schema_version', mode='before')
+    @classmethod
+    def exact_version(cls, value):
+        return VersionedV4.exact_version(value)
+
+
+class SavedBuildingPageV4(VersionedV4):
+    items: list[SavedBuildingSummaryV4]
     next_cursor: str | None

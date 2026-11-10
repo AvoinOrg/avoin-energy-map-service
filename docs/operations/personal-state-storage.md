@@ -583,3 +583,47 @@ covered by the v3 fingerprint/recovery suite. Coefficients are deliberately
 deferred. Independent review, actual ordinary-user/deployed/UI acceptance and
 normal-runtime activation remain separate. No extra columns/grants are needed
 for the structured inputs.
+
+## Completed-renovations v4 candidate (not activated)
+
+The closed candidate is documented in [personal-renovations-v4.md](../../src/api/personal-renovations-v4.md).
+The November 10 owner decision defines thickness as the added insulation layer
+in mm, including explicit zero. Renewed independent review and manager delivery
+remain required; local fixture proof is not rollout approval. Keep the existing sandbox and F007
+configuration unchanged. Historical profiles/catalogs/migrations stay intact.
+
+Combined head `a714cf9e320b` and isolated `es0004_renovations_v4` change only the
+validated personal-version check to admit 1/2/3/4. No row is promoted until an
+explicit conditional v4 write. Readiness rejects requested v4 on older schemas.
+Normal `apply` is still verification-only for a completed target. The explicit
+`upgrade-personal-v4` command is disposable-only, advisory-locked and audited.
+`upgrade-personal-v2` and `upgrade-personal-v3` still target their exact historical
+profiles; neither downgrades a newer target. Downgrade locks the saved table
+before checking and refuses ANY v4 row, including an empty/reset document.
+
+A full backup admits exact historical v1/v2/v3 and current-v4 profiles. NEW-target
+restore audits original schema/data first, then upgrades metadata to v4 while
+keeping the writer NOLOGIN until final audits. Only named additive metadata
+transitions are permitted; complete saved/share row fingerprints stay exact.
+Committed-restore/upgrade retry never replays an archive. Never restore over an
+existing origin, adopt an unknown target, remove fields or force a downgrade.
+
+Ordinary repeatable local proof, using existing installed dependencies/service:
+
+```sh
+PYTHONPATH="$PWD:$PWD/src" .codex-orch/runtime/envs/avoin-energy-map-service-5iS2udd1-py3.12/bin/python -m tests.run_personal_renovations_checks
+```
+
+The checked-in helper uses the fixed protected disposable 55433 bootstrap
+reference and creates uniquely marked temporary DB/role pairs; finalizers remove
+only positively owned resources on success/failure. It never resets historical
+fixtures or starts a service/container. Unknown cleanup retains private retry
+files and fails. No secrets or live descriptors belong in commands/reports/Git.
+
+Future activation needs the settled/frozen contract, compatible readers installed
+before additive private schema activation and authenticated routing/proxy/CORS
+configuration. Once v4 rows exist an old binary is unsafe rollback: retain a
+compatible reader or recover to a verified NEW compatible target. Actual
+ordinary-user save/reload/reopen, expiry/failure/ownership and report acceptance
+remain separate from synthetic local auth/source tests. No deployment, live
+private migration or public personal layer is performed by this feature.
