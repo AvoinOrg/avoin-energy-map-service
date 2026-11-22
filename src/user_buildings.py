@@ -9,16 +9,12 @@ from sqlalchemy.exc import IntegrityError
 from pydantic import ValidationError
 
 from src.building_contract import (
-    AvailabilityV1, LastKnownBuildingSummaryV1, PersonalBuildingPutV1,
-    personal_document, project_building,
+    AvailabilityV1, LastKnownBuildingSummaryV1,
+    personal_document,
 )
 from src.db.state import StateUnavailable
 from src.db.user_building_models import UserBuilding as Row, UserBuildingShare as Share
-from src.user_building_contract import SavedBuildingV1, SavedBuildingV2, SavedBuildingV3, SavedBuildingV4, SavedBuildingV5
-from src.personal_property_contract import PersonalBuildingPutV2, project_v2, v1_document
-from src.personal_hvac_contract import PersonalBuildingPutV3, project_v3
-from src.personal_renovations_contract import PersonalBuildingPutV4, project_v4
-
+from src.user_building_contract import SavedBuildingV5
 from src.personal_utilities_contract import PersonalBuildingPutV5, project_v5
 
 
@@ -96,11 +92,9 @@ def locked_owned(session, principal, key, headers):
 
 
 def stored_document(row):
+    require_current_document(row)
     try:
-        model = {1: PersonalBuildingPutV1, 2: PersonalBuildingPutV2, 3: PersonalBuildingPutV3, 4: PersonalBuildingPutV4, 5: PersonalBuildingPutV5}.get(row.schema_version)
-        if model is None:
-            raise ValueError
-        return model.model_validate_json(json.dumps({
+        return PersonalBuildingPutV5.model_validate_json(json.dumps({
             'schema_version': row.schema_version, 'display_name': row.display_name,
             'overrides': row.overrides, 'scenario_inputs': row.scenario_inputs}),
             context={'stored_document': True})
@@ -168,25 +162,16 @@ def create_owned(session, principal, key, value, base):
     return row
 
 
-def require_document_version(row, version):
-    if row is not None and row.schema_version not in (1, 2, 3, 4, 5):
-        raise StateUnavailable
-    if row is not None and version < row.schema_version:
-        raise OwnerFailure(409, 'personal_document_version_conflict',
-                           f'Reload using personal_schema_version={row.schema_version} before changing this document')
+def require_current_document(row):
+    if row is not None and row.schema_version != 5:
+        raise OwnerFailure(409, 'personal_document_version_conflict', 'This saved building is not a v5 document')
 
 
-def detail(row, base, reason='missing', version=1):
+def detail(row, base, reason='missing'):
     document = stored_document(row)
-    options = dict(building_key=row.building_key, last_known_summary=stored_summary(row), base_unavailable_reason=reason)
-    if version == 1:
-        projected = v1_document(document)
-        projection = project_building(base, projected.overrides, projected.scenario_inputs, **options)
-    else:
-        require_read_version(row, version)
-        projection = {2: project_v2, 3: project_v3, 4: project_v4, 5: project_v5}[version](base, document, **options)
-    model = {1: SavedBuildingV1, 2: SavedBuildingV2, 3: SavedBuildingV3, 4: SavedBuildingV4, 5: SavedBuildingV5}[version]
-    return model(**{name: getattr(projection, name) for name in type(projection).model_fields},
+    projection = project_v5(base, document, building_key=row.building_key,
+        last_known_summary=stored_summary(row), base_unavailable_reason=reason)
+    return SavedBuildingV5(**{name: getattr(projection, name) for name in type(projection).model_fields},
         saved_id=row.saved_id, display_name=document.display_name, revision=row.revision,
         created_at=row.created_at, updated_at=row.updated_at, share_enabled=bool(row.share_enabled))
 
@@ -196,15 +181,7 @@ SUMMARY_COLUMNS = (Row.saved_id, Row.building_key, Row.display_name, Row.schema_
 
 
 def page_query(principal, limit, cursor):
-    query = select(*SUMMARY_COLUMNS).where(*owner_scope(principal))
+    query = select(*SUMMARY_COLUMNS).where(*owner_scope(principal), Row.schema_version == 5)
     if cursor:
         query = query.where(tuple_(Row.updated_at, Row.saved_id) < tuple_(cursor.updated_at, cursor.saved_id))
     return query.order_by(Row.updated_at.desc(), Row.saved_id.desc()).limit(limit + 1)
-
-
-def require_read_version(row, version):
-    if row.schema_version not in (1, 2, 3, 4, 5):
-        raise StateUnavailable
-    if version in (2, 3, 4) and row.schema_version > version:
-        raise OwnerFailure(409, 'personal_document_version_conflict',
-                           f'Reload using personal_schema_version={row.schema_version} to read this document')

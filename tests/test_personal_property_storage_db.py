@@ -10,10 +10,9 @@ from sqlalchemy import text
 from src.api.auth import AuthenticatedPrincipal
 from src.api.building_examples import public_example
 from src.building_contract import CanonicalBuildingV1, PersonalBuildingPutV1
-from src.personal_property_contract import PersonalBuildingPutV2, PersonalBuildingPatchV2, patch_v2
+from tests.personal_storage_fixture import archive_document
 from src.db.state import state_ready, state_session, StateSchemaUpgradeRequired, require_personal_schema
 from src import user_buildings as owner, building_shares as shares
-from src.building_share_contract import shared_projection
 from src.state_storage import operations, recovery
 from src.state_storage.catalog import PROPERTY_VERSION as VERSION, VERSION as CURRENT_VERSION, HISTORICAL_VERSION, audit_schema, audit_acl, rows, scalar
 from src.state_storage.operations import apply, connected, load_bundle, verify, upgrade_personal_v2
@@ -41,7 +40,7 @@ class PropertyStorageDatabaseTests(unittest.TestCase):
         base=CanonicalBuildingV1.model_validate_json(json.dumps(public_example()))
         principal=AuthenticatedPrincipal('https://fixture.example.invalid','property-owner')
         with runtime_environment(t,bundle):
-            self.assertTrue(state_ready());self.assertFalse(state_ready(2))
+            self.assertFalse(state_ready());self.assertFalse(state_ready(2))
             with state_session() as session:
                 with self.assertRaises(StateSchemaUpgradeRequired):require_personal_schema(session,2)
                 row=owner.create_owned(session,principal,base.building_key,PersonalBuildingPutV1.model_validate({
@@ -53,8 +52,8 @@ class PropertyStorageDatabaseTests(unittest.TestCase):
             # A real separate writer session reloads the saved/share row.
             with state_session(read_only=True) as session:
                 row=shares.lookup(session,token)
-                self.assertEqual(owner.detail(row,None,version=2).document_schema_version,1)
-                self.assertEqual(shared_projection(row,None,'missing',2).document_schema_version,1)
+                self.assertEqual(row.schema_version,1)
+                self.assertEqual(row.scenario_inputs['resident_count'],2)
         with connected(t,database=t['database'],read_only=True) as connection:
             before=recovery.data_fingerprint(connection);audit_schema(connection,HISTORICAL_VERSION)
         self.assertEqual(upgrade_personal_v2(t)['version'],VERSION)
@@ -66,26 +65,26 @@ class PropertyStorageDatabaseTests(unittest.TestCase):
             self.assertTrue(state_ready(2))
             with state_session() as session:
                 row=shares.lookup(session,token)
-                old=owner.stored_document(row);saved_id=row.saved_id;created_at=row.created_at;revision=row.revision
-                value=patch_v2(old,PersonalBuildingPatchV2.model_validate({'schema_version':2,
-                    'set':{'scenario_inputs':{'apartment_studio_count':0,'apartment_two_room_count':None,
-                        'apartment_three_room_count':1,'apartment_four_plus_room_count':2,
-                        'personal_energy_class':{'grade':'B','scale':2018},
-                        'personal_energy_class_date':{'precision':'year','year':2020},
-                        'annual_maintenance_charge_eur_cents':123456}}}),None)
+                saved_id, created_at, revision = row.saved_id, row.created_at, row.revision
+                value = archive_document({'schema_version': 2, 'display_name': row.display_name,
+                    'overrides': row.overrides, 'scenario_inputs': {**row.scenario_inputs,
+                        'apartment_studio_count': 0, 'apartment_two_room_count': None,
+                        'apartment_three_room_count': 1, 'apartment_four_plus_room_count': 2,
+                        'personal_energy_class': {'grade': 'B', 'scale': 2018},
+                        'personal_energy_class_date': {'precision': 'year', 'year': 2020},
+                        'annual_maintenance_charge_eur_cents': 123456}})
                 owner.bump_revision(row);owner.store_document(row,value,None);session.commit()
             with state_session(read_only=True) as session:
                 row=shares.lookup(session,token)
                 self.assertEqual((row.saved_id,row.created_at,row.revision),(saved_id,created_at,revision+1))
-                self.assertEqual(owner.detail(row,None,version=2).scenario_inputs.apartment_studio_count,0)
-                self.assertEqual(shared_projection(row,None,'missing',2).scenario_inputs.apartment_studio_count,0)
-                self.assertEqual(shared_projection(row,None,'missing',1).scenario_inputs.resident_count,2)
+                self.assertEqual(row.scenario_inputs['apartment_studio_count'],0)
+                self.assertEqual(row.scenario_inputs['resident_count'],2)
             # A mixed-format collection/backup includes a separate untouched v1 row.
             with state_session() as session:
                 second=base.model_copy(update={'building_key':'property-mixed-v1'})
                 owner.create_owned(session,principal,second.building_key,PersonalBuildingPutV1(),second)
                 third=base.model_copy(update={'building_key':'property-count-only-v2'})
-                owner.create_owned(session,principal,third.building_key,PersonalBuildingPutV2.model_validate({
+                owner.create_owned(session,principal,third.building_key,archive_document({
                     'schema_version':2,'scenario_inputs':{'apartment_three_room_count':0}}),third)
                 session.commit()
         self.assertEqual(verify(t)['version'],VERSION)
@@ -106,20 +105,18 @@ class PropertyStorageDatabaseTests(unittest.TestCase):
             self.assertTrue(state_ready(2))
             with state_session(read_only=True) as session:
                 restored=shares.lookup(session,type(self).active_token)
-                view=shared_projection(restored,None,'missing',2)
-                self.assertEqual(view.scenario_inputs.apartment_studio_count,0)
-                self.assertEqual(view.scenario_inputs.personal_energy_class.grade,'B')
-                self.assertEqual(view.scenario_inputs.personal_energy_class.scale,2018)
-                self.assertEqual(view.scenario_inputs.personal_energy_class_date.year,2020)
-                self.assertEqual(view.scenario_inputs.annual_maintenance_charge_eur_cents,123456)
-                self.assertEqual(owner.detail(restored,None,version=2).scenario_inputs,view.scenario_inputs)
+                values = restored.scenario_inputs
+                self.assertEqual(values['apartment_studio_count'], 0)
+                self.assertEqual(values['personal_energy_class'], {'grade': 'B', 'scale': 2018})
+                self.assertEqual(values['personal_energy_class_date']['year'], 2020)
+                self.assertEqual(values['annual_maintenance_charge_eur_cents'], 123456)
             with state_session() as session:
                 principal=AuthenticatedPrincipal('https://fixture.example.invalid','property-owner')
                 row=owner.load_owned(session,principal,public_example()['building_key'],lock=True)
                 token=shares.rotate(session,row);session.commit()
             with state_session() as session:
                 row=shares.lookup(session,token)
-                self.assertEqual(shared_projection(row,None,'missing',2).scenario_inputs.apartment_studio_count,0)
+                self.assertEqual(row.scenario_inputs['apartment_studio_count'],0)
                 shares.revoke(session,row);session.commit()
             with state_session() as session:
                 with self.assertRaises(shares.ShareNotFound):shares.lookup(session,token)

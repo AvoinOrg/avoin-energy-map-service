@@ -105,56 +105,50 @@ class UtilitiesDatabaseTests(unittest.TestCase):
         replaced = self.client.put(V5, json={'schema_version': 5}, headers=self.headers(sibling.headers['etag'])); self.check(replaced, 200)
         self.assertEqual(replaced.json()['scenario_inputs'], {}); self.assertEqual(replaced.json()['overrides'], {})
 
-    def test_all_versions_projection_promotion_summary_and_old_writer_delete_guards(self):
-        with patch('src.api.user_buildings.observe', side_effect=lambda key, *args: (self.base.model_copy(update={'building_key': key}), 'available', None)):
-            for version in range(1, 6):
-                path = '/energy-data/user/buildings/mixed-' + str(version)
-                scenario = {'resident_count': None}
-                if version >= 2: scenario['apartment_studio_count'] = 0
-                if version >= 3: scenario['systems'] = full_systems()
-                if version >= 4: scenario['renovations'] = all_renovations()
-                if version == 5: scenario['utilities'] = utilities()
-                initial = self.save({'schema_version': version, 'scenario_inputs': scenario}, version, path)
-                read = self.client.get(path + '?personal_schema_version=5', headers=self.headers()); self.check(read, 200)
-                self.assertEqual(read.json()['scenario_inputs'], scenario)
-                self.assertEqual(read.json()['document_schema_version'], version)
-            page = self.client.get('/energy-data/user/buildings?personal_schema_version=5', headers=self.headers()); self.check(page, 200)
-            self.assertEqual(sorted(i['document_schema_version'] for i in page.json()['items']), [1, 2, 3, 4, 5])
-            for view in (2, 3, 4): self.check(self.client.get('/energy-data/user/buildings?personal_schema_version=' + str(view), headers=self.headers()), 409)
-            for version in range(1, 6):
-                path = '/energy-data/user/buildings/mixed-' + str(version)
-                initial = self.client.get(path + '?personal_schema_version=5', headers=self.headers()); self.check(initial, 200)
-                scenario = initial.json()['scenario_inputs']
-                before = self.saved()
-                read = self.client.get(path + '?personal_schema_version=5', headers=self.headers()); self.check(read, 200)
-                self.assertEqual(read.json()['scenario_inputs'], scenario)
-                self.assertEqual(read.json()['document_schema_version'], version); self.assertEqual(self.saved(), before)
-                share = self.client.post(path + '/share', json={}, headers=self.headers(initial.headers['etag'])); self.check(share, 201)
-                promoted = self.client.patch(path + '?personal_schema_version=5', json={'schema_version': 5}, headers=self.headers(share.headers['etag'])); self.check(promoted, 200)
-                for key in ('saved_id', 'created_at', 'overrides', 'scenario_inputs'): self.assertEqual(promoted.json()[key], read.json()[key])
-                self.assertEqual(promoted.json()['revision'], 3); self.assertTrue(promoted.json()['share_enabled'])
-                for view in range(1, 6):
-                    suffix = '?personal_schema_version=' + str(view)
-                    expected = 409 if view in (2, 3, 4) else 200
-                    self.check(self.client.get(path + suffix, headers=self.headers()), expected)
-                    shared = self.client.get(share.json()['resolver_path'] + suffix); self.check(shared, expected)
-                    if expected == 200:
-                        def keys(value):
-                            if isinstance(value, dict): return set(value) | set().union(*(keys(v) for v in value.values()), set())
-                            if isinstance(value, list): return set().union(*(keys(v) for v in value), set())
-                            return set()
-                        self.assertFalse({'saved_id', 'owner_issuer', 'owner_subject', 'token_digest'} & keys(shared.json()))
-                        self.assertEqual(shared.json()['scenario_inputs'], scenario if view == 5 else {'resident_count': None})
-                before = self.saved()
-                for old in range(1, 5):
-                    for method, kwargs in (('put', {'json': {'schema_version': old}}), ('patch', {'json': {'schema_version': old}}), ('delete', {})):
-                        self.check(getattr(self.client, method)(path + '?personal_schema_version=' + str(old), headers=self.headers(promoted.headers['etag']), **kwargs), 409)
-                        self.assertEqual(self.saved(), before)
-        page = self.client.get('/energy-data/user/buildings?personal_schema_version=5', headers=self.headers()); self.check(page, 200)
-        self.assertEqual(len(page.json()['items']), 5)
-        self.assertTrue(all('scenario_inputs' not in i for i in page.json()['items']))
-        for view in (2, 3, 4): self.check(self.client.get('/energy-data/user/buildings?personal_schema_version=' + str(view), headers=self.headers()), 409)
-        self.check(self.client.get('/energy-data/user/buildings', headers=self.headers()), 200)
+    def test_default_and_explicit_v5_reject_obsolete_requests_before_mutation(self):
+        saved = self.client.put(PATH, json={'schema_version': 5, 'scenario_inputs': {'utilities': utilities()}},
+            headers=self.headers() | {'If-None-Match': '*'})
+        self.check(saved, 201)
+        share = self.client.post(PATH + '/share', json={}, headers=self.headers(saved.headers['etag']))
+        self.check(share, 201)
+        resolver = share.json()['resolver_path']
+        before = self.saved()
+        for suffix in ('', '?personal_schema_version=5'):
+            detail = self.client.get(PATH + suffix, headers=self.headers())
+            self.check(detail, 200)
+            self.assertEqual(detail.json()['schema_version'], 5)
+            shared = self.client.get(resolver + suffix)
+            self.check(shared, 200)
+            self.assertEqual(shared.json()['scenario_inputs'], detail.json()['scenario_inputs'])
+            self.assertNotIn('saved_id', shared.json())
+            page = self.client.get('/energy-data/user/buildings' + suffix, headers=self.headers())
+            self.check(page, 200)
+            self.assertEqual([item['document_schema_version'] for item in page.json()['items']], [5])
+        for version in range(1, 5):
+            suffix = '?personal_schema_version=' + str(version)
+            for path in [PATH, '/energy-data/user/buildings', resolver, '/readyz/state']:
+                self.check(self.client.get(path + suffix, headers=self.headers()), 422)
+            for method in ('put', 'patch', 'delete'):
+                kwargs = {} if method == 'delete' else {'json': {'schema_version': 5}}
+                self.check(getattr(self.client, method)(PATH + suffix, headers=self.headers(share.headers['etag']), **kwargs), 422)
+            for method in ('put', 'patch'):
+                self.check(getattr(self.client, method)(PATH, headers=self.headers(share.headers['etag']),
+                    json={'schema_version': version}), 422)
+        self.assertEqual(self.saved(), before)
+
+    def test_an_old_row_is_excluded_from_lists_and_cannot_be_promoted(self):
+        saved = self.save()
+        with migrator_connection(self.target) as connection:
+            connection.execute(text(
+                'UPDATE energymap_state.energymap_user_buildings SET schema_version=3 WHERE saved_id=:id'),
+                {'id': saved.json()['saved_id']})
+        before = self.saved()
+        page = self.client.get('/energy-data/user/buildings', headers=self.headers())
+        self.check(page, 200)
+        self.assertEqual(page.json()['items'], [])
+        self.check(self.client.get(PATH, headers=self.headers()), 409)
+        self.check(self.change({'display_name': 'new'}, saved.headers['etag']), 409)
+        self.assertEqual(self.saved(), before)
 
     def test_invalid_owner_hvac_identity_and_failure_atomicity(self):
         saved = self.save({'schema_version': 5, 'scenario_inputs': {'utilities': utilities(), 'renovations': all_renovations(), 'systems': full_systems()}})
@@ -221,34 +215,20 @@ class UtilitiesDatabaseTests(unittest.TestCase):
         self.assertEqual(reset.json()['scenario_inputs']['renovations'], all_renovations(None))
         for old in range(1, 5):
             for method, kwargs in (('patch', {'json': {'schema_version': old}}), ('put', {'json': {'schema_version': old}}), ('delete', {})):
-                self.check(getattr(self.client, method)(PATH + '?personal_schema_version=' + str(old), headers=self.headers(reset.headers['etag']), **kwargs), 409)
+                self.check(getattr(self.client, method)(PATH + '?personal_schema_version=' + str(old), headers=self.headers(reset.headers['etag']), **kwargs), 422)
         share = self.client.post(PATH + '/share', json={}, headers=self.headers(reset.headers['etag'])); self.check(share, 201)
         rotated = self.client.post(PATH + '/share', json={}, headers=self.headers(share.headers['etag'])); self.check(rotated, 201)
         self.check(self.client.get(share.json()['resolver_path'] + '?personal_schema_version=5'), 404)
         self.check(self.client.delete(PATH + '/share', headers=self.headers(rotated.headers['etag'])), 204)
         self.check(self.client.get(rotated.json()['resolver_path'] + '?personal_schema_version=5'), 404)
 
-    def test_old_writer_paused_before_promotion_and_incarnation_delete(self):
-        saved = self.save({'schema_version': 4, 'scenario_inputs': {'renovations': all_renovations(0)}}, version=4)
-        arrived, resume = threading.Event(), threading.Event()
-        def observe(*args):
-            if not arrived.is_set():
-                arrived.set()
-                if not resume.wait(10): raise RuntimeError('bounded race timeout')
-            return self.base, 'available', None
-        with patch('src.api.user_buildings.observe', side_effect=observe), ThreadPoolExecutor(max_workers=1) as pool:
-            old = pool.submit(self.client.put, PATH + '?personal_schema_version=4', json={'schema_version': 4}, headers=self.headers(saved.headers['etag']))
-            try:
-                self.assertTrue(arrived.wait(10))
-                promoted = self.change({'set': {'scenario_inputs': {'utilities': utilities()}}}, saved.headers['etag']); self.check(promoted, 200)
-            finally: resume.set()
-            self.check(old.result(timeout=15), 412)
-        self.assertEqual(promoted.json()['scenario_inputs']['renovations'], all_renovations(0))
-        share = self.client.post(PATH + '/share', json={}, headers=self.headers(promoted.headers['etag'])); self.check(share, 201)
+    def test_delete_and_recreate_invalidates_share_and_stale_etag(self):
+        saved = self.save()
+        share = self.client.post(PATH + '/share', json={}, headers=self.headers(saved.headers['etag'])); self.check(share, 201)
         self.check(self.client.delete(V5, headers=self.headers(share.headers['etag'])), 204)
         self.check(self.client.get(share.json()['resolver_path'] + '?personal_schema_version=5'), 404)
         recreated = self.save(); self.assertNotEqual(recreated.json()['saved_id'], saved.json()['saved_id'])
-        self.check(self.change({}, promoted.headers['etag']), 412)
+        self.check(self.change({}, saved.headers['etag']), 412)
 
     def test_readiness_additive_definition_and_unvalidated_constraint_fail_closed(self):
         with migrator_connection(self.target) as connection:

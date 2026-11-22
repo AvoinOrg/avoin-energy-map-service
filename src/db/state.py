@@ -137,7 +137,7 @@ def state_session(*, read_only=False):
         raise StateUnavailable from None
 
 
-def state_ready(version=1):
+def state_ready(version=5):
     """Read-only schema/privilege probe. No rows created, auth or source access."""
     try:
         with state_session(read_only=True) as session:

@@ -1,4 +1,7 @@
-# Personal saved buildings, schema version 1
+# Personal saved buildings, schema version 5
+
+Personal reads default to v5. Explicit older format selectors return 422.
+PUT and PATCH require `schema_version: 5`.
 
 This backend accepts the provider access token supplied/refreshed by Avoin Map
 core: `Authorization: Bearer <access-token>`. It uses the existing
@@ -43,7 +46,7 @@ Authorization: Bearer <access-token>
 Content-Type: application/json
 If-None-Match: *
 
-{"schema_version":1,"display_name":"Home","overrides":{"floor_area":0,"total_area":null},"scenario_inputs":{"resident_count":2}}
+{"schema_version":5,"display_name":"Home","overrides":{"floor_area":0,"total_area":null},"scenario_inputs":{"resident_count":2}}
 ```
 
 GET the same path to retrieve its current projection and ETag. Full replacement:
@@ -54,7 +57,7 @@ Authorization: Bearer <access-token>
 Content-Type: application/json
 If-Match: "ub1:00000000-0000-0000-0000-000000000001:1"
 
-{"schema_version":1,"overrides":{"construction_year":1998}}
+{"schema_version":5,"overrides":{"construction_year":1998}}
 ```
 
 An omitted PUT name clears it; omitted override/scenario fields reset to source
@@ -68,10 +71,10 @@ Authorization: Bearer <access-token>
 Content-Type: application/json
 If-Match: "ub1:00000000-0000-0000-0000-000000000001:2"
 
-{"display_name":null,"set":{"overrides":{"heated_net_area":null},"scenario_inputs":{"resident_count":3}},"unset":["overrides.construction_year"]}
+{"schema_version":5,"display_name":null,"set":{"overrides":{"heated_net_area":null},"scenario_inputs":{"resident_count":3}},"unset":["overrides.construction_year"]}
 ```
 
-Reset all overrides with PUT `{}` plus the current If-Match. The intentionally
+Reset all overrides with PUT `{"schema_version":5}` plus the current If-Match. The intentionally
 saved record remains listed. DELETE uses the same current If-Match, has no body
 and returns 204. Every accepted PUT/PATCH advances revision once, including an
 unchanged save; created time stays fixed and updated time advances monotonically.
@@ -106,7 +109,7 @@ Unexpected failures use a sanitized 500. All private success/errors, including
 
 ## Detail, source loss and front-page listing
 
-Detail DTOs extend `PersonalBuildingProjectionV1` with `saved_id`, `display_name`,
+Detail DTOs extend `PersonalBuildingProjectionV5` with `saved_id`, `display_name`,
 `revision`, UTC `created_at`/`updated_at`, and `share_enabled`. `base`, sparse
 `overrides`, `scenario_inputs`, `effective` and field provenance remain separate.
 User values never become official certificate/model/source facts.
@@ -129,7 +132,7 @@ unrelated PATCH. Required catalog outage fails 503 with rollback.
 Collection accepts only one `limit` and one `cursor`, returning:
 
 ```json
-{"schema_version":1,"items":[{"schema_version":1,"saved_id":"00000000-0000-0000-0000-000000000001","building_key":"example-key","display_name":"Home","revision":3,"created_at":"2026-10-23T12:00:00Z","updated_at":"2026-10-23T12:01:00Z","share_enabled":false,"base_status":"unavailable","base_unavailable_reason":"missing","current_summary":null,"last_known_summary":{"schema_version":1,"building_key":"example-key","name":null,"address_fin":"Example street 1","postal_code":"00100","postal_office_fin":"City","location":null,"source_observed_at":null,"source_availability":{},"captured_at":"2026-10-23T12:00:00Z"}}],"next_cursor":null}
+{"schema_version":5,"items":[{"schema_version":5,"document_schema_version":5,"saved_id":"00000000-0000-0000-0000-000000000001","building_key":"example-key","display_name":"Home","revision":3,"created_at":"2026-10-23T12:00:00Z","updated_at":"2026-10-23T12:01:00Z","share_enabled":false,"base_status":"unavailable","base_unavailable_reason":"missing","current_summary":null,"last_known_summary":{"schema_version":1,"building_key":"example-key","name":null,"address_fin":"Example street 1","postal_code":"00100","postal_office_fin":"City","location":null,"source_observed_at":null,"source_availability":{},"captured_at":"2026-10-23T12:00:00Z"}}],"next_cursor":null}
 ```
 
 Available `current_summary` is the canonical `BuildingSummaryV1`, with
@@ -217,7 +220,7 @@ than aliasing owners. One exact owner/key tuple cannot create duplicate rows.
 For a **new dedicated state database**, use the guarded isolated
 [personal-state operations contract](../../docs/operations/personal-state-storage.md).
 It provisions the exact narrow grants, runs the independent lineage through
-`es0002_personal_v2` (historical bootstrap `es0001_saved_share`), and backs up/restores the **entire dedicated database**,
+`es0005_utilities_v5` (historical bootstrap `es0001_saved_share`), and backs up/restores the **entire dedicated database**,
 including independent version metadata and private saved/share rows. Never run
 the source Alembic chain in a new state-only database or stamp its source head.
 
@@ -253,30 +256,3 @@ on already-disabled state. Encode entire keys, especially a terminal /share.
 The v1 share prerequisite is d4e8f021bc63; the current combined head is
 e5f102acd890; the owner-only migration/downgrade
 examples above describe its prerequisite, not the share release procedure.
-
-## Personal v2 extension
-
-See [the explicit field/version contract](personal-property-v2.md) for query
-selection, seven sparse personal inputs, strict class/scale and year objects,
-exact dwelling/share EUR cents/year, mixed v1/v2 reads, deliberate promotion and
-409 protection against lossy older writes. Optional class/year do not gate the
-derived four-input completeness policy; valid partial drafts remain saveable.
-[Purpose discovery](purpose-catalog.md) and new non-null purpose validation share
-one adopted seven-code pin, approved on 2026-10-30. Upstream DRAFT is retained
-as metadata; all seven values support discovery and new purpose input in v1/v2,
-including v1 full PUT resubmission. A missing/corrupt/unadopted pin still fails
-closed 503. Reads, independent PATCH, null/unset and deletion remain usable
-during a catalog outage. Local source/disposable support
-establishes no live schema upgrade, serving-binary load or deployed acceptance.
-
-## Explicit personal v3 contract
-
-[Personal HVAC v3](personal-hvac-v3.md) adds opt-in3 with atomic personal systems
-sources/shares, four heated quantities, multiple cooling/ventilation and
-self-reported equipment. Discovery uses explicit envelope2; coefficients remain
-deferred. Optional HVAC answers never expand the four-field completion policy. V1 remains default. V2's
-closed stored-version enum is preserved: v2 detail/shared reads and a requested
-list page containing a v3 row return409 personal_document_version_conflict,
-requiring view3. V1 retains its scalar projection. Older writers cannot mutate
-or delete3, including empty3, after owner/precondition checks. Share management
-remains version independent. No full HVAC form or live activation is implied.

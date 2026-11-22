@@ -1,4 +1,4 @@
-# Building sharing v1
+# Building sharing
 
 An owner explicitly creates one live read-only link for a saved building. POST
 always rotates the capability and advances the owner's revision once. DELETE
@@ -16,7 +16,8 @@ recover a raw token. Losing a POST response requires reload and deliberate
 rotation. Host and Forwarded never determine URLs.
 
 The public DTO is closed and independent of owner DTOs. Its exact top-level
-allowlist is schema_version, building_key, display_name, revision, created_at,
+allowlist is schema_version, document_schema_version, input_status, systems_defaults,
+systems_source_provenance, building_key, display_name, revision, created_at,
 updated_at, base_status, base_unavailable_reason, base, overrides,
 scenario_inputs, effective, field_provenance, source_availability,
 source_observed_at and last_known_summary. Base allows the canonical v1 fields,
@@ -52,22 +53,21 @@ share. Proxies must preserve encoded slashes. Never guess by record existence.
 
 ## HTTP contract and examples
 
-[Complete schema-valid synthetic examples](building-api-v1.examples.json) and
-[closed schema bundle](building-contract-v1.schema.json) accompany OpenAPI. Public
-canonical details keep their existing GET and no-cache policy. All saved/share
-DTOs are version 1. Request excerpts below omit transport boilerplate only.
+[Complete schema-valid synthetic examples](building-api.examples.json) and
+[closed schema bundle](building-contract.schema.json) accompany OpenAPI. Public
+canonical details keep their existing GET and no-cache policy. Owner and shared building documents use v5. The share-link creation receipt uses its own v1 format. Request excerpts below omit transport boilerplate only.
 
 | Action | Request | Response and next validator |
 | --- | --- | --- |
-| Initial save | PUT /energy-data/user/buildings/{encoded_key}, If-None-Match: *, JSON `{"schema_version":1,"display_name":"Home","overrides":{"floor_area":0,"total_area":null},"scenario_inputs":{"resident_count":2}}` | 201 SavedBuildingV1, ETag |
-| Owner read | GET same path, Bearer | 200 SavedBuildingV1, ETag |
-| List | GET /energy-data/user/buildings?limit=20&cursor={opaque_cursor}, Bearer | 200 SavedBuildingPageV1, next_cursor nullable |
-| Full replace | PUT saved path, If-Match from read/mutation, JSON `{"overrides":{"floor_area":120}}` | 200, name/omitted leaves cleared, new ETag |
-| Partial edit | PATCH saved path, If-Match, JSON `{"set":{"overrides":{"floor_area":150,"total_area":null},"scenario_inputs":{"resident_count":4}},"unset":["overrides.heated_net_area"]}` | 200, omitted leaves/name retained, new ETag |
-| Reset leaf/name | PATCH saved path, If-Match, JSON `{"display_name":null,"unset":["overrides.floor_area","scenario_inputs.resident_count"]}` | 200, current source/default fallback, new ETag |
-| Reset all | PUT saved path, If-Match, JSON `{}` | 200, saved record and active link retained, new ETag |
+| Initial save | PUT /energy-data/user/buildings/{encoded_key}, If-None-Match: *, JSON `{"schema_version":5,"display_name":"Home","overrides":{"floor_area":0,"total_area":null},"scenario_inputs":{"resident_count":2}}` | 201 SavedBuildingV5, ETag |
+| Owner read | GET same path, Bearer | 200 SavedBuildingV5, ETag |
+| List | GET /energy-data/user/buildings?limit=20&cursor={opaque_cursor}, Bearer | 200 SavedBuildingPageV5, next_cursor nullable |
+| Full replace | PUT saved path, If-Match from read/mutation, JSON `{"schema_version":5,"overrides":{"floor_area":120}}` | 200, name/omitted leaves cleared, new ETag |
+| Partial edit | PATCH saved path, If-Match, JSON `{"schema_version":5,"set":{"overrides":{"floor_area":150,"total_area":null},"scenario_inputs":{"resident_count":4}},"unset":["overrides.heated_net_area"]}` | 200, omitted leaves/name retained, new ETag |
+| Reset leaf/name | PATCH saved path, If-Match, JSON `{"schema_version":5,"display_name":null,"unset":["overrides.floor_area","scenario_inputs.resident_count"]}` | 200, current source/default fallback, new ETag |
+| Reset all | PUT saved path, If-Match, JSON `{"schema_version":5}` | 200, saved record and active link retained, new ETag |
 | Create/rotate link | POST saved path + /share, If-Match, no body or `{}` | 201 ShareCreatedV1, new ETag; former token immediately invalid |
-| Public read | GET resolver_path, no Bearer needed | 200 SharedBuildingV1, no ETag; latest saved document/current source |
+| Public read | GET resolver_path, no Bearer needed | 200 SharedBuildingV5, no ETag; latest saved document/current source |
 | Revoke | DELETE saved path + /share, Bearer, If-Match | 204 empty body, new ETag, including already-disabled state |
 | Discard saved record | DELETE saved path, Bearer, If-Match | 204 empty body, terminal ETag; dependent link removed atomically |
 
@@ -263,28 +263,3 @@ context (verify identity using the framework browser/client.mjs first). These de
 smoke test, state provisioning/storage/migrations/grants/backup recovery,
 production-scale performance, frontend/UI/browser acceptance and deployment
 remain external and unverified by local backend fixtures.
-
-Personal-v2 shared views accept the explicit personal_schema_version selector
-and preserve active capabilities across promotion; default reads remain strict
-v1 projections. Share creation/rotation/revoke requests remain version-independent.
-See [personal v2](personal-property-v2.md) for the exact safe projection and limits.
-
-The v2 shared projection includes all seven optional personal inputs, effective
-values, allowlisted per-field provenance and current-input status. Personal
-class/scale/year never replaces official certificate/model data. Absent leaves
-remain absent; null remains unknown. Capability holders see these personal fields
-by the same deliberate sharing policy as existing inputs. No owner issuer/subject,
-saved UUID, address_key or digest is exposed. V1 views omit new fields without
-mutating storage. The adopted purpose pin qualifies all seven supported codes.
-An unavailable catalog or unknown/retired saved code affects qualification
-status, preserving capability readability and revocation.
-
-## Version3 compatibility
-
-The [personal HVAC v3 contract](personal-hvac-v3.md) is explicitly
-selectable with personal_schema_version=3. A shared v3 view intentionally exposes
-its structured sources/shares, quantities, cooling/ventilation, equipment, stable
-per-source provenance, technical pin, deferred-coefficient metadata and input status, while retaining the
-existing metadata allowlist. V1 safely projects scalars from3; v2 must return409
-for3 rather than widen its closed DTO. The latest-read/revoke race boundary and
-version-independent owner rotation/revocation remain unchanged.

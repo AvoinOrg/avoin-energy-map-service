@@ -7,11 +7,9 @@ from unittest.mock import patch
 from src.api.auth import AuthenticatedPrincipal
 from src.api.building_examples import public_example
 from src.building_contract import CanonicalBuildingV1, PersonalBuildingPutV1
-from src.personal_property_contract import PersonalBuildingPutV2
-from src.personal_hvac_contract import PersonalBuildingPutV3
+from tests.personal_storage_fixture import archive_document
 from src.db.state import state_session, state_ready
 from src import user_buildings as owner, building_shares as shares
-from src.building_share_contract import shared_projection
 from src.state_storage import operations, recovery
 from src.state_storage.catalog import HISTORICAL_VERSION, PROPERTY_VERSION, HVAC_VERSION as VERSION, VERSION as CURRENT_VERSION, audit_schema, audit_acl, rows
 from src.state_storage.config import load_target
@@ -53,10 +51,10 @@ class HvacStorageDatabaseTests(unittest.TestCase):
             self.assertEqual(state_ready(3),profile==VERSION)
             models=[PersonalBuildingPutV1()]
             if profile!=HISTORICAL_VERSION:
-                models.append(PersonalBuildingPutV2.model_validate({'schema_version':2,
+                models.append(archive_document({'schema_version':2,
                     'scenario_inputs':{'apartment_studio_count':0,'apartment_two_room_count':None}}))
             if profile==VERSION:
-                models.append(PersonalBuildingPutV3.model_validate({'schema_version':3,
+                models.append(archive_document({'schema_version':3,
                     'overrides':{'ventilation_type_id':'0','total_area':None},
                     'scenario_inputs':{'apartment_studio_count':0,'systems':full_systems()}}))
             with state_session() as session:
@@ -97,12 +95,10 @@ class HvacStorageDatabaseTests(unittest.TestCase):
             self.assertTrue(state_ready(3))
             with state_session(read_only=True) as session:
                 row=shares.lookup(session,token)
-                projected=shared_projection(row,None,'source_unavailable',3)
-                self.assertEqual(projected.document_schema_version,len(models))
+                self.assertEqual(row.schema_version,len(models))
                 if profile==VERSION:
-                    self.assertEqual(projected.scenario_inputs.systems.model_dump(exclude_unset=True), full_systems())
-                    self.assertEqual([p.source_id for p in projected.systems_source_provenance], [s['source_id'] for s in full_systems()['heating']['sources']])
-                    self.assertEqual(projected.scenario_inputs.apartment_studio_count,0)
+                    self.assertEqual(row.scenario_inputs['systems'], full_systems())
+                    self.assertEqual(row.scenario_inputs['apartment_studio_count'],0)
             with state_session() as session:
                 row=shares.lookup(session,token);rotated=shares.rotate(session,row);session.commit()
             with state_session() as session:

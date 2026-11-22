@@ -5,46 +5,12 @@ from src.personal_utilities_contract import (PersonalBuildingProjectionV5, Versi
 from typing import Literal
 from uuid import UUID
 
-from pydantic import Field, field_validator
+from pydantic import Field
 
 from src.building_contract import (
     BuildingKey, BuildingSummaryV1, ContractModel, DisplayName,
-    LastKnownBuildingSummaryV1, PersonalBuildingProjectionV1, UtcTime, VersionedV1,
+    LastKnownBuildingSummaryV1, UtcTime, VersionedV1,
 )
-
-from src.personal_property_contract import PersonalBuildingProjectionV2, VersionedV2
-from src.personal_hvac_contract import PersonalBuildingProjectionV3, VersionedV3
-from src.personal_renovations_contract import PersonalBuildingProjectionV4, VersionedV4
-
-
-class SavedBuildingV1(PersonalBuildingProjectionV1):
-    last_known_summary: LastKnownBuildingSummaryV1
-    saved_id: UUID
-    display_name: DisplayName | None
-    revision: int = Field(ge=1)
-    created_at: UtcTime
-    updated_at: UtcTime
-    share_enabled: bool = False
-
-
-class SavedBuildingSummaryV1(VersionedV1):
-    saved_id: UUID
-    building_key: BuildingKey
-    display_name: DisplayName | None
-    revision: int = Field(ge=1)
-    created_at: UtcTime
-    updated_at: UtcTime
-    share_enabled: bool = False
-    base_status: Literal['available', 'unavailable']
-    base_unavailable_reason: Literal['missing', 'ambiguous', 'source_unavailable'] | None
-    current_summary: BuildingSummaryV1 | None
-    last_known_summary: LastKnownBuildingSummaryV1
-
-
-class SavedBuildingPageV1(VersionedV1):
-    items: list[SavedBuildingSummaryV1]
-    next_cursor: str | None
-
 
 class OwnerErrorDetailV1(ContractModel):
     code: str
@@ -80,83 +46,6 @@ def decode_cursor(value):
         raise ValueError('Invalid cursor') from None
 
 
-class SavedBuildingV2(PersonalBuildingProjectionV2):
-    last_known_summary: LastKnownBuildingSummaryV1
-    saved_id: UUID
-    display_name: DisplayName | None
-    revision: int = Field(ge=1)
-    created_at: UtcTime
-    updated_at: UtcTime
-    share_enabled: bool = False
-
-
-class SavedBuildingSummaryV2(SavedBuildingSummaryV1):
-    schema_version: Literal[2] = 2
-    document_schema_version: Literal[1, 2]
-
-    @field_validator('schema_version', mode='before')
-    @classmethod
-    def exact_version(cls, value):
-        return VersionedV2.exact_version(value)
-
-
-class SavedBuildingPageV2(VersionedV2):
-    items: list[SavedBuildingSummaryV2]
-    next_cursor: str | None
-
-
-
-
-class SavedBuildingV3(PersonalBuildingProjectionV3):
-    last_known_summary: LastKnownBuildingSummaryV1
-    saved_id: UUID
-    display_name: DisplayName | None
-    revision: int = Field(ge=1)
-    created_at: UtcTime
-    updated_at: UtcTime
-    share_enabled: bool = False
-
-
-class SavedBuildingSummaryV3(SavedBuildingSummaryV1):
-    schema_version: Literal[3] = 3
-    document_schema_version: Literal[1, 2, 3]
-
-    @field_validator('schema_version', mode='before')
-    @classmethod
-    def exact_version(cls, value):
-        return VersionedV3.exact_version(value)
-
-
-class SavedBuildingPageV3(VersionedV3):
-    items: list[SavedBuildingSummaryV3]
-    next_cursor: str | None
-
-
-class SavedBuildingV4(PersonalBuildingProjectionV4):
-    last_known_summary: LastKnownBuildingSummaryV1
-    saved_id: UUID
-    display_name: DisplayName | None
-    revision: int = Field(ge=1)
-    created_at: UtcTime
-    updated_at: UtcTime
-    share_enabled: bool = False
-
-
-class SavedBuildingSummaryV4(SavedBuildingSummaryV1):
-    schema_version: Literal[4] = 4
-    document_schema_version: Literal[1, 2, 3, 4]
-
-    @field_validator('schema_version', mode='before')
-    @classmethod
-    def exact_version(cls, value):
-        return VersionedV4.exact_version(value)
-
-
-class SavedBuildingPageV4(VersionedV4):
-    items: list[SavedBuildingSummaryV4]
-    next_cursor: str | None
-
-
 class SavedBuildingV5(PersonalBuildingProjectionV5):
     last_known_summary: LastKnownBuildingSummaryV1
     saved_id: UUID
@@ -167,14 +56,19 @@ class SavedBuildingV5(PersonalBuildingProjectionV5):
     share_enabled: bool = False
 
 
-class SavedBuildingSummaryV5(SavedBuildingSummaryV1):
-    schema_version: Literal[5] = 5
-    document_schema_version: Literal[1, 2, 3, 4, 5]
-
-    @field_validator('schema_version', mode='before')
-    @classmethod
-    def exact_version(cls, value):
-        return VersionedV5.exact_version(value)
+class SavedBuildingSummaryV5(VersionedV5):
+    document_schema_version: Literal[5]
+    saved_id: UUID
+    building_key: BuildingKey
+    display_name: DisplayName | None
+    revision: int = Field(ge=1)
+    created_at: UtcTime
+    updated_at: UtcTime
+    share_enabled: bool = False
+    base_status: Literal['available', 'unavailable']
+    base_unavailable_reason: Literal['missing', 'ambiguous', 'source_unavailable'] | None
+    current_summary: BuildingSummaryV1 | None
+    last_known_summary: LastKnownBuildingSummaryV1
 
 
 class SavedBuildingPageV5(VersionedV5):

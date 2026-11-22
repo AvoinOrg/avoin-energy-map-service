@@ -161,9 +161,6 @@
       "scenario_inputs.utilities"
     ]
   },
-  "explicit_promotion": {
-    "schema_version": 5
-  },
   "owner_read": {
     "schema_version": 5,
     "building_key": "000-fixture-opaque-key",
@@ -916,17 +913,6 @@
         "dependencies": [],
         "source_language": null
       },
-      "display_name": {
-        "status": "missing",
-        "reason": "no_personal_default",
-        "origin": "unavailable",
-        "source": null,
-        "source_observed_at": null,
-        "upstream_modified_at": null,
-        "is_override": false,
-        "dependencies": [],
-        "source_language": null
-      },
       "scenario_inputs.annual_maintenance_charge_eur_cents": {
         "status": "missing",
         "reason": "no_personal_default",
@@ -1001,171 +987,6 @@
         "source_observed_at": null,
         "upstream_modified_at": null,
         "is_override": false,
-        "dependencies": [],
-        "source_language": null
-      },
-      "scenario_inputs.systems": {
-        "status": "available",
-        "reason": null,
-        "origin": "user",
-        "source": "scenario_inputs.systems",
-        "source_observed_at": null,
-        "upstream_modified_at": null,
-        "is_override": true,
-        "dependencies": [],
-        "source_language": null
-      },
-      "scenario_inputs.systems.cooling": {
-        "status": "available",
-        "reason": null,
-        "origin": "user",
-        "source": "scenario_inputs.systems.cooling",
-        "source_observed_at": null,
-        "upstream_modified_at": null,
-        "is_override": true,
-        "dependencies": [],
-        "source_language": null
-      },
-      "scenario_inputs.systems.equipment": {
-        "status": "available",
-        "reason": null,
-        "origin": "user",
-        "source": "scenario_inputs.systems.equipment",
-        "source_observed_at": null,
-        "upstream_modified_at": null,
-        "is_override": true,
-        "dependencies": [],
-        "source_language": null
-      },
-      "scenario_inputs.systems.equipment.energy_storage_ready": {
-        "status": "user_unknown",
-        "reason": null,
-        "origin": "user",
-        "source": "scenario_inputs.systems.equipment.energy_storage_ready",
-        "source_observed_at": null,
-        "upstream_modified_at": null,
-        "is_override": true,
-        "dependencies": [],
-        "source_language": null
-      },
-      "scenario_inputs.systems.equipment.geothermal_installed": {
-        "status": "available",
-        "reason": null,
-        "origin": "user",
-        "source": "scenario_inputs.systems.equipment.geothermal_installed",
-        "source_observed_at": null,
-        "upstream_modified_at": null,
-        "is_override": true,
-        "dependencies": [],
-        "source_language": null
-      },
-      "scenario_inputs.systems.equipment.solar_panels_installed": {
-        "status": "available",
-        "reason": null,
-        "origin": "user",
-        "source": "scenario_inputs.systems.equipment.solar_panels_installed",
-        "source_observed_at": null,
-        "upstream_modified_at": null,
-        "is_override": true,
-        "dependencies": [],
-        "source_language": null
-      },
-      "scenario_inputs.systems.heated_quantities": {
-        "status": "available",
-        "reason": null,
-        "origin": "user",
-        "source": "scenario_inputs.systems.heated_quantities",
-        "source_observed_at": null,
-        "upstream_modified_at": null,
-        "is_override": true,
-        "dependencies": [],
-        "source_language": null
-      },
-      "scenario_inputs.systems.heated_quantities.residential_area_m2": {
-        "status": "available",
-        "reason": null,
-        "origin": "user",
-        "source": "scenario_inputs.systems.heated_quantities.residential_area_m2",
-        "source_observed_at": null,
-        "upstream_modified_at": null,
-        "is_override": true,
-        "dependencies": [],
-        "source_language": null
-      },
-      "scenario_inputs.systems.heated_quantities.residential_volume_m3": {
-        "status": "available",
-        "reason": null,
-        "origin": "user",
-        "source": "scenario_inputs.systems.heated_quantities.residential_volume_m3",
-        "source_observed_at": null,
-        "upstream_modified_at": null,
-        "is_override": true,
-        "dependencies": [],
-        "source_language": null
-      },
-      "scenario_inputs.systems.heated_quantities.total_area_m2": {
-        "status": "available",
-        "reason": null,
-        "origin": "user",
-        "source": "scenario_inputs.systems.heated_quantities.total_area_m2",
-        "source_observed_at": null,
-        "upstream_modified_at": null,
-        "is_override": true,
-        "dependencies": [],
-        "source_language": null
-      },
-      "scenario_inputs.systems.heated_quantities.total_volume_m3": {
-        "status": "user_unknown",
-        "reason": null,
-        "origin": "user",
-        "source": "scenario_inputs.systems.heated_quantities.total_volume_m3",
-        "source_observed_at": null,
-        "upstream_modified_at": null,
-        "is_override": true,
-        "dependencies": [],
-        "source_language": null
-      },
-      "scenario_inputs.systems.heating": {
-        "status": "available",
-        "reason": null,
-        "origin": "user",
-        "source": "scenario_inputs.systems.heating",
-        "source_observed_at": null,
-        "upstream_modified_at": null,
-        "is_override": true,
-        "dependencies": [],
-        "source_language": null
-      },
-      "scenario_inputs.systems.heating.primary_source_id": {
-        "status": "available",
-        "reason": null,
-        "origin": "user",
-        "source": "scenario_inputs.systems.heating.primary_source_id",
-        "source_observed_at": null,
-        "upstream_modified_at": null,
-        "is_override": true,
-        "dependencies": [],
-        "source_language": null
-      },
-      "scenario_inputs.systems.heating.sources": {
-        "status": "available",
-        "reason": null,
-        "origin": "user",
-        "source": "scenario_inputs.systems.heating.sources",
-        "source_observed_at": null,
-        "upstream_modified_at": null,
-        "is_override": true,
-        "dependencies": [],
-        "source_language": null
-      },
-      "scenario_inputs.systems.ventilation": {
-        "status": "available",
-        "reason": null,
-        "origin": "user",
-        "source": "scenario_inputs.systems.ventilation",
-        "source_observed_at": null,
-        "upstream_modified_at": null,
-        "is_override": true,
         "dependencies": [],
         "source_language": null
       },
@@ -1380,6 +1201,171 @@
         ],
         "source_language": null
       },
+      "scenario_inputs.systems": {
+        "status": "available",
+        "reason": null,
+        "origin": "user",
+        "source": "scenario_inputs.systems",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": true,
+        "dependencies": [],
+        "source_language": null
+      },
+      "scenario_inputs.systems.cooling": {
+        "status": "available",
+        "reason": null,
+        "origin": "user",
+        "source": "scenario_inputs.systems.cooling",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": true,
+        "dependencies": [],
+        "source_language": null
+      },
+      "scenario_inputs.systems.equipment": {
+        "status": "available",
+        "reason": null,
+        "origin": "user",
+        "source": "scenario_inputs.systems.equipment",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": true,
+        "dependencies": [],
+        "source_language": null
+      },
+      "scenario_inputs.systems.equipment.energy_storage_ready": {
+        "status": "user_unknown",
+        "reason": null,
+        "origin": "user",
+        "source": "scenario_inputs.systems.equipment.energy_storage_ready",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": true,
+        "dependencies": [],
+        "source_language": null
+      },
+      "scenario_inputs.systems.equipment.geothermal_installed": {
+        "status": "available",
+        "reason": null,
+        "origin": "user",
+        "source": "scenario_inputs.systems.equipment.geothermal_installed",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": true,
+        "dependencies": [],
+        "source_language": null
+      },
+      "scenario_inputs.systems.equipment.solar_panels_installed": {
+        "status": "available",
+        "reason": null,
+        "origin": "user",
+        "source": "scenario_inputs.systems.equipment.solar_panels_installed",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": true,
+        "dependencies": [],
+        "source_language": null
+      },
+      "scenario_inputs.systems.heated_quantities": {
+        "status": "available",
+        "reason": null,
+        "origin": "user",
+        "source": "scenario_inputs.systems.heated_quantities",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": true,
+        "dependencies": [],
+        "source_language": null
+      },
+      "scenario_inputs.systems.heated_quantities.residential_area_m2": {
+        "status": "available",
+        "reason": null,
+        "origin": "user",
+        "source": "scenario_inputs.systems.heated_quantities.residential_area_m2",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": true,
+        "dependencies": [],
+        "source_language": null
+      },
+      "scenario_inputs.systems.heated_quantities.residential_volume_m3": {
+        "status": "available",
+        "reason": null,
+        "origin": "user",
+        "source": "scenario_inputs.systems.heated_quantities.residential_volume_m3",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": true,
+        "dependencies": [],
+        "source_language": null
+      },
+      "scenario_inputs.systems.heated_quantities.total_area_m2": {
+        "status": "available",
+        "reason": null,
+        "origin": "user",
+        "source": "scenario_inputs.systems.heated_quantities.total_area_m2",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": true,
+        "dependencies": [],
+        "source_language": null
+      },
+      "scenario_inputs.systems.heated_quantities.total_volume_m3": {
+        "status": "user_unknown",
+        "reason": null,
+        "origin": "user",
+        "source": "scenario_inputs.systems.heated_quantities.total_volume_m3",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": true,
+        "dependencies": [],
+        "source_language": null
+      },
+      "scenario_inputs.systems.heating": {
+        "status": "available",
+        "reason": null,
+        "origin": "user",
+        "source": "scenario_inputs.systems.heating",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": true,
+        "dependencies": [],
+        "source_language": null
+      },
+      "scenario_inputs.systems.heating.primary_source_id": {
+        "status": "available",
+        "reason": null,
+        "origin": "user",
+        "source": "scenario_inputs.systems.heating.primary_source_id",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": true,
+        "dependencies": [],
+        "source_language": null
+      },
+      "scenario_inputs.systems.heating.sources": {
+        "status": "available",
+        "reason": null,
+        "origin": "user",
+        "source": "scenario_inputs.systems.heating.sources",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": true,
+        "dependencies": [],
+        "source_language": null
+      },
+      "scenario_inputs.systems.ventilation": {
+        "status": "available",
+        "reason": null,
+        "origin": "user",
+        "source": "scenario_inputs.systems.ventilation",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": true,
+        "dependencies": [],
+        "source_language": null
+      },
       "scenario_inputs.utilities": {
         "status": "available",
         "reason": null,
@@ -1454,6 +1440,17 @@
         "source_observed_at": null,
         "upstream_modified_at": null,
         "is_override": true,
+        "dependencies": [],
+        "source_language": null
+      },
+      "display_name": {
+        "status": "missing",
+        "reason": "no_personal_default",
+        "origin": "unavailable",
+        "source": null,
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": false,
         "dependencies": [],
         "source_language": null
       }
@@ -1539,10 +1536,6 @@
         "status": "available",
         "reason": null
       },
-      "display_name": {
-        "status": "missing",
-        "reason": "no_personal_default"
-      },
       "scenario_inputs.annual_maintenance_charge_eur_cents": {
         "status": "missing",
         "reason": "no_personal_default"
@@ -1570,66 +1563,6 @@
       "scenario_inputs.personal_energy_class_date": {
         "status": "missing",
         "reason": "no_personal_default"
-      },
-      "scenario_inputs.systems": {
-        "status": "available",
-        "reason": null
-      },
-      "scenario_inputs.systems.cooling": {
-        "status": "available",
-        "reason": null
-      },
-      "scenario_inputs.systems.equipment": {
-        "status": "available",
-        "reason": null
-      },
-      "scenario_inputs.systems.equipment.energy_storage_ready": {
-        "status": "user_unknown",
-        "reason": null
-      },
-      "scenario_inputs.systems.equipment.geothermal_installed": {
-        "status": "available",
-        "reason": null
-      },
-      "scenario_inputs.systems.equipment.solar_panels_installed": {
-        "status": "available",
-        "reason": null
-      },
-      "scenario_inputs.systems.heated_quantities": {
-        "status": "available",
-        "reason": null
-      },
-      "scenario_inputs.systems.heated_quantities.residential_area_m2": {
-        "status": "available",
-        "reason": null
-      },
-      "scenario_inputs.systems.heated_quantities.residential_volume_m3": {
-        "status": "available",
-        "reason": null
-      },
-      "scenario_inputs.systems.heated_quantities.total_area_m2": {
-        "status": "available",
-        "reason": null
-      },
-      "scenario_inputs.systems.heated_quantities.total_volume_m3": {
-        "status": "user_unknown",
-        "reason": null
-      },
-      "scenario_inputs.systems.heating": {
-        "status": "available",
-        "reason": null
-      },
-      "scenario_inputs.systems.heating.primary_source_id": {
-        "status": "available",
-        "reason": null
-      },
-      "scenario_inputs.systems.heating.sources": {
-        "status": "available",
-        "reason": null
-      },
-      "scenario_inputs.systems.ventilation": {
-        "status": "available",
-        "reason": null
       },
       "scenario_inputs.renovations": {
         "status": "available",
@@ -1707,6 +1640,66 @@
         "status": "user_unknown",
         "reason": null
       },
+      "scenario_inputs.systems": {
+        "status": "available",
+        "reason": null
+      },
+      "scenario_inputs.systems.cooling": {
+        "status": "available",
+        "reason": null
+      },
+      "scenario_inputs.systems.equipment": {
+        "status": "available",
+        "reason": null
+      },
+      "scenario_inputs.systems.equipment.energy_storage_ready": {
+        "status": "user_unknown",
+        "reason": null
+      },
+      "scenario_inputs.systems.equipment.geothermal_installed": {
+        "status": "available",
+        "reason": null
+      },
+      "scenario_inputs.systems.equipment.solar_panels_installed": {
+        "status": "available",
+        "reason": null
+      },
+      "scenario_inputs.systems.heated_quantities": {
+        "status": "available",
+        "reason": null
+      },
+      "scenario_inputs.systems.heated_quantities.residential_area_m2": {
+        "status": "available",
+        "reason": null
+      },
+      "scenario_inputs.systems.heated_quantities.residential_volume_m3": {
+        "status": "available",
+        "reason": null
+      },
+      "scenario_inputs.systems.heated_quantities.total_area_m2": {
+        "status": "available",
+        "reason": null
+      },
+      "scenario_inputs.systems.heated_quantities.total_volume_m3": {
+        "status": "user_unknown",
+        "reason": null
+      },
+      "scenario_inputs.systems.heating": {
+        "status": "available",
+        "reason": null
+      },
+      "scenario_inputs.systems.heating.primary_source_id": {
+        "status": "available",
+        "reason": null
+      },
+      "scenario_inputs.systems.heating.sources": {
+        "status": "available",
+        "reason": null
+      },
+      "scenario_inputs.systems.ventilation": {
+        "status": "available",
+        "reason": null
+      },
       "scenario_inputs.utilities": {
         "status": "available",
         "reason": null
@@ -1734,6 +1727,10 @@
       "scenario_inputs.utilities.water.supplied_volume_m3": {
         "status": "available",
         "reason": null
+      },
+      "display_name": {
+        "status": "missing",
+        "reason": "no_personal_default"
       }
     },
     "source_observed_at": null,
@@ -1898,6 +1895,121 @@
   },
   "shared_read": {
     "schema_version": 5,
+    "document_schema_version": 5,
+    "input_status": {
+      "property": {
+        "policy_version": "property-required-inputs-2026-10-29",
+        "saveable": true,
+        "completeness": "incomplete",
+        "missing_paths": [
+          "details.main_purpose",
+          "details.construction_year",
+          "details.heating_method"
+        ],
+        "unavailable_paths": []
+      },
+      "systems": {
+        "policy_version": "property-required-inputs-2026-10-29",
+        "saveable": true,
+        "completeness": "incomplete",
+        "missing_paths": [
+          "details.heating_method"
+        ],
+        "unavailable_paths": []
+      }
+    },
+    "systems_source_provenance": [
+      {
+        "source_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        "source_code": {
+          "status": "available",
+          "reason": null,
+          "origin": "user",
+          "source": "scenario_inputs.systems.heating.sources",
+          "source_observed_at": null,
+          "upstream_modified_at": null,
+          "is_override": true,
+          "dependencies": [],
+          "source_language": null
+        },
+        "share_percent": {
+          "status": "available",
+          "reason": null,
+          "origin": "user",
+          "source": "scenario_inputs.systems.heating.sources",
+          "source_observed_at": null,
+          "upstream_modified_at": null,
+          "is_override": true,
+          "dependencies": [],
+          "source_language": null
+        }
+      },
+      {
+        "source_id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+        "source_code": {
+          "status": "available",
+          "reason": null,
+          "origin": "user",
+          "source": "scenario_inputs.systems.heating.sources",
+          "source_observed_at": null,
+          "upstream_modified_at": null,
+          "is_override": true,
+          "dependencies": [],
+          "source_language": null
+        },
+        "share_percent": {
+          "status": "available",
+          "reason": null,
+          "origin": "user",
+          "source": "scenario_inputs.systems.heating.sources",
+          "source_observed_at": null,
+          "upstream_modified_at": null,
+          "is_override": true,
+          "dependencies": [],
+          "source_language": null
+        }
+      },
+      {
+        "source_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
+        "source_code": {
+          "status": "available",
+          "reason": null,
+          "origin": "user",
+          "source": "scenario_inputs.systems.heating.sources",
+          "source_observed_at": null,
+          "upstream_modified_at": null,
+          "is_override": true,
+          "dependencies": [],
+          "source_language": null
+        },
+        "share_percent": {
+          "status": "user_unknown",
+          "reason": null,
+          "origin": "user",
+          "source": "scenario_inputs.systems.heating.sources",
+          "source_observed_at": null,
+          "upstream_modified_at": null,
+          "is_override": true,
+          "dependencies": [],
+          "source_language": null
+        }
+      }
+    ],
+    "systems_defaults": {
+      "defaults_version": "hvac-inputs-2026-10-31.1",
+      "status": "pinned_no_scientific_defaults",
+      "capability_version": "hvac-inputs-2026-10-31.1",
+      "coefficients": {
+        "status": "deferred",
+        "reason": "owner_deferred",
+        "editable": false,
+        "numeric_defaults": null,
+        "attribution_editable": false,
+        "reset_available": false,
+        "required_for_save": false,
+        "required_for_completion": false
+      }
+    },
     "building_key": "000-fixture-opaque-key",
     "display_name": null,
     "revision": 1,
@@ -2651,17 +2763,6 @@
         "dependencies": [],
         "source_language": null
       },
-      "display_name": {
-        "status": "missing",
-        "reason": "no_personal_default",
-        "origin": "unavailable",
-        "source": null,
-        "source_observed_at": null,
-        "upstream_modified_at": null,
-        "is_override": false,
-        "dependencies": [],
-        "source_language": null
-      },
       "scenario_inputs.annual_maintenance_charge_eur_cents": {
         "status": "missing",
         "reason": "no_personal_default",
@@ -2736,171 +2837,6 @@
         "source_observed_at": null,
         "upstream_modified_at": null,
         "is_override": false,
-        "dependencies": [],
-        "source_language": null
-      },
-      "scenario_inputs.systems": {
-        "status": "available",
-        "reason": null,
-        "origin": "user",
-        "source": "scenario_inputs.systems",
-        "source_observed_at": null,
-        "upstream_modified_at": null,
-        "is_override": true,
-        "dependencies": [],
-        "source_language": null
-      },
-      "scenario_inputs.systems.cooling": {
-        "status": "available",
-        "reason": null,
-        "origin": "user",
-        "source": "scenario_inputs.systems.cooling",
-        "source_observed_at": null,
-        "upstream_modified_at": null,
-        "is_override": true,
-        "dependencies": [],
-        "source_language": null
-      },
-      "scenario_inputs.systems.equipment": {
-        "status": "available",
-        "reason": null,
-        "origin": "user",
-        "source": "scenario_inputs.systems.equipment",
-        "source_observed_at": null,
-        "upstream_modified_at": null,
-        "is_override": true,
-        "dependencies": [],
-        "source_language": null
-      },
-      "scenario_inputs.systems.equipment.energy_storage_ready": {
-        "status": "user_unknown",
-        "reason": null,
-        "origin": "user",
-        "source": "scenario_inputs.systems.equipment.energy_storage_ready",
-        "source_observed_at": null,
-        "upstream_modified_at": null,
-        "is_override": true,
-        "dependencies": [],
-        "source_language": null
-      },
-      "scenario_inputs.systems.equipment.geothermal_installed": {
-        "status": "available",
-        "reason": null,
-        "origin": "user",
-        "source": "scenario_inputs.systems.equipment.geothermal_installed",
-        "source_observed_at": null,
-        "upstream_modified_at": null,
-        "is_override": true,
-        "dependencies": [],
-        "source_language": null
-      },
-      "scenario_inputs.systems.equipment.solar_panels_installed": {
-        "status": "available",
-        "reason": null,
-        "origin": "user",
-        "source": "scenario_inputs.systems.equipment.solar_panels_installed",
-        "source_observed_at": null,
-        "upstream_modified_at": null,
-        "is_override": true,
-        "dependencies": [],
-        "source_language": null
-      },
-      "scenario_inputs.systems.heated_quantities": {
-        "status": "available",
-        "reason": null,
-        "origin": "user",
-        "source": "scenario_inputs.systems.heated_quantities",
-        "source_observed_at": null,
-        "upstream_modified_at": null,
-        "is_override": true,
-        "dependencies": [],
-        "source_language": null
-      },
-      "scenario_inputs.systems.heated_quantities.residential_area_m2": {
-        "status": "available",
-        "reason": null,
-        "origin": "user",
-        "source": "scenario_inputs.systems.heated_quantities.residential_area_m2",
-        "source_observed_at": null,
-        "upstream_modified_at": null,
-        "is_override": true,
-        "dependencies": [],
-        "source_language": null
-      },
-      "scenario_inputs.systems.heated_quantities.residential_volume_m3": {
-        "status": "available",
-        "reason": null,
-        "origin": "user",
-        "source": "scenario_inputs.systems.heated_quantities.residential_volume_m3",
-        "source_observed_at": null,
-        "upstream_modified_at": null,
-        "is_override": true,
-        "dependencies": [],
-        "source_language": null
-      },
-      "scenario_inputs.systems.heated_quantities.total_area_m2": {
-        "status": "available",
-        "reason": null,
-        "origin": "user",
-        "source": "scenario_inputs.systems.heated_quantities.total_area_m2",
-        "source_observed_at": null,
-        "upstream_modified_at": null,
-        "is_override": true,
-        "dependencies": [],
-        "source_language": null
-      },
-      "scenario_inputs.systems.heated_quantities.total_volume_m3": {
-        "status": "user_unknown",
-        "reason": null,
-        "origin": "user",
-        "source": "scenario_inputs.systems.heated_quantities.total_volume_m3",
-        "source_observed_at": null,
-        "upstream_modified_at": null,
-        "is_override": true,
-        "dependencies": [],
-        "source_language": null
-      },
-      "scenario_inputs.systems.heating": {
-        "status": "available",
-        "reason": null,
-        "origin": "user",
-        "source": "scenario_inputs.systems.heating",
-        "source_observed_at": null,
-        "upstream_modified_at": null,
-        "is_override": true,
-        "dependencies": [],
-        "source_language": null
-      },
-      "scenario_inputs.systems.heating.primary_source_id": {
-        "status": "available",
-        "reason": null,
-        "origin": "user",
-        "source": "scenario_inputs.systems.heating.primary_source_id",
-        "source_observed_at": null,
-        "upstream_modified_at": null,
-        "is_override": true,
-        "dependencies": [],
-        "source_language": null
-      },
-      "scenario_inputs.systems.heating.sources": {
-        "status": "available",
-        "reason": null,
-        "origin": "user",
-        "source": "scenario_inputs.systems.heating.sources",
-        "source_observed_at": null,
-        "upstream_modified_at": null,
-        "is_override": true,
-        "dependencies": [],
-        "source_language": null
-      },
-      "scenario_inputs.systems.ventilation": {
-        "status": "available",
-        "reason": null,
-        "origin": "user",
-        "source": "scenario_inputs.systems.ventilation",
-        "source_observed_at": null,
-        "upstream_modified_at": null,
-        "is_override": true,
         "dependencies": [],
         "source_language": null
       },
@@ -3115,6 +3051,171 @@
         ],
         "source_language": null
       },
+      "scenario_inputs.systems": {
+        "status": "available",
+        "reason": null,
+        "origin": "user",
+        "source": "scenario_inputs.systems",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": true,
+        "dependencies": [],
+        "source_language": null
+      },
+      "scenario_inputs.systems.cooling": {
+        "status": "available",
+        "reason": null,
+        "origin": "user",
+        "source": "scenario_inputs.systems.cooling",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": true,
+        "dependencies": [],
+        "source_language": null
+      },
+      "scenario_inputs.systems.equipment": {
+        "status": "available",
+        "reason": null,
+        "origin": "user",
+        "source": "scenario_inputs.systems.equipment",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": true,
+        "dependencies": [],
+        "source_language": null
+      },
+      "scenario_inputs.systems.equipment.energy_storage_ready": {
+        "status": "user_unknown",
+        "reason": null,
+        "origin": "user",
+        "source": "scenario_inputs.systems.equipment.energy_storage_ready",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": true,
+        "dependencies": [],
+        "source_language": null
+      },
+      "scenario_inputs.systems.equipment.geothermal_installed": {
+        "status": "available",
+        "reason": null,
+        "origin": "user",
+        "source": "scenario_inputs.systems.equipment.geothermal_installed",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": true,
+        "dependencies": [],
+        "source_language": null
+      },
+      "scenario_inputs.systems.equipment.solar_panels_installed": {
+        "status": "available",
+        "reason": null,
+        "origin": "user",
+        "source": "scenario_inputs.systems.equipment.solar_panels_installed",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": true,
+        "dependencies": [],
+        "source_language": null
+      },
+      "scenario_inputs.systems.heated_quantities": {
+        "status": "available",
+        "reason": null,
+        "origin": "user",
+        "source": "scenario_inputs.systems.heated_quantities",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": true,
+        "dependencies": [],
+        "source_language": null
+      },
+      "scenario_inputs.systems.heated_quantities.residential_area_m2": {
+        "status": "available",
+        "reason": null,
+        "origin": "user",
+        "source": "scenario_inputs.systems.heated_quantities.residential_area_m2",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": true,
+        "dependencies": [],
+        "source_language": null
+      },
+      "scenario_inputs.systems.heated_quantities.residential_volume_m3": {
+        "status": "available",
+        "reason": null,
+        "origin": "user",
+        "source": "scenario_inputs.systems.heated_quantities.residential_volume_m3",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": true,
+        "dependencies": [],
+        "source_language": null
+      },
+      "scenario_inputs.systems.heated_quantities.total_area_m2": {
+        "status": "available",
+        "reason": null,
+        "origin": "user",
+        "source": "scenario_inputs.systems.heated_quantities.total_area_m2",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": true,
+        "dependencies": [],
+        "source_language": null
+      },
+      "scenario_inputs.systems.heated_quantities.total_volume_m3": {
+        "status": "user_unknown",
+        "reason": null,
+        "origin": "user",
+        "source": "scenario_inputs.systems.heated_quantities.total_volume_m3",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": true,
+        "dependencies": [],
+        "source_language": null
+      },
+      "scenario_inputs.systems.heating": {
+        "status": "available",
+        "reason": null,
+        "origin": "user",
+        "source": "scenario_inputs.systems.heating",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": true,
+        "dependencies": [],
+        "source_language": null
+      },
+      "scenario_inputs.systems.heating.primary_source_id": {
+        "status": "available",
+        "reason": null,
+        "origin": "user",
+        "source": "scenario_inputs.systems.heating.primary_source_id",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": true,
+        "dependencies": [],
+        "source_language": null
+      },
+      "scenario_inputs.systems.heating.sources": {
+        "status": "available",
+        "reason": null,
+        "origin": "user",
+        "source": "scenario_inputs.systems.heating.sources",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": true,
+        "dependencies": [],
+        "source_language": null
+      },
+      "scenario_inputs.systems.ventilation": {
+        "status": "available",
+        "reason": null,
+        "origin": "user",
+        "source": "scenario_inputs.systems.ventilation",
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": true,
+        "dependencies": [],
+        "source_language": null
+      },
       "scenario_inputs.utilities": {
         "status": "available",
         "reason": null,
@@ -3189,6 +3290,17 @@
         "source_observed_at": null,
         "upstream_modified_at": null,
         "is_override": true,
+        "dependencies": [],
+        "source_language": null
+      },
+      "display_name": {
+        "status": "missing",
+        "reason": "no_personal_default",
+        "origin": "unavailable",
+        "source": null,
+        "source_observed_at": null,
+        "upstream_modified_at": null,
+        "is_override": false,
         "dependencies": [],
         "source_language": null
       }
@@ -3274,10 +3386,6 @@
         "status": "available",
         "reason": null
       },
-      "display_name": {
-        "status": "missing",
-        "reason": "no_personal_default"
-      },
       "scenario_inputs.annual_maintenance_charge_eur_cents": {
         "status": "missing",
         "reason": "no_personal_default"
@@ -3305,66 +3413,6 @@
       "scenario_inputs.personal_energy_class_date": {
         "status": "missing",
         "reason": "no_personal_default"
-      },
-      "scenario_inputs.systems": {
-        "status": "available",
-        "reason": null
-      },
-      "scenario_inputs.systems.cooling": {
-        "status": "available",
-        "reason": null
-      },
-      "scenario_inputs.systems.equipment": {
-        "status": "available",
-        "reason": null
-      },
-      "scenario_inputs.systems.equipment.energy_storage_ready": {
-        "status": "user_unknown",
-        "reason": null
-      },
-      "scenario_inputs.systems.equipment.geothermal_installed": {
-        "status": "available",
-        "reason": null
-      },
-      "scenario_inputs.systems.equipment.solar_panels_installed": {
-        "status": "available",
-        "reason": null
-      },
-      "scenario_inputs.systems.heated_quantities": {
-        "status": "available",
-        "reason": null
-      },
-      "scenario_inputs.systems.heated_quantities.residential_area_m2": {
-        "status": "available",
-        "reason": null
-      },
-      "scenario_inputs.systems.heated_quantities.residential_volume_m3": {
-        "status": "available",
-        "reason": null
-      },
-      "scenario_inputs.systems.heated_quantities.total_area_m2": {
-        "status": "available",
-        "reason": null
-      },
-      "scenario_inputs.systems.heated_quantities.total_volume_m3": {
-        "status": "user_unknown",
-        "reason": null
-      },
-      "scenario_inputs.systems.heating": {
-        "status": "available",
-        "reason": null
-      },
-      "scenario_inputs.systems.heating.primary_source_id": {
-        "status": "available",
-        "reason": null
-      },
-      "scenario_inputs.systems.heating.sources": {
-        "status": "available",
-        "reason": null
-      },
-      "scenario_inputs.systems.ventilation": {
-        "status": "available",
-        "reason": null
       },
       "scenario_inputs.renovations": {
         "status": "available",
@@ -3442,6 +3490,66 @@
         "status": "user_unknown",
         "reason": null
       },
+      "scenario_inputs.systems": {
+        "status": "available",
+        "reason": null
+      },
+      "scenario_inputs.systems.cooling": {
+        "status": "available",
+        "reason": null
+      },
+      "scenario_inputs.systems.equipment": {
+        "status": "available",
+        "reason": null
+      },
+      "scenario_inputs.systems.equipment.energy_storage_ready": {
+        "status": "user_unknown",
+        "reason": null
+      },
+      "scenario_inputs.systems.equipment.geothermal_installed": {
+        "status": "available",
+        "reason": null
+      },
+      "scenario_inputs.systems.equipment.solar_panels_installed": {
+        "status": "available",
+        "reason": null
+      },
+      "scenario_inputs.systems.heated_quantities": {
+        "status": "available",
+        "reason": null
+      },
+      "scenario_inputs.systems.heated_quantities.residential_area_m2": {
+        "status": "available",
+        "reason": null
+      },
+      "scenario_inputs.systems.heated_quantities.residential_volume_m3": {
+        "status": "available",
+        "reason": null
+      },
+      "scenario_inputs.systems.heated_quantities.total_area_m2": {
+        "status": "available",
+        "reason": null
+      },
+      "scenario_inputs.systems.heated_quantities.total_volume_m3": {
+        "status": "user_unknown",
+        "reason": null
+      },
+      "scenario_inputs.systems.heating": {
+        "status": "available",
+        "reason": null
+      },
+      "scenario_inputs.systems.heating.primary_source_id": {
+        "status": "available",
+        "reason": null
+      },
+      "scenario_inputs.systems.heating.sources": {
+        "status": "available",
+        "reason": null
+      },
+      "scenario_inputs.systems.ventilation": {
+        "status": "available",
+        "reason": null
+      },
       "scenario_inputs.utilities": {
         "status": "available",
         "reason": null
@@ -3469,6 +3577,10 @@
       "scenario_inputs.utilities.water.supplied_volume_m3": {
         "status": "available",
         "reason": null
+      },
+      "display_name": {
+        "status": "missing",
+        "reason": "no_personal_default"
       }
     },
     "source_observed_at": null,
@@ -3508,121 +3620,6 @@
         }
       },
       "captured_at": "2026-11-09T00:00:00Z"
-    },
-    "document_schema_version": 5,
-    "input_status": {
-      "property": {
-        "policy_version": "property-required-inputs-2026-10-29",
-        "saveable": true,
-        "completeness": "incomplete",
-        "missing_paths": [
-          "details.main_purpose",
-          "details.construction_year",
-          "details.heating_method"
-        ],
-        "unavailable_paths": []
-      },
-      "systems": {
-        "policy_version": "property-required-inputs-2026-10-29",
-        "saveable": true,
-        "completeness": "incomplete",
-        "missing_paths": [
-          "details.heating_method"
-        ],
-        "unavailable_paths": []
-      }
-    },
-    "systems_source_provenance": [
-      {
-        "source_id": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
-        "source_code": {
-          "status": "available",
-          "reason": null,
-          "origin": "user",
-          "source": "scenario_inputs.systems.heating.sources",
-          "source_observed_at": null,
-          "upstream_modified_at": null,
-          "is_override": true,
-          "dependencies": [],
-          "source_language": null
-        },
-        "share_percent": {
-          "status": "available",
-          "reason": null,
-          "origin": "user",
-          "source": "scenario_inputs.systems.heating.sources",
-          "source_observed_at": null,
-          "upstream_modified_at": null,
-          "is_override": true,
-          "dependencies": [],
-          "source_language": null
-        }
-      },
-      {
-        "source_id": "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
-        "source_code": {
-          "status": "available",
-          "reason": null,
-          "origin": "user",
-          "source": "scenario_inputs.systems.heating.sources",
-          "source_observed_at": null,
-          "upstream_modified_at": null,
-          "is_override": true,
-          "dependencies": [],
-          "source_language": null
-        },
-        "share_percent": {
-          "status": "available",
-          "reason": null,
-          "origin": "user",
-          "source": "scenario_inputs.systems.heating.sources",
-          "source_observed_at": null,
-          "upstream_modified_at": null,
-          "is_override": true,
-          "dependencies": [],
-          "source_language": null
-        }
-      },
-      {
-        "source_id": "cccccccc-cccc-4ccc-8ccc-cccccccccccc",
-        "source_code": {
-          "status": "available",
-          "reason": null,
-          "origin": "user",
-          "source": "scenario_inputs.systems.heating.sources",
-          "source_observed_at": null,
-          "upstream_modified_at": null,
-          "is_override": true,
-          "dependencies": [],
-          "source_language": null
-        },
-        "share_percent": {
-          "status": "user_unknown",
-          "reason": null,
-          "origin": "user",
-          "source": "scenario_inputs.systems.heating.sources",
-          "source_observed_at": null,
-          "upstream_modified_at": null,
-          "is_override": true,
-          "dependencies": [],
-          "source_language": null
-        }
-      }
-    ],
-    "systems_defaults": {
-      "defaults_version": "hvac-inputs-2026-10-31.1",
-      "status": "pinned_no_scientific_defaults",
-      "capability_version": "hvac-inputs-2026-10-31.1",
-      "coefficients": {
-        "status": "deferred",
-        "reason": "owner_deferred",
-        "editable": false,
-        "numeric_defaults": null,
-        "attribution_editable": false,
-        "reset_available": false,
-        "required_for_save": false,
-        "required_for_completion": false
-      }
     }
   },
   "summary_page": {
@@ -3630,6 +3627,7 @@
     "items": [
       {
         "schema_version": 5,
+        "document_schema_version": 5,
         "saved_id": "11111111-1111-4111-8111-111111111111",
         "building_key": "000-fixture-opaque-key",
         "display_name": null,
@@ -3676,8 +3674,7 @@
             }
           },
           "captured_at": "2026-11-09T00:00:00Z"
-        },
-        "document_schema_version": 5
+        }
       }
     ],
     "next_cursor": null

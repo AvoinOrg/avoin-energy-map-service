@@ -458,5 +458,5 @@
       "type": "object"
     }
   },
-  "title": "EnergyMapHvacCatalogV2"
+  "title": "hvac-catalog-v2"
 }

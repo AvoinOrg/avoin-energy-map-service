@@ -305,7 +305,7 @@ For private saved-building authentication, the Compose definition also forwards 
 
 Install test dependencies with `poetry install --with test`. Area tests run with `python3 -m unittest tests.test_area_aggregates tests.test_area_publication -v`; the real PostGIS cases require `RUN_AREA_DB_TESTS=1` and refuse to run unless `PGDATABASE=energymap_areas_test`. Use a disposable PostGIS database, run migrations first, and never point those fixtures at the application database. They cover deduplication, conflicting records, holes/enclaves, shared edges, incomplete locations, certificate scales/validity, denominator conservation, intersection summaries, decoded MVTs, release coexistence, activation/failure/rollback and candidate-only catalog publication.
 
-Completed personal renovation inputs are a **v4 candidate**:
-[contract including added insulation thickness in mm](src/api/personal-renovations-v4.md).
+Completed personal renovation inputs use the v5 saved-building format.
+[contract including added insulation thickness in mm](src/api/personal-utilities-v5.md).
 Use the checked-in serial `tests.run_personal_renovations_checks` command for
 local contract/storage proof; no private endpoint or live activation is implied.

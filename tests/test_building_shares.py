@@ -16,7 +16,7 @@ from src.api.main import app
 from src.api.buildings import public_example
 from src.api.log_redaction import RedactingFormatter, RedactingAccessFormatter, redact
 from src.building_contract import CanonicalBuildingV1, PersonalBuildingPutV1, FieldProvenanceV1, AvailabilityV1
-from src.building_share_contract import SharedBuildingV1, shared_projection
+from src.building_share_contract import SharedBuildingV5, shared_projection
 from src.building_shares import digest, ShareNotFound
 from src.user_buildings import capture_summary, page_query
 from src.api.auth import AuthenticatedPrincipal
@@ -80,11 +80,11 @@ class ShareBoundaryTests(unittest.TestCase):
         base.source_availability['identity.address_key']=AvailabilityV1(status='available')
         now=datetime.now(timezone.utc)
         row=SimpleNamespace(saved_id=uuid4(),owner_issuer='PRIVATE-ISSUER',owner_subject='PRIVATE-SUB',
-            building_key=base.building_key,display_name='Shared name',schema_version=1,
+            building_key=base.building_key,display_name='Shared name',schema_version=5,
             overrides={'address_fin':'Shared personal address','floor_area':0,'total_area':None},scenario_inputs={'resident_count':None},
             revision=4,created_at=now,updated_at=now,last_known_summary=capture_summary(base,now).model_dump(mode='json'))
         value=shared_projection(row,base,'available').model_dump(mode='json')
-        self.assertEqual(set(value),set(SharedBuildingV1.model_fields))
+        self.assertEqual(set(value),set(SharedBuildingV5.model_fields))
         self.assertEqual(set(value['base']['identity']),{'permanent_building_identifier','property_identifier'})
         self.assertEqual(value['overrides'],row.overrides)
         self.assertEqual(value['scenario_inputs'],{'resident_count':None})
@@ -114,21 +114,21 @@ class ShareBoundaryTests(unittest.TestCase):
         for method in ('post','delete'):
             self.assertEqual(manage[method]['security'],[{'ZitadelAccessToken':[]}])
             self.assertIn('If-Match',[p['name'] for p in manage[method]['parameters']])
-        for name in ('SharedBuildingV1','SharedBaseV1','SharedIdentityV1','ShareCreatedV1'):
+        for name in ('SharedBuildingV5','SharedBaseV1','SharedIdentityV1','ShareCreatedV1'):
             self.assertFalse(schema['components']['schemas'][name]['additionalProperties'])
-        self.assertNotIn('saved_id',schema['components']['schemas']['SharedBuildingV1']['properties'])
+        self.assertNotIn('saved_id',schema['components']['schemas']['SharedBuildingV5']['properties'])
         self.assertNotIn('address_key',schema['components']['schemas']['SharedIdentityV1']['properties'])
 
     def test_checked_examples_and_schema_match_typed_contracts(self):
         from src.api.export_building_contract import contract_examples
-        checked = json.loads(Path('src/api/building-api-v1.examples.json').read_text())
+        checked = json.loads(Path('src/api/building-api.examples.json').read_text())
         for name, (model, value) in contract_examples().items():
             self.assertEqual(checked[name], value)
             model.model_validate_json(json.dumps(value))
-        definitions = json.loads(Path('src/api/building-contract-v1.schema.json').read_text())['$defs']
-        for name in ('SharedBuildingV1', 'SharedBaseV1', 'SharedIdentityV1', 'ShareCreatedV1', 'SavedBuildingV1'):
+        definitions = json.loads(Path('src/api/building-contract.schema.json').read_text())['$defs']
+        for name in ('SharedBuildingV5', 'SharedBaseV1', 'SharedIdentityV1', 'ShareCreatedV1', 'SavedBuildingV5'):
             self.assertIn(name, definitions)
-        self.assertEqual(definitions['SavedBuildingV1']['properties']['share_enabled']['type'], 'boolean')
+        self.assertEqual(definitions['SavedBuildingV5']['properties']['share_enabled']['type'], 'boolean')
 
     def test_final_formatted_access_application_and_exception_logs(self):
         token='synthetic'+ '_'*33+'X'

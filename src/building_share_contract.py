@@ -2,19 +2,19 @@
 from src.personal_utilities_contract import (ScenarioInputsV5, EffectiveV5, VersionedV5, ReadPathV5, AvailabilityPathV5, UTILITIES_PATHS, project_v5)
 from typing import Literal
 
-from pydantic import Field, field_serializer, field_validator
+from pydantic import Field, field_serializer
 
 from src.building_contract import (
     AvailabilityV1, BuildingKey, BuildingOverridesV1, CertificateV1, CodeLabelsV1,
-    ContractModel, DetailsV1, DisplayName, EffectiveV1, FieldProvenanceV1,
+    ContractModel, DetailsV1, DisplayName, FieldProvenanceV1,
     GeometryV1, LastKnownBuildingSummaryV1, LocationV1, ModelV1,
-    PublishedCertificateV1, ScenarioInputsV1, SelectionV1, SourcesV1,
-    UtcTime, VersionedV1, project_building, sparse,
+    PublishedCertificateV1, SelectionV1, SourcesV1,
+    UtcTime, VersionedV1, sparse,
 )
 from src import user_buildings as owner
-from src.personal_renovations_contract import (ScenarioInputsV4, EffectiveV4, VersionedV4, ReadPathV4, AvailabilityPathV4, RENOVATIONS_PATHS, project_v4)
-from src.personal_hvac_contract import (HeatingSourceProvenanceV3, ScenarioInputsV3, EffectiveV3, InputStatusV3, DefaultResolutionV3, VersionedV3, ReadPathV3, AvailabilityPathV3, SYSTEMS_PATHS, project_v3)
-from src.personal_property_contract import (ScenarioInputsV2, EffectiveV2, InputStatusV2, VersionedV2, NEW_PATHS, ReadPathV2, AvailabilityPathV2, v1_document, project_v2)
+from src.personal_renovations_contract import RENOVATIONS_PATHS
+from src.personal_hvac_contract import HeatingSourceProvenanceV3, InputStatusV3, DefaultResolutionV3, SYSTEMS_PATHS
+from src.personal_property_contract import NEW_PATHS
 
 
 class ShareCreatedV1(VersionedV1):
@@ -49,7 +49,11 @@ class SharedBaseV1(VersionedV1):
     source_availability: dict[str, AvailabilityV1]
 
 
-class SharedBuildingV1(VersionedV1):
+class SharedBuildingV5(VersionedV5):
+    document_schema_version: Literal[5]
+    input_status: InputStatusV3
+    systems_source_provenance: list[HeatingSourceProvenanceV3] = Field(max_length=16)
+    systems_defaults: DefaultResolutionV3
     building_key: BuildingKey
     display_name: DisplayName | None
     revision: int = Field(ge=1)
@@ -59,77 +63,16 @@ class SharedBuildingV1(VersionedV1):
     base_unavailable_reason: Literal['missing', 'ambiguous', 'source_unavailable'] | None
     base: SharedBaseV1 | None
     overrides: BuildingOverridesV1
-    scenario_inputs: ScenarioInputsV1
-    effective: EffectiveV1
-    field_provenance: dict[str, FieldProvenanceV1]
-    source_availability: dict[str, AvailabilityV1]
+    scenario_inputs: ScenarioInputsV5
+    effective: EffectiveV5
+    field_provenance: dict[ReadPathV5, FieldProvenanceV1]
+    source_availability: dict[AvailabilityPathV5, AvailabilityV1]
     source_observed_at: UtcTime | None
     last_known_summary: LastKnownBuildingSummaryV1
 
     @field_serializer('overrides', 'scenario_inputs')
     def sparse_inputs(self, value):
         return sparse(value)
-
-
-class SharedBuildingV2(SharedBuildingV1):
-    schema_version: Literal[2] = 2
-    document_schema_version: Literal[1, 2]
-    scenario_inputs: ScenarioInputsV2
-    effective: EffectiveV2
-    input_status: InputStatusV2
-    field_provenance: dict[ReadPathV2, FieldProvenanceV1]
-    source_availability: dict[AvailabilityPathV2, AvailabilityV1]
-
-    @field_validator('schema_version', mode='before')
-    @classmethod
-    def exact_version(cls, value):
-        return VersionedV2.exact_version(value)
-
-
-class SharedBuildingV3(SharedBuildingV2):
-    schema_version: Literal[3] = 3
-    document_schema_version: Literal[1, 2, 3]
-    scenario_inputs: ScenarioInputsV3
-    effective: EffectiveV3
-    input_status: InputStatusV3
-    systems_source_provenance: list[HeatingSourceProvenanceV3] = Field(max_length=16)
-    systems_defaults: DefaultResolutionV3
-    field_provenance: dict[ReadPathV3, FieldProvenanceV1]
-    source_availability: dict[AvailabilityPathV3, AvailabilityV1]
-
-    @field_validator('schema_version', mode='before')
-    @classmethod
-    def exact_version(cls, value):
-        return VersionedV3.exact_version(value)
-
-
-class SharedBuildingV4(SharedBuildingV3):
-    schema_version: Literal[4] = 4
-    document_schema_version: Literal[1, 2, 3, 4]
-    scenario_inputs: ScenarioInputsV4
-    effective: EffectiveV4
-    field_provenance: dict[ReadPathV4, FieldProvenanceV1]
-    source_availability: dict[AvailabilityPathV4, AvailabilityV1]
-
-    @field_validator('schema_version', mode='before')
-    @classmethod
-    def exact_version(cls, value):
-        return VersionedV4.exact_version(value)
-
-
-class SharedBuildingV5(SharedBuildingV3):
-    schema_version: Literal[5] = 5
-    document_schema_version: Literal[1, 2, 3, 4, 5]
-    scenario_inputs: ScenarioInputsV5
-    effective: EffectiveV5
-    field_provenance: dict[ReadPathV5, FieldProvenanceV1]
-    source_availability: dict[AvailabilityPathV5, AvailabilityV1]
-
-    @field_validator('schema_version', mode='before')
-    @classmethod
-    def exact_version(cls, value):
-        return VersionedV5.exact_version(value)
-
 
 
 # Map keys/dependencies cannot smuggle internal identifiers into the safe DTO.
@@ -158,25 +101,18 @@ def public_component(value):
         set(type(value).model_fields) - {'field_availability'})})
 
 
-def shared_projection(row, base, reason, version=1):
-    owner.require_read_version(row, version)
+def shared_projection(row, base, reason):
     document = owner.stored_document(row)
     summary = owner.stored_summary(row)
     summary = summary.model_copy(update={'source_availability': public_map(summary.source_availability, SUMMARY_AVAILABILITY)})
-    if version == 1:
-        document = v1_document(document)
-        projection = project_building(base, document.overrides, document.scenario_inputs,
-            building_key=row.building_key, last_known_summary=summary, base_unavailable_reason=reason)
-    else:
-        projection = {2: project_v2, 3: project_v3, 4: project_v4, 5: project_v5}[version](base, document, building_key=row.building_key,
-            last_known_summary=summary, base_unavailable_reason=reason)
-    allowed = PUBLIC_PROVENANCE if version == 1 else PUBLIC_PROVENANCE | NEW_PATHS | {'display_name'}
-    if version in (3, 4, 5):
-        allowed |= SYSTEMS_PATHS
-    if version in (4, 5):
-        allowed |= RENOVATIONS_PATHS
-    if version == 5:
-        allowed |= UTILITIES_PATHS
+    if base is not None:
+        base = base.model_copy(update={
+            'field_provenance': public_provenance(base.field_provenance),
+            'source_availability': public_map(base.source_availability, PUBLIC_AVAILABILITY),
+        })
+    projection = project_v5(base, document, building_key=row.building_key,
+        last_known_summary=summary, base_unavailable_reason=reason)
+    allowed = PUBLIC_PROVENANCE | NEW_PATHS | {'display_name'} | SYSTEMS_PATHS | RENOVATIONS_PATHS | UTILITIES_PATHS
     safe_base = None
     if base is not None:
         safe_base = SharedBaseV1(
@@ -195,12 +131,9 @@ def shared_projection(row, base, reason, version=1):
         'certificate': public_component(projection.effective.certificate),
         'published_certificate': public_component(projection.effective.published_certificate),
         'model': public_component(projection.effective.model)})
-    model = {1: SharedBuildingV1, 2: SharedBuildingV2, 3: SharedBuildingV3, 4: SharedBuildingV4, 5: SharedBuildingV5}[version]
-    fields = {} if version == 1 else {'document_schema_version': row.schema_version, 'input_status': projection.input_status}
-    if version in (3, 4, 5):
-        fields['systems_defaults'] = projection.systems_defaults
-        fields['systems_source_provenance'] = projection.systems_source_provenance
-    return model(**fields, building_key=row.building_key, display_name=document.display_name,
+    return SharedBuildingV5(document_schema_version=row.schema_version, input_status=projection.input_status,
+        systems_defaults=projection.systems_defaults, systems_source_provenance=projection.systems_source_provenance,
+        building_key=row.building_key, display_name=document.display_name,
         revision=row.revision, created_at=row.created_at, updated_at=row.updated_at,
         base_status=projection.base_status, base_unavailable_reason=projection.base_unavailable_reason,
         base=safe_base, overrides=document.overrides, scenario_inputs=projection.scenario_inputs,

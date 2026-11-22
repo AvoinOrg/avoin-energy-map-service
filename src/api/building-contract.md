@@ -1,10 +1,10 @@
-# Building contract v1
+# Canonical building fields and personal overrides
 
-Status: locally implemented and fixture-verified; the field matrix was fixed before product code. This child does not complete the parent or frontend.
+Public building records use schema 1. Personal saved buildings use schema 5. See the [saved-building API](user-buildings.md) and its [v5 schema](personal-utilities-v5.schema.json) for the full personal record.
 
-## V1 field matrix — completed planning input
+## Base building fields
 
-The names below are the v1 API names. `details` denotes a common displayed-value shape used in `base.details` and `effective.details`. PUT `overrides` accepts only the editable rows below, using the unprefixed leaf name. Official fields live separately under `base.certificate`/`base.model`, even when a detail displays the same source value.
+`details` denotes a common displayed-value shape used in `base.details` and `effective.details`. PUT `overrides` accepts only the editable rows below, using the unprefixed leaf name. Official fields live separately under `base.certificate`/`base.model`, even when a detail displays the same source value.
 
 Null conventions: all editable scalar leaves are optional and nullable. Omitted means no personal override; explicit null means personal unknown and blocks source fallback; zero is a supplied value where permitted. All DTOs forbid extra keys recursively. Source absence is null plus a field/source availability reason, not a fabricated zero. Source values outside a user-input bound are handled as source data with validity metadata; do not reject an entire public read merely because imported data is malformed.
 
@@ -21,7 +21,7 @@ For user numeric quantities, accept JSON integers/reals as numbers but explicitl
 | `postal_code` | Same selected address's `postal_code` | string / none | Null unknown; `"00100"` stays text | Exactly 5 ASCII digits; no numeric coercion or padding | Editable personal postal information |
 | `postal_office_fin` | Same selected address's `postal_office_fin` | string / none | Null unknown | 1–150 chars | Editable personal postal information |
 | `construction_year` | Calendar year of Ryhti `completion_date`; never certificate `completion_year` | integer / year | Null unknown; zero invalid | 1 through current UTC year + 5, clock injected in tests; full dates/strings/bools rejected | Editable personal year; raw completion date read-only |
-| `main_purpose` | `main.main_purpose`, otherwise `buildings.main_purpose` | string / code | Null unknown; leading zeroes retained | Exact selectable membership in the adopted bundled [purpose catalog](purpose-catalog.md) for both v1 and v2 writes, length 1–16; no trimming/coercion or restriction to model-covered `05`/`06` | Editable Ryhti-code personal choice |
+| `main_purpose` | `main.main_purpose`, otherwise `buildings.main_purpose` | string / code | Null unknown; leading zeroes retained | Exact selectable membership in the adopted bundled [purpose catalog](purpose-catalog.md) for personal writes, length 1–16; no trimming/coercion or restriction to model-covered `05`/`06` | Editable Ryhti-code personal choice |
 | `heating_method` | `main.heating_method`, otherwise `buildings.heating_method` | string / code | Null unknown | Exact `code_maps` type `heating_method`, length 1–16 | Editable personal choice; no assertion of certified installation |
 | `heating_energy_source` | `main.heating_energy_source`, otherwise `buildings.heating_energy_source` | string / code | Null unknown | Exact `code_maps` type `heating_energy_source`, length 1–16 | Editable personal choice |
 | `number_of_storeys` | `main.number_of_storeys`, otherwise `buildings.number_of_storeys` | integer / storeys | Zero retained as supplied count, with no positive-storey model eligibility; null unknown | 0–1,000; no float/string/bool | Editable personal count |
@@ -34,13 +34,13 @@ For user numeric quantities, accept JSON integers/reals as numbers but explicitl
 | `ventilation_type_id` | Selected certificate `ventilation_type_id` / corresponding main field | string / code | `"0"` is valid gravity; null personally unknown | Exactly one of `"0"`…`"8"` from pinned `VENTILATION_TYPES`; numeric 0 rejected | Personal system selection; official code/labels remain separate |
 | `ventilation_description` | First nonblank selected-certificate FI then SV description, with actual language in provenance | string / none | Null blocks display fallback; no invented translation | 1–4,000 chars; plain text, newline/tab permitted | Personal note; original FI/SV certificate prose immutable |
 
-Code-catalog interface: pass a read-only `CodeCatalog` into semantic validation, separate from structural Pydantic validation. For both v1 and v2 personal writes, `main_purpose` uses the adopted bundled [purpose catalog](purpose-catalog.md); discovery and validation share its selectable exact codes. Upstream DRAFT remains metadata and does not disable adopted choices. Heating method and heating energy source still use source `code_maps` sets/labels, fetched in one bounded query when needed; fixture tests inject them. Unknown supplied code yields field-level 422. A missing/corrupt/unadopted purpose pin yields sanitized 503 `purpose_catalog_unavailable`; an upstream outage does not invalidate an intact adopted pin. Other required catalog outages also yield typed 503 dependency failures. Existing saved codes remain readable as unknown/deprecated after catalog refresh; do not erase or rewrite them on read. Revalidate newly supplied values, including full PUT resubmission, while unrelated edits and null/unset/reset/deletion remain possible without purpose catalog availability.
+Code-catalog interface: pass a read-only `CodeCatalog` into semantic validation, separate from structural Pydantic validation. For personal writes, `main_purpose` uses the adopted bundled [purpose catalog](purpose-catalog.md); discovery and validation share its selectable exact codes. Upstream DRAFT remains metadata and does not disable adopted choices. Heating method and heating energy source still use source `code_maps` sets/labels, fetched in one bounded query when needed; fixture tests inject them. Unknown supplied code yields field-level 422. A missing/corrupt/unadopted purpose pin yields sanitized 503 `purpose_catalog_unavailable`; an upstream outage does not invalidate an intact adopted pin. Other required catalog outages also yield typed 503 dependency failures. Existing saved codes remain readable as unknown/deprecated after catalog refresh; do not erase or rewrite them on read. Revalidate newly supplied values, including full PUT resubmission, while unrelated edits and null/unset/reset/deletion remain possible without purpose catalog availability.
 
 ### Scenario inputs and actual calculation dependencies
 
 | API field or inventory item | Actual source/input | Type / unit | Null, limits and combinations | Editable status / treatment |
 | --- | --- | --- | --- | --- |
-| `scenario_inputs.resident_count` | Current Water control's committed user count; default is frontend floor-area heuristic | integer / residents | Optional/null; supplied count 1–10,000, matching `CURRENT_REFERENCE_DATA`; zero rejected, no bool/float/string | The v1 adjustable scenario input. Omission/unset restores existing default behavior; null means unknown and must not silently reapply heuristic. No resident-register claim. |
+| `scenario_inputs.resident_count` | Current Water control's committed user count; default is frontend floor-area heuristic | integer / residents | Optional/null; supplied count 1–10,000, matching `CURRENT_REFERENCE_DATA`; zero rejected, no bool/float/string | Omission/unset restores existing default behavior; null means unknown and must not silently reapply heuristic. No resident-register claim. |
 | Calculation `floorAreaSquareMeters` | Effective `details.floor_area` | number / m² | Positive needed for current annual/reference computations; zero/null remains representable but calculation unavailable | Reuse the detail override; no duplicate scenario-area field |
 | Calculation `mainPurpose` | Effective `details.main_purpose` | string / code | Existing cost/reference building classes are only `05`/`06`; other valid building codes remain savable/displayable | Reuse the detail override; unsupported calculation is not invalid building data |
 | Calculation `scenarioPrefix` | Effective heating source/method mapping: `01→distr`, `02→oil`, `07→wood`, `09→gshp`, `04+01→elecb`, `04+03→delec` | enum / none | No unambiguous current Ryhti mapping to `awhp`; absent/unsupported combination remains unavailable | Derived input; no independent editable prefix that can contradict heating details |
@@ -80,21 +80,21 @@ All source-backed detail leaves retain their source values under `base` even whe
 
 ### Unsupported fields and reasons
 
-| Requested/product concept | V1 treatment and reason |
+| Requested/product concept | Canonical treatment |
 | --- | --- |
 | Water-heating share | Unsupported: no approved split source/formula |
 | General renovation/energy recommendations and class-improvement measures | Unsupported: no general dataset or measure-to-official-class contract. Preserve matched certificate recommendations and existing reference scenario outputs separately. |
 | Planned works, plot tenure | Unsupported: no linked project/ownership/lease data; property ID is insufficient |
 | Installed solar/other-energy equipment | No inference from solar scenario columns; fuller source dataset has not been obtained |
-| Personal energy-class or annual-consumption estimates | Not accepted in v1: they are optional in the parent, are not the actual current adjustable control, and need distinct future user-estimate fields/units. Reject attempts to set `energy_class`, certificate consumption or model columns. |
-| User prices, CO₂ factors, efficiencies, renovation dates, arbitrary source columns | Unsupported: not current adjustable inputs; accepting helper parameters as arbitrary editable fields would expand product scope |
+| Personal energy-class or annual-consumption estimates | Personal estimates and measured utilities belong in `scenario_inputs`. Official certificate and model fields are read-only. |
+| User prices, CO₂ factors, efficiencies, arbitrary source columns | Unsupported: not current adjustable inputs; accepting helper parameters as arbitrary editable fields would expand product scope |
 | Canonical building name | No registry-name property in current projection. Summary `name` is null rather than a certificate name silently promoted to a building name; later `display_name` is separate. |
 | Reliable main refresh/model-generation timestamp and exact scenario-generation failure | Unavailable in current schema/job lineage; report unknown. Do not add ETL work or invent a timestamp/diagnosis. |
 
 
 ## Implemented schema and public HTTP interface
 
-Schema version is **1**. [building-contract-v1.schema.json](building-contract-v1.schema.json)
+Schema version is **1**. [building-contract.schema.json](building-contract.schema.json)
 contains the closed DTO definitions, including the future request envelopes;
 [buildings.py](buildings.py) registers only the public GET. The API's `/openapi.json`
 contains a complete, schema-valid success example and the expected error bodies.

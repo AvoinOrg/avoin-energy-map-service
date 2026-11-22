@@ -131,7 +131,7 @@ class OwnerHttpBoundaryTests(unittest.TestCase):
                 {'overrides':{'main_purpose':10}}, {'display_name':'x'*121}):
             self.check(self.client.put('/energy-data/user/buildings/key',json=body,headers=self.auth),422)
         for raw, expected in ((b'{"overrides":',422), (b' '*32769,413),
-                               (b' '*32766+b'{}',503), (b'{"overrides":{"floor_area":NaN}}',422)):
+                               (b'{"schema_version":5}'.ljust(32768, b' '),503), (b'{"overrides":{"floor_area":NaN}}',422)):
             self.check(self.client.put('/energy-data/user/buildings/key',content=raw,headers={**self.auth,'Content-Type':'application/json'}), expected)
         response=self.client.get('/energy-data/user/buildings',headers={**self.auth,'Origin':'http://127.0.0.1:8080'})
         self.check(response,503)

@@ -84,12 +84,12 @@ class ShareDatabaseTests(unittest.TestCase):
         self.assertEqual(public.json()['field_provenance']['details.total_area']['status'],'user_unknown')
         for private in ('saved_id','owner_issuer','owner_subject','address_key','share_enabled','token_digest',token,str(saved.json()['saved_id'])):
             self.assertNotIn(private,public.text)
-        updated=self.client.patch(PATH,json={'set':{'overrides':{'floor_area':175}},'unset':['overrides.total_area','scenario_inputs.resident_count']},headers=self.auth(**{'If-Match':created.headers['etag']}))
+        updated=self.client.patch(PATH,json={'schema_version': 5, 'set':{'overrides':{'floor_area':175}},'unset':['overrides.total_area','scenario_inputs.resident_count']},headers=self.auth(**{'If-Match':created.headers['etag']}))
         self.assert_status(updated,200);self.assertTrue(updated.json()['share_enabled'])
         public=self.resolve(created).json()
         self.assertEqual(public['effective']['details']['floor_area'],175)
         self.assertEqual(public['field_provenance']['details.total_area']['origin'],'ryhti')
-        reset=self.client.put(PATH,json={},headers=self.auth(**{'If-Match':updated.headers['etag']}))
+        reset=self.client.put(PATH,json={'schema_version': 5},headers=self.auth(**{'If-Match':updated.headers['etag']}))
         self.assert_status(reset,200);self.assertTrue(reset.json()['share_enabled'])
         self.assertEqual(self.resolve(created).json()['overrides'],{})
         revoked=self.client.delete(PATH+'/share',headers=self.auth(**{'If-Match':reset.headers['etag'],'Origin':'http://127.0.0.1:8080'}))
@@ -104,7 +104,7 @@ class ShareDatabaseTests(unittest.TestCase):
         self.assertEqual(self.read().json()['revision'],reset.json()['revision']+2)
         stale=self.client.delete(PATH+'/share',headers=self.auth(**{'If-Match':revoked.headers['etag']}))
         self.assert_status(stale,412)
-        edited=self.client.patch(PATH,json={'display_name':'Next'},headers=self.auth(**{'If-Match':again.headers['etag']}))
+        edited=self.client.patch(PATH,json={'schema_version': 5, 'display_name':'Next'},headers=self.auth(**{'If-Match':again.headers['etag']}))
         self.assert_status(edited,200)
         self.assertEqual(self.count(),1)
 
@@ -145,7 +145,7 @@ class ShareDatabaseTests(unittest.TestCase):
         self.assert_status(self.client.post(PATH+'/share?owner=A',headers=self.auth(**{'If-Match':created.headers['etag']})),422)
         # Token is a capability, never an identity. Real dependency sees inactive.
         self.provider_reply=lambda request:httpx.Response(200,json={'active':False})
-        self.assert_status(self.client.patch(PATH,json={},headers={'Authorization':'Bearer '+created.json()['share_token'],'If-Match':created.headers['etag']}),401)
+        self.assert_status(self.client.patch(PATH,json={'schema_version': 5},headers={'Authorization':'Bearer '+created.json()['share_token'],'If-Match':created.headers['etag']}),401)
         self.provider_reply=lambda request:httpx.Response(503)
         self.assert_status(self.share(created.headers['etag']),503)
         for body in ({**claims(),'active':False},{**claims(),'exp':1000},{**claims(),'aud':['wrong']}):
@@ -215,7 +215,7 @@ class ShareDatabaseTests(unittest.TestCase):
         saved=self.save();current=self.share(saved.headers['etag'])
         def request(kind,tag):
             if kind=='post':return self.share(tag)
-            if kind=='patch':return self.client.patch(PATH,json={'display_name':'race'},headers=self.auth(**{'If-Match':tag}))
+            if kind=='patch':return self.client.patch(PATH,json={'schema_version': 5, 'display_name':'race'},headers=self.auth(**{'If-Match':tag}))
             return self.client.delete(PATH+('/share' if kind=='revoke' else ''),headers=self.auth(**{'If-Match':tag}))
         for left,right in (('post','post'),('patch','post'),('patch','revoke'),('post','revoke'),('delete','post')):
             current_read=self.read();tag=current_read.headers['etag'];barrier=threading.Barrier(2)
@@ -247,7 +247,7 @@ class ShareDatabaseTests(unittest.TestCase):
         # Source work overlaps owner change: final state read uses latest document.
         with patch('src.api.building_shares.observe',slow),ThreadPoolExecutor(1) as pool:
             future=pool.submit(self.resolve,created);self.assertTrue(reached.wait(10))
-            edited=self.client.patch(PATH,json={'set':{'overrides':{'floor_area':222}}},headers=self.auth(**{'If-Match':created.headers['etag']}))
+            edited=self.client.patch(PATH,json={'schema_version': 5, 'set':{'overrides':{'floor_area':222}}},headers=self.auth(**{'If-Match':created.headers['etag']}))
             self.assert_status(edited,200);release.set();r=future.result(timeout=10)
         self.assertEqual(r.json()['effective']['details']['floor_area'],222)
         reached.clear();release.clear()

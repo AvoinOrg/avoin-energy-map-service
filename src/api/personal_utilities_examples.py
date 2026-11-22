@@ -49,8 +49,7 @@ def utilities_examples():
         'retain_water_replace_electricity': (PersonalBuildingPatchV5, {'schema_version': 5,
             'set': {'scenario_inputs': {'utilities': utilities_example()}}}),
         'reset_section': (PersonalBuildingPatchV5, {'schema_version': 5, 'unset': ['scenario_inputs.utilities']}),
-        'explicit_promotion': (PersonalBuildingPatchV5, {'schema_version': 5}),
-        'owner_read': (SavedBuildingV5, owner.detail(row, base, version=5).model_dump(mode='json')),
-        'shared_read': (SharedBuildingV5, shared_projection(row, base, 'missing', 5).model_dump(mode='json')),
+        'owner_read': (SavedBuildingV5, owner.detail(row, base).model_dump(mode='json')),
+        'shared_read': (SharedBuildingV5, shared_projection(row, base, 'missing').model_dump(mode='json')),
         'summary_page': (SavedBuildingPageV5, SavedBuildingPageV5(items=[summary], next_cursor=None).model_dump(mode='json')),
     }

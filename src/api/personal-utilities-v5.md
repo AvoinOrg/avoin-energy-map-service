@@ -1,11 +1,10 @@
 # Personal electricity and water — closed format 5
 
-Version 5 succeeds reviewed renovations v4. Select `personal_schema_version=5`
-on the existing `/energy-data/user/buildings` collection and detail routes and
-`/energy-data/shared-buildings/{token}`. PUT/PATCH require integer
-`schema_version:5`; the default remains v1. See the maintained
-`personal-utilities-v5.schema.json` and `personal-utilities-v5.examples.json`.
-Earlier schemas/examples, catalogs and migrations remain frozen.
+Personal saved buildings use v5. Omitting the selector or sending
+`personal_schema_version=5` selects the same format on owner, list, shared
+and state readiness routes. Other selectors return 422. PUT and PATCH require
+an integer `schema_version` of 5 in the body. The public canonical building
+record uses its own schema version 1.
 
 These are delegated MVP meanings (November 10), not quantities specified by the
 Sähkövesi Figma frames: those repeat property controls. This is self-report, not
@@ -67,7 +66,7 @@ No descendant-unset API is added. PUT remains **whole-document replacement**:
 omitting property/residents/HVAC/renovations/utilities clears those answers.
 Use PATCH for section saves. Stale writes require reload and reconciliation.
 
-## Reads, attribution and compatibility
+## Reads and attribution
 
 Owner/shared v5 exposes sparse U at `scenario_inputs.utilities` and
 `effective.scenario_inputs.utilities`. Computed `field_provenance` and
@@ -78,21 +77,11 @@ dependency. Missing is unavailable/missing/no_personal_default. Reset removes
 user attribution. Utilities have no source fallback, input-status/completion
 requirement, HVAC pin/default, canonical, aggregate, tile or calculation effect.
 
-| Operation | Stored 1–4 | Stored 5, even empty/reset |
-| --- | --- | --- |
-| Default/v1 owner/shared | Existing scalar projection | Same scalar projection without systems/renovations/utilities |
-| Owner/shared v2/v3/v4 | Existing unsupported-newer-row conflicts | Typed 409 `personal_document_version_conflict`; reload v5 |
-| Owner/shared v5 | Supported projection, actual `document_schema_version`; no synthesized U or mutation | Full sparse supported inputs/provenance |
-| List v5 | Summary only, actual stored version | Same; no personal inputs in summaries/cursors |
-| List v2/v3/v4 | Existing rules | Page containing unsupported 5 conflicts atomically |
-| v1–v4 writes/delete | Existing old-row policy | Reject after ownership/exact precondition checks; no downgrade |
-| v5 PATCH | Explicit non-lossy promotion, preserving omitted siblings/shares | Atomic sparse edits |
-| v5 PUT | Explicit whole replacement/promotion | Same replacement semantics |
-| Share rotation/revoke | Existing version-independent lifecycle | Same lifecycle and row lock/revision rules |
+Owner and shared detail responses identify the document as v5. Lists contain
+v5 summaries. PATCH preserves omitted siblings, and PUT replaces the whole
+personal document under the current ETag. The API never promotes older rows.
 
-Promotion preserves UUID/incarnation, created time and capabilities, and bumps
-revision once. Stale 412 precedes version information at both preflight and
-under-lock checks. Unknown stored versions fail closed. Explicit bearer shares
+Explicit bearer shares
 include supported personal answers under the existing capability policy; DTOs
 strip owner IDs, saved UUID, digest and internal identifiers. No public list,
 layer or new sharing UI. Every private response is no-store. Validation errors

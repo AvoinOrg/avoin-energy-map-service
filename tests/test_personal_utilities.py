@@ -9,13 +9,10 @@ import unittest
 from unittest.mock import patch
 
 from pydantic import ValidationError
-from src.building_contract import personal_document, sparse, PersonalBuildingPutV1
-from src.personal_property_contract import PersonalBuildingPutV2
-from src.personal_hvac_contract import PersonalBuildingPutV3
-from src.personal_renovations_contract import PersonalBuildingPutV4
+from src.building_contract import personal_document, sparse
 from src.personal_utilities_contract import (PersonalBuildingPutV5, PersonalBuildingPatchV5,
     UTILITIES_PATH, UTILITIES_PATHS, project_v5, patch_v5, replace_v5)
-from src.user_buildings import require_read_version, require_document_version, OwnerFailure
+from src.user_buildings import require_current_document, OwnerFailure
 from src.hvac_catalog import HvacCatalogUnavailable
 from tests.test_personal_hvac import full_systems
 from tests.test_personal_renovations import all_renovations
@@ -86,7 +83,7 @@ class UtilitiesTests(unittest.TestCase):
             self.assertEqual((p.status, p.reason, p.origin), ('missing', 'no_personal_default', 'unavailable'))
         self.assertNotIn('utilities', sparse(baseline.scenario_inputs))
 
-    def test_atomic_replacement_reset_promotion_and_frozen_old_models(self):
+    def test_atomic_replacement_reset_and_document_version(self):
         doc = document(utilities(), resident_count=2, systems=full_systems(), renovations=all_renovations(0))
         original = personal_document(doc)
         replaced = change(doc, set={'scenario_inputs': {'utilities': {'electricity': {'grid_import_kwh': 0}, 'water': None}}})
@@ -103,27 +100,15 @@ class UtilitiesTests(unittest.TestCase):
             change(doc, unset=[UTILITIES_PATH]); project_v5(None, doc, building_key='synthetic')
             with self.assertRaises(HvacCatalogUnavailable): replace_v5(doc, None)
         self.assertEqual(personal_document(replace_v5(document(), None))['scenario_inputs'], {})
-        for version, model in enumerate((PersonalBuildingPutV1, PersonalBuildingPutV2, PersonalBuildingPutV3, PersonalBuildingPutV4), 1):
-            with self.assertRaises(ValidationError): model.model_validate({'schema_version': version, 'scenario_inputs': {'utilities': {}}})
-            old = model.model_validate({'schema_version': version, 'scenario_inputs': {'resident_count': None}})
-            self.assertEqual(personal_document(change(old)), personal_document(old) | {'schema_version': 5})
-            view = project_v5(None, old, building_key='synthetic')
-            self.assertEqual(view.document_schema_version, version)
-            self.assertNotIn('utilities', sparse(view.scenario_inputs))
         for body in ({'unset': [UTILITIES_PATH] * 2}, {'unset': [UTILITIES_PATH + '.water']},
                      {'unset': [UTILITIES_PATH], 'set': {'scenario_inputs': {'utilities': None}}}):
             with self.assertRaises(ValidationError): PersonalBuildingPatchV5.model_validate({'schema_version': 5, **body})
         for value in (None, 4, 5.0, '5', True):
             with self.assertRaises(ValidationError): PersonalBuildingPutV5.model_validate({'schema_version': value})
-        for stored in range(1, 6):
-            for view in range(1, 6):
-                row = SimpleNamespace(schema_version=stored)
-                if view != 1 and view < stored:
-                    with self.assertRaises(OwnerFailure): require_read_version(row, view)
-                else: require_read_version(row, view)
-                if view < stored:
-                    with self.assertRaises(OwnerFailure): require_document_version(row, view)
-                else: require_document_version(row, view)
+        for stored in [1, 2, 3, 4, 6]:
+            with self.subTest(stored=stored), self.assertRaises(OwnerFailure):
+                require_current_document(SimpleNamespace(schema_version=stored))
+        require_current_document(SimpleNamespace(schema_version=5))
 
 
 class UtilitiesHttpTests(unittest.TestCase):
@@ -149,7 +134,7 @@ class UtilitiesHttpTests(unittest.TestCase):
 
 
 class UtilitiesArtifactTests(unittest.TestCase):
-    def test_maintained_schema_examples_isolated_export_and_frozen_baselines(self):
+    def test_current_schema_and_examples_match_isolated_export(self):
         import os
         import jsonschema
         from src.api.personal_utilities_examples import utilities_examples
@@ -169,11 +154,3 @@ class UtilitiesArtifactTests(unittest.TestCase):
             self.assertEqual(result.returncode, 0, 'isolated utilities export failed')
             self.assertEqual(sorted(p.name for p in output.iterdir()), ['personal-utilities-v5.examples.json', 'personal-utilities-v5.schema.json'])
             for p in output.iterdir(): self.assertEqual(p.read_bytes(), (root/'src/api'/p.name).read_bytes())
-        for pattern in ('src/api/*v[1234].schema.json', 'src/api/*v[1234].examples.json',
-                        'src/state_storage/expected_catalog*.json', 'db_migrations/versions/*.py', 'state_migrations/versions/*.py'):
-            for p in root.glob(pattern):
-                if p.name in ('expected_catalog_v5.json', 'b825df0a431c_015_personal_utilities_v5.py', 'es0005_utilities_v5.py'): continue
-                relative = p.relative_to(root).as_posix()
-                original = subprocess.run(['git', 'show', 'HEAD:' + relative], cwd=root, capture_output=True)
-                self.assertEqual(original.returncode, 0, relative)
-                self.assertEqual(p.read_bytes(), original.stdout, relative)

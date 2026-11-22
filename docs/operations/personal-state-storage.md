@@ -577,7 +577,7 @@ replay an accepted archive. Downgrade refuses v3 rows rather than erasing fields
 Deploy read-capable consumers before enabling v3 saves. Older binaries cannot
 serve the new stored format; rollback after v3 writes requires a compatible
 reader/NEW compatible recovery target. V2 views of3 intentionally conflict409;
-see [the API compatibility contract](../../src/api/personal-hvac-v3.md). This
+see [the current personal API contract](../../src/api/personal-utilities-v5.md). This
 feature's evidence is disposable/local only; full structured JSONB fields are
 covered by the v3 fingerprint/recovery suite. Coefficients are deliberately
 deferred. Independent review, actual ordinary-user/deployed/UI acceptance and
@@ -586,7 +586,7 @@ for the structured inputs.
 
 ## Completed-renovations v4 candidate (not activated)
 
-The closed candidate is documented in [personal-renovations-v4.md](../../src/api/personal-renovations-v4.md).
+The current personal format is documented in [personal-utilities-v5.md](../../src/api/personal-utilities-v5.md).
 The November 10 owner decision defines thickness as the added insulation layer
 in mm, including explicit zero. Renewed independent review and manager delivery
 remain required; local fixture proof is not rollout approval. Keep the existing sandbox and F007

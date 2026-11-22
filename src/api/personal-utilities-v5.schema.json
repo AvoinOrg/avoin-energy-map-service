@@ -2660,13 +2660,7 @@
           "default": null
         },
         "document_schema_version": {
-          "enum": [
-            1,
-            2,
-            3,
-            4,
-            5
-          ],
+          "const": 5,
           "title": "Document Schema Version",
           "type": "integer"
         },
@@ -3210,6 +3204,11 @@
           "title": "Schema Version",
           "type": "integer"
         },
+        "document_schema_version": {
+          "const": 5,
+          "title": "Document Schema Version",
+          "type": "integer"
+        },
         "saved_id": {
           "format": "uuid",
           "title": "Saved Id",
@@ -3287,20 +3286,10 @@
         },
         "last_known_summary": {
           "$ref": "#/$defs/LastKnownBuildingSummaryV1"
-        },
-        "document_schema_version": {
-          "enum": [
-            1,
-            2,
-            3,
-            4,
-            5
-          ],
-          "title": "Document Schema Version",
-          "type": "integer"
         }
       },
       "required": [
+        "document_schema_version",
         "saved_id",
         "building_key",
         "display_name",
@@ -3310,8 +3299,7 @@
         "base_status",
         "base_unavailable_reason",
         "current_summary",
-        "last_known_summary",
-        "document_schema_version"
+        "last_known_summary"
       ],
       "title": "SavedBuildingSummaryV5",
       "type": "object"
@@ -3555,13 +3543,7 @@
           "$ref": "#/$defs/LastKnownBuildingSummaryV1"
         },
         "document_schema_version": {
-          "enum": [
-            1,
-            2,
-            3,
-            4,
-            5
-          ],
+          "const": 5,
           "title": "Document Schema Version",
           "type": "integer"
         },
@@ -4229,6 +4211,25 @@
           "title": "Schema Version",
           "type": "integer"
         },
+        "document_schema_version": {
+          "const": 5,
+          "title": "Document Schema Version",
+          "type": "integer"
+        },
+        "input_status": {
+          "$ref": "#/$defs/InputStatusV3"
+        },
+        "systems_source_provenance": {
+          "items": {
+            "$ref": "#/$defs/HeatingSourceProvenanceV3"
+          },
+          "maxItems": 16,
+          "title": "Systems Source Provenance",
+          "type": "array"
+        },
+        "systems_defaults": {
+          "$ref": "#/$defs/DefaultResolutionV3"
+        },
         "building_key": {
           "title": "Building Key",
           "type": "string"
@@ -4483,34 +4484,13 @@
         },
         "last_known_summary": {
           "$ref": "#/$defs/LastKnownBuildingSummaryV1"
-        },
-        "document_schema_version": {
-          "enum": [
-            1,
-            2,
-            3,
-            4,
-            5
-          ],
-          "title": "Document Schema Version",
-          "type": "integer"
-        },
-        "input_status": {
-          "$ref": "#/$defs/InputStatusV3"
-        },
-        "systems_source_provenance": {
-          "items": {
-            "$ref": "#/$defs/HeatingSourceProvenanceV3"
-          },
-          "maxItems": 16,
-          "title": "Systems Source Provenance",
-          "type": "array"
-        },
-        "systems_defaults": {
-          "$ref": "#/$defs/DefaultResolutionV3"
         }
       },
       "required": [
+        "document_schema_version",
+        "input_status",
+        "systems_source_provenance",
+        "systems_defaults",
         "building_key",
         "display_name",
         "revision",
@@ -4525,11 +4505,7 @@
         "field_provenance",
         "source_availability",
         "source_observed_at",
-        "last_known_summary",
-        "document_schema_version",
-        "input_status",
-        "systems_source_provenance",
-        "systems_defaults"
+        "last_known_summary"
       ],
       "title": "SharedBuildingV5",
       "type": "object"

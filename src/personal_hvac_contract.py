@@ -4,12 +4,10 @@ from typing import Annotated, Literal
 from pydantic import BeforeValidator, Field, ValidationError, field_validator, model_validator
 from pydantic_core import PydanticCustomError
 
-from src.building_contract import (AvailabilityV1, BuildingOverridesV1, ContractModel,
-    FieldProvenanceV1, PersonalBuildingPatchV1, PersonalBuildingPutV1, UNSET_PATHS,
-    ContractValidationError, check_payload_size, fail, issue, numeric, personal_document, sparse, validate_new_codes)
-from src.personal_property_contract import (ScenarioInputsV2, PersonalBuildingPutV2,
-    PersonalBuildingProjectionV2, EffectiveV2, NEW_PATHS,
-    PERSONAL_READ_PATHS, PropertyInputStatusV2, project_v2)
+from src.building_contract import (
+    ContractModel, ContractValidationError, FieldProvenanceV1, fail, issue, numeric,
+)
+from src.personal_property_contract import PropertyInputStatusV2, ScenarioInputsV2
 from src.hvac_catalog import (CAPABILITY_VERSION, DeferredCoefficientsV2, HvacCatalogUnavailable, load_hvac_catalog)
 
 SYSTEMS_PATH = 'scenario_inputs.systems'
@@ -19,8 +17,6 @@ SYSTEMS_SUFFIXES = ('', '.heating', '.heating.sources', '.heating.primary_source
     '.heated_quantities', '.cooling', '.ventilation', '.equipment',
     *('.heated_quantities.' + k for k in QUANTITY_FIELDS), *('.equipment.' + k for k in EQUIPMENT_FIELDS))
 SYSTEMS_PATHS = frozenset(SYSTEMS_PATH + k for k in SYSTEMS_SUFFIXES)
-ReadPathV3 = Literal[tuple(sorted(PERSONAL_READ_PATHS | SYSTEMS_PATHS))]
-AvailabilityPathV3 = Literal[tuple(sorted(PERSONAL_READ_PATHS | SYSTEMS_PATHS | {'geometry', 'source_observed_at'}))]
 StatusPathV3 = Literal['details.floor_area', 'details.heating_method']
 DefaultsVersionV3 = Literal['hvac-defaults-2026-10-30.1', 'hvac-inputs-2026-10-31.1']
 ChoiceCodeV3 = Annotated[str, Field(min_length=1, max_length=64, pattern=r'^[A-Za-z0-9_:-]+$')]
@@ -53,17 +49,6 @@ def duplicate_errors(values, prefix, code='duplicate_choice'):
             errors.append(issue((*prefix, i), code, 'Collection members must be unique'))
         seen.add(value)
     return errors
-
-
-class VersionedV3(ContractModel):
-    schema_version: Literal[3] = 3
-
-    @field_validator('schema_version', mode='before')
-    @classmethod
-    def exact_version(cls, value):
-        if type(value) is not int or value != 3:
-            fail('schema_version', 'Expected schema version integer 3')
-        return value
 
 
 class NoVentilationV3(ContractModel):
@@ -153,33 +138,6 @@ class ScenarioInputsV3(ScenarioInputsV2):
     systems: SystemsV3 | None = None
 
 
-class PersonalBuildingPutV3(PersonalBuildingPutV2):
-    schema_version: Literal[3]
-    scenario_inputs: ScenarioInputsV3 = Field(default_factory=ScenarioInputsV3)
-
-    @field_validator('schema_version', mode='before')
-    @classmethod
-    def exact_version(cls, value):
-        return VersionedV3.exact_version(value)
-
-
-class PatchSetV3(ContractModel):
-    overrides: BuildingOverridesV1 = Field(default_factory=BuildingOverridesV1)
-    scenario_inputs: ScenarioInputsV3 = Field(default_factory=ScenarioInputsV3)
-
-
-class PersonalBuildingPatchV3(PersonalBuildingPatchV1):
-    schema_version: Literal[3]
-    set: PatchSetV3 = Field(default_factory=PatchSetV3)
-    unset: list[Literal[tuple(sorted(UNSET_PATHS | NEW_PATHS | {SYSTEMS_PATH}))]] = Field(
-        default_factory=list, max_length=len(UNSET_PATHS | NEW_PATHS | {SYSTEMS_PATH}))
-
-    @field_validator('schema_version', mode='before')
-    @classmethod
-    def exact_version(cls, value):
-        return VersionedV3.exact_version(value)
-
-
 def selected_codes(systems):
     """Code validation locations are the submitted snapshot, never stored indexes."""
     if systems is None:
@@ -223,30 +181,6 @@ def validate_systems(new, old=None, *, prefix=('scenario_inputs', 'systems'), re
         raise ContractValidationError(errors)
 
 
-def replace_v3(value, catalog):
-    validate_new_codes(value.overrides, catalog)
-    validate_systems(value.scenario_inputs.systems, replacement=True)
-    return PersonalBuildingPutV3.model_validate(personal_document(value), context={'stored_document': True})
-
-
-def patch_v3(existing, patch, catalog):
-    validate_new_codes(patch.set.overrides, catalog, prefix=('set', 'overrides'))
-    if 'systems' in patch.set.scenario_inputs.model_fields_set:
-        validate_systems(patch.set.scenario_inputs.systems, getattr(existing.scenario_inputs, 'systems', None),
-                         prefix=('set', 'scenario_inputs', 'systems'))
-    document = personal_document(existing)
-    document['schema_version'] = 3
-    for namespace in ('overrides', 'scenario_inputs'):
-        document[namespace].update(sparse(getattr(patch.set, namespace)))
-    for path in patch.unset:
-        namespace, key = path.split('.')
-        document[namespace].pop(key, None)
-    if 'display_name' in patch.model_fields_set:
-        document['display_name'] = patch.display_name
-    check_payload_size(document)
-    return PersonalBuildingPutV3.model_validate(document, context={'stored_document': True})
-
-
 class SystemsInputStatusV3(ContractModel):
     policy_version: Literal['property-required-inputs-2026-10-29'] = 'property-required-inputs-2026-10-29'
     saveable: Literal[True] = True
@@ -273,38 +207,8 @@ class HeatingSourceProvenanceV3(ContractModel):
     share_percent: FieldProvenanceV1
 
 
-class EffectiveV3(EffectiveV2):
-    scenario_inputs: ScenarioInputsV3
-
-
-class PersonalBuildingProjectionV3(PersonalBuildingProjectionV2):
-    schema_version: Literal[3] = 3
-    document_schema_version: Literal[1, 2, 3]
-    scenario_inputs: ScenarioInputsV3
-    effective: EffectiveV3
-    field_provenance: dict[ReadPathV3, FieldProvenanceV1]
-    source_availability: dict[AvailabilityPathV3, AvailabilityV1]
-    input_status: InputStatusV3
-    systems_defaults: DefaultResolutionV3
-    systems_source_provenance: list[HeatingSourceProvenanceV3] = Field(max_length=16)
-
-    @field_validator('schema_version', mode='before')
-    @classmethod
-    def exact_version(cls, value):
-        return VersionedV3.exact_version(value)
-
-
-def project_v3(base, document, **kwargs):
-    # Explicit lossless-to-v2 *read projection*; never used as a stored write.
-    old = personal_document(document)
-    old['schema_version'] = min(document.schema_version, 2)
-    old['scenario_inputs'].pop('systems', None)
-    model = PersonalBuildingPutV1 if document.schema_version == 1 else PersonalBuildingPutV2
-    legacy = model.model_validate(old, context={'stored_document': True})
-    projection = project_v2(base, legacy, **kwargs)
-    scenario = ScenarioInputsV3.model_validate(sparse(document.scenario_inputs), context={'stored_document': True})
-    provenance = dict(projection.field_provenance)
-    systems = scenario.systems
+def project_systems(systems, provenance, property_status):
+    """Resolve selected HVAC choices and report the input status for this building."""
     default_status = 'not_requested'
     catalog = None
     if systems is not None:
@@ -315,21 +219,6 @@ def project_v3(base, document, **kwargs):
             except HvacCatalogUnavailable:
                 default_status = 'pin_unavailable'
 
-    def personal_provenance(path):
-        current = scenario
-        parts = path.split('.')[1:]
-        for index, part in enumerate(parts):
-            if part not in current.model_fields_set:
-                return FieldProvenanceV1(origin='unavailable', status='missing', reason='no_personal_default')
-            current = getattr(current, part)
-            if current is None:
-                ancestor = 'scenario_inputs.' + '.'.join(parts[:index + 1])
-                return FieldProvenanceV1(origin='user', source=ancestor, status='user_unknown',
-                    is_override=True, dependencies=[ancestor] if ancestor != path else [])
-        return FieldProvenanceV1(origin='user', source=path, status='available', is_override=True)
-
-    for path in sorted(SYSTEMS_PATHS):
-        provenance[path] = personal_provenance(path)
     selected = selected_codes(systems)
     available = {name: {c.code for c in getattr(catalog, name + '_choices') if c.selectable}
                  for name in ('heating', 'cooling', 'ventilation')} if catalog else {}
@@ -360,20 +249,11 @@ def project_v3(base, document, **kwargs):
                 is_override='share_percent' in source.model_fields_set)
             source_provenance.append(HeatingSourceProvenanceV3(source_id=source.source_id,
                 source_code=choice_provenance(code_p, 'heating', source.source_code), share_percent=share_p))
-    availability = dict(projection.source_availability)
-    availability.update({p: AvailabilityV1(status=provenance[p].status, reason=provenance[p].reason) for p in sorted(SYSTEMS_PATHS)})
     mandatory = {'details.floor_area', 'details.heating_method'}
-    property_status = projection.input_status.property
     missing = [p for p in property_status.missing_paths if p in mandatory]
     unavailable = [p for p in property_status.unavailable_paths if p in mandatory]
     statuses = InputStatusV3(property=property_status, systems=SystemsInputStatusV3(
         completeness='unavailable' if unavailable else 'incomplete' if missing else 'complete',
         missing_paths=missing, unavailable_paths=unavailable))
-    values = {k: getattr(projection, k) for k in type(projection).model_fields}
-    values.update(schema_version=3, document_schema_version=document.schema_version,
-        scenario_inputs=scenario, effective=EffectiveV3(**{k: scenario if k == 'scenario_inputs' else getattr(projection.effective, k)
-                                                         for k in EffectiveV2.model_fields}),
-        field_provenance=provenance, source_availability=availability, input_status=statuses,
-        systems_source_provenance=source_provenance,
-        systems_defaults=DefaultResolutionV3(defaults_version=systems.defaults_version if systems else None, status=default_status))
-    return PersonalBuildingProjectionV3(**values)
+    defaults = DefaultResolutionV3(defaults_version=systems.defaults_version if systems else None, status=default_status)
+    return statuses, defaults, source_provenance

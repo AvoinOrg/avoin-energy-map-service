@@ -990,6 +990,25 @@
       "title": "CodeLabelsV1",
       "type": "object"
     },
+    "CompletedWorkV4": {
+      "additionalProperties": false,
+      "properties": {
+        "completed": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Completed"
+        }
+      },
+      "title": "CompletedWorkV4",
+      "type": "object"
+    },
     "ConsumptionComponentV1": {
       "additionalProperties": false,
       "properties": {
@@ -1043,6 +1062,104 @@
         "annual_kwh"
       ],
       "title": "ConsumptionComponentV1",
+      "type": "object"
+    },
+    "DefaultResolutionV3": {
+      "additionalProperties": false,
+      "properties": {
+        "defaults_version": {
+          "anyOf": [
+            {
+              "enum": [
+                "hvac-defaults-2026-10-30.1",
+                "hvac-inputs-2026-10-31.1"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Defaults Version"
+        },
+        "status": {
+          "enum": [
+            "not_requested",
+            "pinned_no_scientific_defaults",
+            "pin_unavailable"
+          ],
+          "title": "Status",
+          "type": "string"
+        },
+        "capability_version": {
+          "const": "hvac-inputs-2026-10-31.1",
+          "default": "hvac-inputs-2026-10-31.1",
+          "title": "Capability Version",
+          "type": "string"
+        },
+        "coefficients": {
+          "$ref": "#/$defs/DeferredCoefficientsV2"
+        }
+      },
+      "required": [
+        "defaults_version",
+        "status"
+      ],
+      "title": "DefaultResolutionV3",
+      "type": "object"
+    },
+    "DeferredCoefficientsV2": {
+      "additionalProperties": false,
+      "properties": {
+        "status": {
+          "const": "deferred",
+          "default": "deferred",
+          "title": "Status",
+          "type": "string"
+        },
+        "reason": {
+          "const": "owner_deferred",
+          "default": "owner_deferred",
+          "title": "Reason",
+          "type": "string"
+        },
+        "editable": {
+          "const": false,
+          "default": false,
+          "title": "Editable",
+          "type": "boolean"
+        },
+        "numeric_defaults": {
+          "default": null,
+          "title": "Numeric Defaults",
+          "type": "null"
+        },
+        "attribution_editable": {
+          "const": false,
+          "default": false,
+          "title": "Attribution Editable",
+          "type": "boolean"
+        },
+        "reset_available": {
+          "const": false,
+          "default": false,
+          "title": "Reset Available",
+          "type": "boolean"
+        },
+        "required_for_save": {
+          "const": false,
+          "default": false,
+          "title": "Required For Save",
+          "type": "boolean"
+        },
+        "required_for_completion": {
+          "const": false,
+          "default": false,
+          "title": "Required For Completion",
+          "type": "boolean"
+        }
+      },
+      "title": "DeferredCoefficientsV2",
       "type": "object"
     },
     "DetailsV1": {
@@ -1280,7 +1397,7 @@
       "title": "DetailsV1",
       "type": "object"
     },
-    "EffectiveV2": {
+    "EffectiveV5": {
       "additionalProperties": false,
       "properties": {
         "published_certificate": {
@@ -1298,7 +1415,7 @@
           "$ref": "#/$defs/DetailsV1"
         },
         "scenario_inputs": {
-          "$ref": "#/$defs/ScenarioInputsV2"
+          "$ref": "#/$defs/ScenarioInputsV5-Output"
         },
         "certificate": {
           "anyOf": [
@@ -1365,7 +1482,86 @@
         "scenario_inputs",
         "resident_count_applicability"
       ],
-      "title": "EffectiveV2",
+      "title": "EffectiveV5",
+      "type": "object"
+    },
+    "ElectricityV5": {
+      "additionalProperties": false,
+      "properties": {
+        "calendar_year": {
+          "anyOf": [
+            {
+              "maximum": 9999,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Complete January\u2013December calendar year; newly submitted non-null years must precede the current UTC year. Optional, independent of amount; no inferred year.",
+          "title": "Calendar Year"
+        },
+        "grid_import_kwh": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Self-reported measured grid import for the whole building over one complete calendar year, kWh; all supplied uses, excluding direct self-generation and exports. Zero retained, null unknown; no source prefill.",
+          "title": "Grid Import Kwh"
+        }
+      },
+      "title": "ElectricityV5",
+      "type": "object"
+    },
+    "EquipmentV3": {
+      "additionalProperties": false,
+      "properties": {
+        "geothermal_installed": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Geothermal Installed"
+        },
+        "solar_panels_installed": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Solar Panels Installed"
+        },
+        "energy_storage_ready": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Energy Storage Ready"
+        }
+      },
+      "title": "EquipmentV3",
       "type": "object"
     },
     "FieldProvenanceV1": {
@@ -1534,6 +1730,153 @@
       "title": "GeometryV1",
       "type": "object"
     },
+    "HeatedQuantitiesV3": {
+      "additionalProperties": false,
+      "properties": {
+        "total_area_m2": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Total Area M2"
+        },
+        "total_volume_m3": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Total Volume M3"
+        },
+        "residential_area_m2": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Residential Area M2"
+        },
+        "residential_volume_m3": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Residential Volume M3"
+        }
+      },
+      "title": "HeatedQuantitiesV3",
+      "type": "object"
+    },
+    "HeatingSourceProvenanceV3": {
+      "additionalProperties": false,
+      "properties": {
+        "source_id": {
+          "format": "uuid",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+          "title": "Source Id",
+          "type": "string"
+        },
+        "source_code": {
+          "$ref": "#/$defs/FieldProvenanceV1"
+        },
+        "share_percent": {
+          "$ref": "#/$defs/FieldProvenanceV1"
+        }
+      },
+      "required": [
+        "source_id",
+        "source_code",
+        "share_percent"
+      ],
+      "title": "HeatingSourceProvenanceV3",
+      "type": "object"
+    },
+    "HeatingSourceV3": {
+      "additionalProperties": false,
+      "properties": {
+        "source_id": {
+          "format": "uuid",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+          "title": "Source Id",
+          "type": "string"
+        },
+        "source_code": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9_:-]+$",
+          "title": "Source Code",
+          "type": "string"
+        },
+        "share_percent": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Share Percent"
+        }
+      },
+      "required": [
+        "source_id",
+        "source_code"
+      ],
+      "title": "HeatingSourceV3",
+      "type": "object"
+    },
+    "HeatingV3": {
+      "additionalProperties": false,
+      "properties": {
+        "sources": {
+          "items": {
+            "$ref": "#/$defs/HeatingSourceV3"
+          },
+          "maxItems": 16,
+          "title": "Sources",
+          "type": "array"
+        },
+        "primary_source_id": {
+          "anyOf": [
+            {
+              "format": "uuid",
+              "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Primary Source Id"
+        }
+      },
+      "required": [
+        "sources"
+      ],
+      "title": "HeatingV3",
+      "type": "object"
+    },
     "IdentityV1": {
       "additionalProperties": false,
       "properties": {
@@ -1577,17 +1920,21 @@
       "title": "IdentityV1",
       "type": "object"
     },
-    "InputStatusV2": {
+    "InputStatusV3": {
       "additionalProperties": false,
       "properties": {
         "property": {
           "$ref": "#/$defs/PropertyInputStatusV2"
+        },
+        "systems": {
+          "$ref": "#/$defs/SystemsInputStatusV3"
         }
       },
       "required": [
-        "property"
+        "property",
+        "systems"
       ],
-      "title": "InputStatusV2",
+      "title": "InputStatusV3",
       "type": "object"
     },
     "LastKnownBuildingSummaryV1": {
@@ -1927,24 +2274,82 @@
       "title": "MultiPolygonV1",
       "type": "object"
     },
-    "PatchSetV2": {
+    "MultipleVentilationV3": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "multiple",
+          "title": "Kind",
+          "type": "string"
+        },
+        "codes": {
+          "items": {
+            "maxLength": 64,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9_:-]+$",
+            "type": "string"
+          },
+          "maxItems": 9,
+          "minItems": 2,
+          "title": "Codes",
+          "type": "array"
+        }
+      },
+      "required": [
+        "kind",
+        "codes"
+      ],
+      "title": "MultipleVentilationV3",
+      "type": "object"
+    },
+    "NoCoolingV3": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "none",
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "title": "NoCoolingV3",
+      "type": "object"
+    },
+    "NoVentilationV3": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "none",
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "title": "NoVentilationV3",
+      "type": "object"
+    },
+    "PatchSetV5": {
       "additionalProperties": false,
       "properties": {
         "overrides": {
           "$ref": "#/$defs/BuildingOverridesV1"
         },
         "scenario_inputs": {
-          "$ref": "#/$defs/ScenarioInputsV2"
+          "$ref": "#/$defs/ScenarioInputsV5-Input"
         }
       },
-      "title": "PatchSetV2",
+      "title": "PatchSetV5",
       "type": "object"
     },
-    "PersonalBuildingPatchV2": {
+    "PersonalBuildingPatchV5": {
       "additionalProperties": false,
       "properties": {
         "schema_version": {
-          "const": 2,
+          "const": 5,
           "title": "Schema Version",
           "type": "integer"
         },
@@ -1962,7 +2367,7 @@
           "title": "Display Name"
         },
         "set": {
-          "$ref": "#/$defs/PatchSetV2"
+          "$ref": "#/$defs/PatchSetV5"
         },
         "unset": {
           "items": {
@@ -1990,11 +2395,14 @@
               "scenario_inputs.apartment_two_room_count",
               "scenario_inputs.personal_energy_class",
               "scenario_inputs.personal_energy_class_date",
-              "scenario_inputs.resident_count"
+              "scenario_inputs.renovations",
+              "scenario_inputs.resident_count",
+              "scenario_inputs.systems",
+              "scenario_inputs.utilities"
             ],
             "type": "string"
           },
-          "maxItems": 24,
+          "maxItems": 27,
           "title": "Unset",
           "type": "array"
         }
@@ -2002,15 +2410,15 @@
       "required": [
         "schema_version"
       ],
-      "title": "PersonalBuildingPatchV2",
+      "title": "PersonalBuildingPatchV5",
       "type": "object"
     },
-    "PersonalBuildingProjectionV2": {
+    "PersonalBuildingProjectionV5": {
       "additionalProperties": false,
       "properties": {
         "schema_version": {
-          "const": 2,
-          "default": 2,
+          "const": 5,
+          "default": 5,
           "title": "Schema Version",
           "type": "integer"
         },
@@ -2057,10 +2465,10 @@
           "$ref": "#/$defs/BuildingOverridesV1"
         },
         "scenario_inputs": {
-          "$ref": "#/$defs/ScenarioInputsV2"
+          "$ref": "#/$defs/ScenarioInputsV5-Output"
         },
         "effective": {
-          "$ref": "#/$defs/EffectiveV2"
+          "$ref": "#/$defs/EffectiveV5"
         },
         "field_provenance": {
           "additionalProperties": {
@@ -2097,7 +2505,48 @@
               "scenario_inputs.apartment_two_room_count",
               "scenario_inputs.personal_energy_class",
               "scenario_inputs.personal_energy_class_date",
-              "scenario_inputs.resident_count"
+              "scenario_inputs.renovations",
+              "scenario_inputs.renovations.drainage",
+              "scenario_inputs.renovations.drainage.completed",
+              "scenario_inputs.renovations.energy_smart_solutions",
+              "scenario_inputs.renovations.energy_smart_solutions.completed",
+              "scenario_inputs.renovations.energy_storage",
+              "scenario_inputs.renovations.energy_storage.completed",
+              "scenario_inputs.renovations.facade",
+              "scenario_inputs.renovations.facade.completed",
+              "scenario_inputs.renovations.plumbing",
+              "scenario_inputs.renovations.plumbing.completed",
+              "scenario_inputs.renovations.roof",
+              "scenario_inputs.renovations.roof.completed",
+              "scenario_inputs.renovations.top_floor_insulation",
+              "scenario_inputs.renovations.top_floor_insulation.added_insulation_thickness_mm",
+              "scenario_inputs.renovations.top_floor_insulation.completed",
+              "scenario_inputs.renovations.top_floor_insulation.execution_year",
+              "scenario_inputs.renovations.windows",
+              "scenario_inputs.renovations.windows.completed",
+              "scenario_inputs.resident_count",
+              "scenario_inputs.systems",
+              "scenario_inputs.systems.cooling",
+              "scenario_inputs.systems.equipment",
+              "scenario_inputs.systems.equipment.energy_storage_ready",
+              "scenario_inputs.systems.equipment.geothermal_installed",
+              "scenario_inputs.systems.equipment.solar_panels_installed",
+              "scenario_inputs.systems.heated_quantities",
+              "scenario_inputs.systems.heated_quantities.residential_area_m2",
+              "scenario_inputs.systems.heated_quantities.residential_volume_m3",
+              "scenario_inputs.systems.heated_quantities.total_area_m2",
+              "scenario_inputs.systems.heated_quantities.total_volume_m3",
+              "scenario_inputs.systems.heating",
+              "scenario_inputs.systems.heating.primary_source_id",
+              "scenario_inputs.systems.heating.sources",
+              "scenario_inputs.systems.ventilation",
+              "scenario_inputs.utilities",
+              "scenario_inputs.utilities.electricity",
+              "scenario_inputs.utilities.electricity.calendar_year",
+              "scenario_inputs.utilities.electricity.grid_import_kwh",
+              "scenario_inputs.utilities.water",
+              "scenario_inputs.utilities.water.calendar_year",
+              "scenario_inputs.utilities.water.supplied_volume_m3"
             ]
           },
           "title": "Field Provenance",
@@ -2139,7 +2588,48 @@
               "scenario_inputs.apartment_two_room_count",
               "scenario_inputs.personal_energy_class",
               "scenario_inputs.personal_energy_class_date",
+              "scenario_inputs.renovations",
+              "scenario_inputs.renovations.drainage",
+              "scenario_inputs.renovations.drainage.completed",
+              "scenario_inputs.renovations.energy_smart_solutions",
+              "scenario_inputs.renovations.energy_smart_solutions.completed",
+              "scenario_inputs.renovations.energy_storage",
+              "scenario_inputs.renovations.energy_storage.completed",
+              "scenario_inputs.renovations.facade",
+              "scenario_inputs.renovations.facade.completed",
+              "scenario_inputs.renovations.plumbing",
+              "scenario_inputs.renovations.plumbing.completed",
+              "scenario_inputs.renovations.roof",
+              "scenario_inputs.renovations.roof.completed",
+              "scenario_inputs.renovations.top_floor_insulation",
+              "scenario_inputs.renovations.top_floor_insulation.added_insulation_thickness_mm",
+              "scenario_inputs.renovations.top_floor_insulation.completed",
+              "scenario_inputs.renovations.top_floor_insulation.execution_year",
+              "scenario_inputs.renovations.windows",
+              "scenario_inputs.renovations.windows.completed",
               "scenario_inputs.resident_count",
+              "scenario_inputs.systems",
+              "scenario_inputs.systems.cooling",
+              "scenario_inputs.systems.equipment",
+              "scenario_inputs.systems.equipment.energy_storage_ready",
+              "scenario_inputs.systems.equipment.geothermal_installed",
+              "scenario_inputs.systems.equipment.solar_panels_installed",
+              "scenario_inputs.systems.heated_quantities",
+              "scenario_inputs.systems.heated_quantities.residential_area_m2",
+              "scenario_inputs.systems.heated_quantities.residential_volume_m3",
+              "scenario_inputs.systems.heated_quantities.total_area_m2",
+              "scenario_inputs.systems.heated_quantities.total_volume_m3",
+              "scenario_inputs.systems.heating",
+              "scenario_inputs.systems.heating.primary_source_id",
+              "scenario_inputs.systems.heating.sources",
+              "scenario_inputs.systems.ventilation",
+              "scenario_inputs.utilities",
+              "scenario_inputs.utilities.electricity",
+              "scenario_inputs.utilities.electricity.calendar_year",
+              "scenario_inputs.utilities.electricity.grid_import_kwh",
+              "scenario_inputs.utilities.water",
+              "scenario_inputs.utilities.water.calendar_year",
+              "scenario_inputs.utilities.water.supplied_volume_m3",
               "source_observed_at"
             ]
           },
@@ -2170,15 +2660,23 @@
           "default": null
         },
         "document_schema_version": {
-          "enum": [
-            1,
-            2
-          ],
+          "const": 5,
           "title": "Document Schema Version",
           "type": "integer"
         },
         "input_status": {
-          "$ref": "#/$defs/InputStatusV2"
+          "$ref": "#/$defs/InputStatusV3"
+        },
+        "systems_defaults": {
+          "$ref": "#/$defs/DefaultResolutionV3"
+        },
+        "systems_source_provenance": {
+          "items": {
+            "$ref": "#/$defs/HeatingSourceProvenanceV3"
+          },
+          "maxItems": 16,
+          "title": "Systems Source Provenance",
+          "type": "array"
         }
       },
       "required": [
@@ -2192,16 +2690,18 @@
         "source_availability",
         "source_observed_at",
         "document_schema_version",
-        "input_status"
+        "input_status",
+        "systems_defaults",
+        "systems_source_provenance"
       ],
-      "title": "PersonalBuildingProjectionV2",
+      "title": "PersonalBuildingProjectionV5",
       "type": "object"
     },
-    "PersonalBuildingPutV2": {
+    "PersonalBuildingPutV5": {
       "additionalProperties": false,
       "properties": {
         "schema_version": {
-          "const": 2,
+          "const": 5,
           "title": "Schema Version",
           "type": "integer"
         },
@@ -2222,13 +2722,13 @@
           "$ref": "#/$defs/BuildingOverridesV1"
         },
         "scenario_inputs": {
-          "$ref": "#/$defs/ScenarioInputsV2"
+          "$ref": "#/$defs/ScenarioInputsV5-Input"
         }
       },
       "required": [
         "schema_version"
       ],
-      "title": "PersonalBuildingPutV2",
+      "title": "PersonalBuildingPutV5",
       "type": "object"
     },
     "PersonalEnergyClassV2": {
@@ -2565,18 +3065,113 @@
       "title": "PublishedCertificateV1",
       "type": "object"
     },
-    "SavedBuildingPageV2": {
+    "RenovationsV4": {
+      "additionalProperties": false,
+      "properties": {
+        "facade": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CompletedWorkV4"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "windows": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CompletedWorkV4"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "plumbing": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CompletedWorkV4"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "roof": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CompletedWorkV4"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "top_floor_insulation": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TopFloorInsulationV4"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "drainage": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CompletedWorkV4"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "energy_smart_solutions": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CompletedWorkV4"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "energy_storage": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CompletedWorkV4"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "RenovationsV4",
+      "type": "object"
+    },
+    "SavedBuildingPageV5": {
       "additionalProperties": false,
       "properties": {
         "schema_version": {
-          "const": 2,
-          "default": 2,
+          "const": 5,
+          "default": 5,
           "title": "Schema Version",
           "type": "integer"
         },
         "items": {
           "items": {
-            "$ref": "#/$defs/SavedBuildingSummaryV2"
+            "$ref": "#/$defs/SavedBuildingSummaryV5"
           },
           "title": "Items",
           "type": "array"
@@ -2597,16 +3192,21 @@
         "items",
         "next_cursor"
       ],
-      "title": "SavedBuildingPageV2",
+      "title": "SavedBuildingPageV5",
       "type": "object"
     },
-    "SavedBuildingSummaryV2": {
+    "SavedBuildingSummaryV5": {
       "additionalProperties": false,
       "properties": {
         "schema_version": {
-          "const": 2,
-          "default": 2,
+          "const": 5,
+          "default": 5,
           "title": "Schema Version",
+          "type": "integer"
+        },
+        "document_schema_version": {
+          "const": 5,
+          "title": "Document Schema Version",
           "type": "integer"
         },
         "saved_id": {
@@ -2686,17 +3286,10 @@
         },
         "last_known_summary": {
           "$ref": "#/$defs/LastKnownBuildingSummaryV1"
-        },
-        "document_schema_version": {
-          "enum": [
-            1,
-            2
-          ],
-          "title": "Document Schema Version",
-          "type": "integer"
         }
       },
       "required": [
+        "document_schema_version",
         "saved_id",
         "building_key",
         "display_name",
@@ -2706,18 +3299,17 @@
         "base_status",
         "base_unavailable_reason",
         "current_summary",
-        "last_known_summary",
-        "document_schema_version"
+        "last_known_summary"
       ],
-      "title": "SavedBuildingSummaryV2",
+      "title": "SavedBuildingSummaryV5",
       "type": "object"
     },
-    "SavedBuildingV2": {
+    "SavedBuildingV5": {
       "additionalProperties": false,
       "properties": {
         "schema_version": {
-          "const": 2,
-          "default": 2,
+          "const": 5,
+          "default": 5,
           "title": "Schema Version",
           "type": "integer"
         },
@@ -2764,10 +3356,10 @@
           "$ref": "#/$defs/BuildingOverridesV1"
         },
         "scenario_inputs": {
-          "$ref": "#/$defs/ScenarioInputsV2"
+          "$ref": "#/$defs/ScenarioInputsV5-Output"
         },
         "effective": {
-          "$ref": "#/$defs/EffectiveV2"
+          "$ref": "#/$defs/EffectiveV5"
         },
         "field_provenance": {
           "additionalProperties": {
@@ -2804,7 +3396,48 @@
               "scenario_inputs.apartment_two_room_count",
               "scenario_inputs.personal_energy_class",
               "scenario_inputs.personal_energy_class_date",
-              "scenario_inputs.resident_count"
+              "scenario_inputs.renovations",
+              "scenario_inputs.renovations.drainage",
+              "scenario_inputs.renovations.drainage.completed",
+              "scenario_inputs.renovations.energy_smart_solutions",
+              "scenario_inputs.renovations.energy_smart_solutions.completed",
+              "scenario_inputs.renovations.energy_storage",
+              "scenario_inputs.renovations.energy_storage.completed",
+              "scenario_inputs.renovations.facade",
+              "scenario_inputs.renovations.facade.completed",
+              "scenario_inputs.renovations.plumbing",
+              "scenario_inputs.renovations.plumbing.completed",
+              "scenario_inputs.renovations.roof",
+              "scenario_inputs.renovations.roof.completed",
+              "scenario_inputs.renovations.top_floor_insulation",
+              "scenario_inputs.renovations.top_floor_insulation.added_insulation_thickness_mm",
+              "scenario_inputs.renovations.top_floor_insulation.completed",
+              "scenario_inputs.renovations.top_floor_insulation.execution_year",
+              "scenario_inputs.renovations.windows",
+              "scenario_inputs.renovations.windows.completed",
+              "scenario_inputs.resident_count",
+              "scenario_inputs.systems",
+              "scenario_inputs.systems.cooling",
+              "scenario_inputs.systems.equipment",
+              "scenario_inputs.systems.equipment.energy_storage_ready",
+              "scenario_inputs.systems.equipment.geothermal_installed",
+              "scenario_inputs.systems.equipment.solar_panels_installed",
+              "scenario_inputs.systems.heated_quantities",
+              "scenario_inputs.systems.heated_quantities.residential_area_m2",
+              "scenario_inputs.systems.heated_quantities.residential_volume_m3",
+              "scenario_inputs.systems.heated_quantities.total_area_m2",
+              "scenario_inputs.systems.heated_quantities.total_volume_m3",
+              "scenario_inputs.systems.heating",
+              "scenario_inputs.systems.heating.primary_source_id",
+              "scenario_inputs.systems.heating.sources",
+              "scenario_inputs.systems.ventilation",
+              "scenario_inputs.utilities",
+              "scenario_inputs.utilities.electricity",
+              "scenario_inputs.utilities.electricity.calendar_year",
+              "scenario_inputs.utilities.electricity.grid_import_kwh",
+              "scenario_inputs.utilities.water",
+              "scenario_inputs.utilities.water.calendar_year",
+              "scenario_inputs.utilities.water.supplied_volume_m3"
             ]
           },
           "title": "Field Provenance",
@@ -2846,7 +3479,48 @@
               "scenario_inputs.apartment_two_room_count",
               "scenario_inputs.personal_energy_class",
               "scenario_inputs.personal_energy_class_date",
+              "scenario_inputs.renovations",
+              "scenario_inputs.renovations.drainage",
+              "scenario_inputs.renovations.drainage.completed",
+              "scenario_inputs.renovations.energy_smart_solutions",
+              "scenario_inputs.renovations.energy_smart_solutions.completed",
+              "scenario_inputs.renovations.energy_storage",
+              "scenario_inputs.renovations.energy_storage.completed",
+              "scenario_inputs.renovations.facade",
+              "scenario_inputs.renovations.facade.completed",
+              "scenario_inputs.renovations.plumbing",
+              "scenario_inputs.renovations.plumbing.completed",
+              "scenario_inputs.renovations.roof",
+              "scenario_inputs.renovations.roof.completed",
+              "scenario_inputs.renovations.top_floor_insulation",
+              "scenario_inputs.renovations.top_floor_insulation.added_insulation_thickness_mm",
+              "scenario_inputs.renovations.top_floor_insulation.completed",
+              "scenario_inputs.renovations.top_floor_insulation.execution_year",
+              "scenario_inputs.renovations.windows",
+              "scenario_inputs.renovations.windows.completed",
               "scenario_inputs.resident_count",
+              "scenario_inputs.systems",
+              "scenario_inputs.systems.cooling",
+              "scenario_inputs.systems.equipment",
+              "scenario_inputs.systems.equipment.energy_storage_ready",
+              "scenario_inputs.systems.equipment.geothermal_installed",
+              "scenario_inputs.systems.equipment.solar_panels_installed",
+              "scenario_inputs.systems.heated_quantities",
+              "scenario_inputs.systems.heated_quantities.residential_area_m2",
+              "scenario_inputs.systems.heated_quantities.residential_volume_m3",
+              "scenario_inputs.systems.heated_quantities.total_area_m2",
+              "scenario_inputs.systems.heated_quantities.total_volume_m3",
+              "scenario_inputs.systems.heating",
+              "scenario_inputs.systems.heating.primary_source_id",
+              "scenario_inputs.systems.heating.sources",
+              "scenario_inputs.systems.ventilation",
+              "scenario_inputs.utilities",
+              "scenario_inputs.utilities.electricity",
+              "scenario_inputs.utilities.electricity.calendar_year",
+              "scenario_inputs.utilities.electricity.grid_import_kwh",
+              "scenario_inputs.utilities.water",
+              "scenario_inputs.utilities.water.calendar_year",
+              "scenario_inputs.utilities.water.supplied_volume_m3",
               "source_observed_at"
             ]
           },
@@ -2869,15 +3543,23 @@
           "$ref": "#/$defs/LastKnownBuildingSummaryV1"
         },
         "document_schema_version": {
-          "enum": [
-            1,
-            2
-          ],
+          "const": 5,
           "title": "Document Schema Version",
           "type": "integer"
         },
         "input_status": {
-          "$ref": "#/$defs/InputStatusV2"
+          "$ref": "#/$defs/InputStatusV3"
+        },
+        "systems_defaults": {
+          "$ref": "#/$defs/DefaultResolutionV3"
+        },
+        "systems_source_provenance": {
+          "items": {
+            "$ref": "#/$defs/HeatingSourceProvenanceV3"
+          },
+          "maxItems": 16,
+          "title": "Systems Source Provenance",
+          "type": "array"
         },
         "saved_id": {
           "format": "uuid",
@@ -2930,16 +3612,18 @@
         "last_known_summary",
         "document_schema_version",
         "input_status",
+        "systems_defaults",
+        "systems_source_provenance",
         "saved_id",
         "display_name",
         "revision",
         "created_at",
         "updated_at"
       ],
-      "title": "SavedBuildingV2",
+      "title": "SavedBuildingV5",
       "type": "object"
     },
-    "ScenarioInputsV2": {
+    "ScenarioInputsV5-Input": {
       "additionalProperties": false,
       "properties": {
         "resident_count": {
@@ -3047,9 +3731,188 @@
           ],
           "default": null,
           "title": "Apartment Four Plus Room Count"
+        },
+        "systems": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SystemsV3-Input"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "renovations": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RenovationsV4"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "utilities": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/UtilitiesV5"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         }
       },
-      "title": "ScenarioInputsV2",
+      "title": "ScenarioInputsV5",
+      "type": "object"
+    },
+    "ScenarioInputsV5-Output": {
+      "additionalProperties": false,
+      "properties": {
+        "resident_count": {
+          "anyOf": [
+            {
+              "maximum": 10000,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Resident Count"
+        },
+        "personal_energy_class": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PersonalEnergyClassV2"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "personal_energy_class_date": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/PersonalEstimateYearV2"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "annual_maintenance_charge_eur_cents": {
+          "anyOf": [
+            {
+              "maximum": 99999999999,
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Annual Maintenance Charge Eur Cents"
+        },
+        "apartment_studio_count": {
+          "anyOf": [
+            {
+              "maximum": 1000000,
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Apartment Studio Count"
+        },
+        "apartment_two_room_count": {
+          "anyOf": [
+            {
+              "maximum": 1000000,
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Apartment Two Room Count"
+        },
+        "apartment_three_room_count": {
+          "anyOf": [
+            {
+              "maximum": 1000000,
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Apartment Three Room Count"
+        },
+        "apartment_four_plus_room_count": {
+          "anyOf": [
+            {
+              "maximum": 1000000,
+              "minimum": 0,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Apartment Four Plus Room Count"
+        },
+        "systems": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SystemsV3-Output"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "renovations": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/RenovationsV4"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "utilities": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/UtilitiesV5"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "ScenarioInputsV5",
       "type": "object"
     },
     "ScenarioQuantityV1": {
@@ -3106,6 +3969,57 @@
       "title": "ScenarioQuantityV1",
       "type": "object"
     },
+    "SelectedCoolingV3": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "selected",
+          "title": "Kind",
+          "type": "string"
+        },
+        "codes": {
+          "items": {
+            "maxLength": 64,
+            "minLength": 1,
+            "pattern": "^[A-Za-z0-9_:-]+$",
+            "type": "string"
+          },
+          "maxItems": 14,
+          "minItems": 1,
+          "title": "Codes",
+          "type": "array"
+        }
+      },
+      "required": [
+        "kind",
+        "codes"
+      ],
+      "title": "SelectedCoolingV3",
+      "type": "object"
+    },
+    "SelectedVentilationV3": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "const": "selected",
+          "title": "Kind",
+          "type": "string"
+        },
+        "code": {
+          "maxLength": 64,
+          "minLength": 1,
+          "pattern": "^[A-Za-z0-9_-]+$",
+          "title": "Code",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "code"
+      ],
+      "title": "SelectedVentilationV3",
+      "type": "object"
+    },
     "SelectionV1": {
       "additionalProperties": false,
       "properties": {
@@ -3151,6 +4065,45 @@
         "geometry_status"
       ],
       "title": "SelectionV1",
+      "type": "object"
+    },
+    "ShareCreatedV1": {
+      "additionalProperties": false,
+      "properties": {
+        "schema_version": {
+          "const": 1,
+          "default": 1,
+          "title": "Schema Version",
+          "type": "integer"
+        },
+        "share_token": {
+          "pattern": "^[A-Za-z0-9_-]{43}$",
+          "title": "Share Token",
+          "type": "string"
+        },
+        "resolver_path": {
+          "pattern": "^/energy-data/shared-buildings/[A-Za-z0-9_-]{43}$",
+          "title": "Resolver Path",
+          "type": "string"
+        },
+        "revision": {
+          "minimum": 1,
+          "title": "Revision",
+          "type": "integer"
+        },
+        "updated_at": {
+          "format": "date-time",
+          "title": "Updated At",
+          "type": "string"
+        }
+      },
+      "required": [
+        "share_token",
+        "resolver_path",
+        "revision",
+        "updated_at"
+      ],
+      "title": "ShareCreatedV1",
       "type": "object"
     },
     "SharedBaseV1": {
@@ -3288,14 +4241,33 @@
       "title": "SharedBaseV1",
       "type": "object"
     },
-    "SharedBuildingV2": {
+    "SharedBuildingV5": {
       "additionalProperties": false,
       "properties": {
         "schema_version": {
-          "const": 2,
-          "default": 2,
+          "const": 5,
+          "default": 5,
           "title": "Schema Version",
           "type": "integer"
+        },
+        "document_schema_version": {
+          "const": 5,
+          "title": "Document Schema Version",
+          "type": "integer"
+        },
+        "input_status": {
+          "$ref": "#/$defs/InputStatusV3"
+        },
+        "systems_source_provenance": {
+          "items": {
+            "$ref": "#/$defs/HeatingSourceProvenanceV3"
+          },
+          "maxItems": 16,
+          "title": "Systems Source Provenance",
+          "type": "array"
+        },
+        "systems_defaults": {
+          "$ref": "#/$defs/DefaultResolutionV3"
         },
         "building_key": {
           "title": "Building Key",
@@ -3366,10 +4338,10 @@
           "$ref": "#/$defs/BuildingOverridesV1"
         },
         "scenario_inputs": {
-          "$ref": "#/$defs/ScenarioInputsV2"
+          "$ref": "#/$defs/ScenarioInputsV5-Output"
         },
         "effective": {
-          "$ref": "#/$defs/EffectiveV2"
+          "$ref": "#/$defs/EffectiveV5"
         },
         "field_provenance": {
           "additionalProperties": {
@@ -3406,7 +4378,48 @@
               "scenario_inputs.apartment_two_room_count",
               "scenario_inputs.personal_energy_class",
               "scenario_inputs.personal_energy_class_date",
-              "scenario_inputs.resident_count"
+              "scenario_inputs.renovations",
+              "scenario_inputs.renovations.drainage",
+              "scenario_inputs.renovations.drainage.completed",
+              "scenario_inputs.renovations.energy_smart_solutions",
+              "scenario_inputs.renovations.energy_smart_solutions.completed",
+              "scenario_inputs.renovations.energy_storage",
+              "scenario_inputs.renovations.energy_storage.completed",
+              "scenario_inputs.renovations.facade",
+              "scenario_inputs.renovations.facade.completed",
+              "scenario_inputs.renovations.plumbing",
+              "scenario_inputs.renovations.plumbing.completed",
+              "scenario_inputs.renovations.roof",
+              "scenario_inputs.renovations.roof.completed",
+              "scenario_inputs.renovations.top_floor_insulation",
+              "scenario_inputs.renovations.top_floor_insulation.added_insulation_thickness_mm",
+              "scenario_inputs.renovations.top_floor_insulation.completed",
+              "scenario_inputs.renovations.top_floor_insulation.execution_year",
+              "scenario_inputs.renovations.windows",
+              "scenario_inputs.renovations.windows.completed",
+              "scenario_inputs.resident_count",
+              "scenario_inputs.systems",
+              "scenario_inputs.systems.cooling",
+              "scenario_inputs.systems.equipment",
+              "scenario_inputs.systems.equipment.energy_storage_ready",
+              "scenario_inputs.systems.equipment.geothermal_installed",
+              "scenario_inputs.systems.equipment.solar_panels_installed",
+              "scenario_inputs.systems.heated_quantities",
+              "scenario_inputs.systems.heated_quantities.residential_area_m2",
+              "scenario_inputs.systems.heated_quantities.residential_volume_m3",
+              "scenario_inputs.systems.heated_quantities.total_area_m2",
+              "scenario_inputs.systems.heated_quantities.total_volume_m3",
+              "scenario_inputs.systems.heating",
+              "scenario_inputs.systems.heating.primary_source_id",
+              "scenario_inputs.systems.heating.sources",
+              "scenario_inputs.systems.ventilation",
+              "scenario_inputs.utilities",
+              "scenario_inputs.utilities.electricity",
+              "scenario_inputs.utilities.electricity.calendar_year",
+              "scenario_inputs.utilities.electricity.grid_import_kwh",
+              "scenario_inputs.utilities.water",
+              "scenario_inputs.utilities.water.calendar_year",
+              "scenario_inputs.utilities.water.supplied_volume_m3"
             ]
           },
           "title": "Field Provenance",
@@ -3448,7 +4461,48 @@
               "scenario_inputs.apartment_two_room_count",
               "scenario_inputs.personal_energy_class",
               "scenario_inputs.personal_energy_class_date",
+              "scenario_inputs.renovations",
+              "scenario_inputs.renovations.drainage",
+              "scenario_inputs.renovations.drainage.completed",
+              "scenario_inputs.renovations.energy_smart_solutions",
+              "scenario_inputs.renovations.energy_smart_solutions.completed",
+              "scenario_inputs.renovations.energy_storage",
+              "scenario_inputs.renovations.energy_storage.completed",
+              "scenario_inputs.renovations.facade",
+              "scenario_inputs.renovations.facade.completed",
+              "scenario_inputs.renovations.plumbing",
+              "scenario_inputs.renovations.plumbing.completed",
+              "scenario_inputs.renovations.roof",
+              "scenario_inputs.renovations.roof.completed",
+              "scenario_inputs.renovations.top_floor_insulation",
+              "scenario_inputs.renovations.top_floor_insulation.added_insulation_thickness_mm",
+              "scenario_inputs.renovations.top_floor_insulation.completed",
+              "scenario_inputs.renovations.top_floor_insulation.execution_year",
+              "scenario_inputs.renovations.windows",
+              "scenario_inputs.renovations.windows.completed",
               "scenario_inputs.resident_count",
+              "scenario_inputs.systems",
+              "scenario_inputs.systems.cooling",
+              "scenario_inputs.systems.equipment",
+              "scenario_inputs.systems.equipment.energy_storage_ready",
+              "scenario_inputs.systems.equipment.geothermal_installed",
+              "scenario_inputs.systems.equipment.solar_panels_installed",
+              "scenario_inputs.systems.heated_quantities",
+              "scenario_inputs.systems.heated_quantities.residential_area_m2",
+              "scenario_inputs.systems.heated_quantities.residential_volume_m3",
+              "scenario_inputs.systems.heated_quantities.total_area_m2",
+              "scenario_inputs.systems.heated_quantities.total_volume_m3",
+              "scenario_inputs.systems.heating",
+              "scenario_inputs.systems.heating.primary_source_id",
+              "scenario_inputs.systems.heating.sources",
+              "scenario_inputs.systems.ventilation",
+              "scenario_inputs.utilities",
+              "scenario_inputs.utilities.electricity",
+              "scenario_inputs.utilities.electricity.calendar_year",
+              "scenario_inputs.utilities.electricity.grid_import_kwh",
+              "scenario_inputs.utilities.water",
+              "scenario_inputs.utilities.water.calendar_year",
+              "scenario_inputs.utilities.water.supplied_volume_m3",
               "source_observed_at"
             ]
           },
@@ -3469,20 +4523,13 @@
         },
         "last_known_summary": {
           "$ref": "#/$defs/LastKnownBuildingSummaryV1"
-        },
-        "document_schema_version": {
-          "enum": [
-            1,
-            2
-          ],
-          "title": "Document Schema Version",
-          "type": "integer"
-        },
-        "input_status": {
-          "$ref": "#/$defs/InputStatusV2"
         }
       },
       "required": [
+        "document_schema_version",
+        "input_status",
+        "systems_source_provenance",
+        "systems_defaults",
         "building_key",
         "display_name",
         "revision",
@@ -3497,11 +4544,9 @@
         "field_provenance",
         "source_availability",
         "source_observed_at",
-        "last_known_summary",
-        "document_schema_version",
-        "input_status"
+        "last_known_summary"
       ],
-      "title": "SharedBuildingV2",
+      "title": "SharedBuildingV5",
       "type": "object"
     },
     "SharedIdentityV1": {
@@ -3641,7 +4686,413 @@
       ],
       "title": "SourcesV1",
       "type": "object"
+    },
+    "SystemsInputStatusV3": {
+      "additionalProperties": false,
+      "properties": {
+        "policy_version": {
+          "const": "property-required-inputs-2026-10-29",
+          "default": "property-required-inputs-2026-10-29",
+          "title": "Policy Version",
+          "type": "string"
+        },
+        "saveable": {
+          "const": true,
+          "default": true,
+          "title": "Saveable",
+          "type": "boolean"
+        },
+        "completeness": {
+          "enum": [
+            "complete",
+            "incomplete",
+            "unavailable"
+          ],
+          "title": "Completeness",
+          "type": "string"
+        },
+        "missing_paths": {
+          "items": {
+            "enum": [
+              "details.floor_area",
+              "details.heating_method"
+            ],
+            "type": "string"
+          },
+          "title": "Missing Paths",
+          "type": "array"
+        },
+        "unavailable_paths": {
+          "items": {
+            "enum": [
+              "details.floor_area",
+              "details.heating_method"
+            ],
+            "type": "string"
+          },
+          "title": "Unavailable Paths",
+          "type": "array"
+        }
+      },
+      "required": [
+        "completeness",
+        "missing_paths",
+        "unavailable_paths"
+      ],
+      "title": "SystemsInputStatusV3",
+      "type": "object"
+    },
+    "SystemsV3-Input": {
+      "additionalProperties": false,
+      "properties": {
+        "defaults_version": {
+          "enum": [
+            "hvac-defaults-2026-10-30.1",
+            "hvac-inputs-2026-10-31.1"
+          ],
+          "title": "Defaults Version",
+          "type": "string"
+        },
+        "heating": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/HeatingV3"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "heated_quantities": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/HeatedQuantitiesV3"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "cooling": {
+          "anyOf": [
+            {
+              "discriminator": {
+                "mapping": {
+                  "none": "#/$defs/NoCoolingV3",
+                  "selected": "#/$defs/SelectedCoolingV3"
+                },
+                "propertyName": "kind"
+              },
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/NoCoolingV3"
+                },
+                {
+                  "$ref": "#/$defs/SelectedCoolingV3"
+                }
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cooling"
+        },
+        "ventilation": {
+          "anyOf": [
+            {
+              "discriminator": {
+                "mapping": {
+                  "multiple": "#/$defs/MultipleVentilationV3",
+                  "none": "#/$defs/NoVentilationV3",
+                  "selected": "#/$defs/SelectedVentilationV3"
+                },
+                "propertyName": "kind"
+              },
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/NoVentilationV3"
+                },
+                {
+                  "$ref": "#/$defs/SelectedVentilationV3"
+                },
+                {
+                  "$ref": "#/$defs/MultipleVentilationV3"
+                }
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ventilation"
+        },
+        "equipment": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EquipmentV3"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "defaults_version"
+      ],
+      "title": "SystemsV3",
+      "type": "object"
+    },
+    "SystemsV3-Output": {
+      "additionalProperties": false,
+      "properties": {
+        "defaults_version": {
+          "enum": [
+            "hvac-defaults-2026-10-30.1",
+            "hvac-inputs-2026-10-31.1"
+          ],
+          "title": "Defaults Version",
+          "type": "string"
+        },
+        "heating": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/HeatingV3"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "heated_quantities": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/HeatedQuantitiesV3"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "cooling": {
+          "anyOf": [
+            {
+              "discriminator": {
+                "mapping": {
+                  "none": "#/$defs/NoCoolingV3",
+                  "selected": "#/$defs/SelectedCoolingV3"
+                },
+                "propertyName": "kind"
+              },
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/NoCoolingV3"
+                },
+                {
+                  "$ref": "#/$defs/SelectedCoolingV3"
+                }
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Cooling"
+        },
+        "ventilation": {
+          "anyOf": [
+            {
+              "discriminator": {
+                "mapping": {
+                  "multiple": "#/$defs/MultipleVentilationV3",
+                  "none": "#/$defs/NoVentilationV3",
+                  "selected": "#/$defs/SelectedVentilationV3"
+                },
+                "propertyName": "kind"
+              },
+              "oneOf": [
+                {
+                  "$ref": "#/$defs/NoVentilationV3"
+                },
+                {
+                  "$ref": "#/$defs/SelectedVentilationV3"
+                },
+                {
+                  "$ref": "#/$defs/MultipleVentilationV3"
+                }
+              ]
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ventilation"
+        },
+        "equipment": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/EquipmentV3"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "defaults_version"
+      ],
+      "title": "SystemsV3",
+      "type": "object"
+    },
+    "TopFloorInsulationV4": {
+      "additionalProperties": false,
+      "if": {
+        "anyOf": [
+          {
+            "required": [
+              "execution_year"
+            ]
+          },
+          {
+            "required": [
+              "added_insulation_thickness_mm"
+            ]
+          }
+        ]
+      },
+      "properties": {
+        "completed": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Completed"
+        },
+        "execution_year": {
+          "anyOf": [
+            {
+              "maximum": 9999,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Completed calendar year; newly submitted values must not exceed the current UTC year.",
+          "title": "Execution Year"
+        },
+        "added_insulation_thickness_mm": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Insulation layer added by this completed renovation, in mm; zero retained, null unknown.",
+          "title": "Added Insulation Thickness Mm"
+        }
+      },
+      "then": {
+        "properties": {
+          "completed": {
+            "const": true
+          }
+        },
+        "required": [
+          "completed"
+        ]
+      },
+      "title": "TopFloorInsulationV4",
+      "type": "object"
+    },
+    "UtilitiesV5": {
+      "additionalProperties": false,
+      "properties": {
+        "electricity": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/ElectricityV5"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "water": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/WaterV5"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "title": "UtilitiesV5",
+      "type": "object"
+    },
+    "WaterV5": {
+      "additionalProperties": false,
+      "properties": {
+        "calendar_year": {
+          "anyOf": [
+            {
+              "maximum": 9999,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Complete January\u2013December calendar year; newly submitted non-null years must precede the current UTC year. Optional, independent of amount; no inferred year.",
+          "title": "Calendar Year"
+        },
+        "supplied_volume_m3": {
+          "anyOf": [
+            {
+              "minimum": 0,
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Self-reported measured total supplied consumption for the whole building over one complete calendar year, m\u00b3 counted once before hot/cold distribution; excludes recirculation, wastewater and heating energy. Zero retained, null unknown; no source prefill.",
+          "title": "Supplied Volume M3"
+        }
+      },
+      "title": "WaterV5",
+      "type": "object"
     }
   },
-  "title": "EnergyMapPersonalPropertyV2"
+  "title": "EnergyMapBuildingContract"
 }

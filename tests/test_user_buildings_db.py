@@ -129,7 +129,7 @@ class OwnerDatabaseTests(unittest.TestCase):
         return {'Authorization':'Bearer '+subject, **extra}
 
     def create(self, data=None, subject='A', key=KEY):
-        return self.client.put('/energy-data/user/buildings/'+key,json=data or {},headers=self.auth(subject, **{'If-None-Match':'*'}))
+        return self.client.put('/energy-data/user/buildings/'+key,json={'schema_version': 5, **(data or {})},headers=self.auth(subject, **{'If-None-Match':'*'}))
 
     def save(self, data=None):
         result=self.create(data)
@@ -176,46 +176,46 @@ class OwnerDatabaseTests(unittest.TestCase):
         self.assertEqual(response.json()['overrides'],values)
         self.assertEqual(self.stored()[0]['overrides'],values)
         created=response.json()['created_at']
-        response=self.client.patch(PATH,json={'set':{'overrides':values,'scenario_inputs':{'resident_count':2}}},headers=self.auth(**{'If-Match':response.headers['etag']}))
+        response=self.client.patch(PATH,json={'schema_version': 5, 'set':{'overrides':values,'scenario_inputs':{'resident_count':2}}},headers=self.auth(**{'If-Match':response.headers['etag']}))
         self.assertEqual(response.status_code,200,response.text)
         self.assertEqual(response.json()['overrides'],values)
         self.assertEqual(self.stored()[0]['overrides'],values)
         self.assertEqual(response.json()['display_name'],'Mine')
         self.assertEqual(response.json()['created_at'],created)
         self.assertEqual(response.json()['revision'],2)
-        updated=self.client.patch(PATH,json={'display_name':None,'set':{'overrides':{'total_area':None},'scenario_inputs':{'resident_count':None}},'unset':['overrides.floor_area']},headers=self.auth(**{'If-Match':response.headers['etag']}))
+        updated=self.client.patch(PATH,json={'schema_version': 5, 'display_name':None,'set':{'overrides':{'total_area':None},'scenario_inputs':{'resident_count':None}},'unset':['overrides.floor_area']},headers=self.auth(**{'If-Match':response.headers['etag']}))
         self.assertEqual(updated.status_code,200,updated.text)
         data=updated.json();self.assertIsNone(data['display_name']);self.assertEqual(data['revision'],3)
         self.assertNotIn('floor_area',data['overrides']);self.assertIsNone(data['overrides']['total_area'])
         self.assertEqual(data['effective']['details']['floor_area'],100)
-        replaced=self.client.put(PATH,json={},headers=self.auth(**{'If-Match':updated.headers['etag']}))
+        replaced=self.client.put(PATH,json={'schema_version': 5},headers=self.auth(**{'If-Match':updated.headers['etag']}))
         self.assertEqual(replaced.status_code,200,replaced.text)
         self.assertEqual(replaced.json()['overrides'],{});self.assertEqual(replaced.json()['scenario_inputs'],{})
         self.assertEqual(replaced.json()['revision'],4);self.assertEqual(self.count(),1)
         self.assertEqual(self.checksum(),source_before)
 
     def test_preconditions_delete_recreate_validation_and_atomic_rollback(self):
-        self.assertEqual(self.client.put(PATH,json={},headers=self.auth()).status_code,428)
-        self.assertEqual(self.client.put(PATH,json={},headers=self.auth(**{'If-Match':'"old"'})).status_code,412)
+        self.assertEqual(self.client.put(PATH,json={'schema_version': 5},headers=self.auth()).status_code,428)
+        self.assertEqual(self.client.put(PATH,json={'schema_version': 5},headers=self.auth(**{'If-Match':'"old"'})).status_code,412)
         response=self.save();tag=response.headers['etag'];before=self.stored()
         cases=[({'owner_subject':'forged'},422),({'overrides':{'unknown_column':'SQL SECRET'}},422),({'overrides':{'main_purpose':'99'}},422),({'overrides':{'floor_area':True}},422),({'display_name':'x'*121},422)]
         for body,status in cases:
-            result=self.client.put(PATH,json=body,headers=self.auth(**{'If-Match':tag}))
+            result=self.client.put(PATH,json={'schema_version': 5, **body},headers=self.auth(**{'If-Match':tag}))
             self.assertEqual(result.status_code,status,result.text)
             self.assertEqual(self.stored(),before)
         self.assertEqual(self.create().status_code,412)
         for method in ('put','patch','delete'):
-            kwargs={'json':{}} if method!='delete' else {}
+            kwargs={'json':{'schema_version':5}} if method!='delete' else {}
             self.assertEqual(getattr(self.client,method)(PATH,headers=self.auth(),**kwargs).status_code,428)
             self.assertEqual(getattr(self.client,method)(PATH,headers=self.auth(**{'If-Match':'"stale"'}),**kwargs).status_code,412)
         with patch('src.api.user_buildings.rendered',side_effect=RuntimeError('SECRET')):
-            failed=self.client.patch(PATH,json={'display_name':'must rollback'},headers=self.auth(**{'If-Match':tag}))
+            failed=self.client.patch(PATH,json={'schema_version': 5, 'display_name':'must rollback'},headers=self.auth(**{'If-Match':tag}))
         self.assertEqual(failed.status_code,500);self.assertNotIn('SECRET',failed.text)
         self.assertEqual(self.stored(),before)
         deleted=self.client.delete(PATH,headers=self.auth(**{'If-Match':tag}));self.assertEqual(deleted.status_code,204)
         self.assertEqual(deleted.headers['cache-control'],'no-store')
         recreated=self.save();self.assertNotEqual(tag,recreated.headers['etag'])
-        self.assertEqual(self.client.patch(PATH,json={},headers=self.auth(**{'If-Match':tag})).status_code,412)
+        self.assertEqual(self.client.patch(PATH,json={'schema_version': 5},headers=self.auth(**{'If-Match':tag})).status_code,412)
 
     def test_authentication_failures_do_not_write_database(self):
         self.save();before=self.stored();source=self.checksum()
@@ -257,13 +257,13 @@ class OwnerDatabaseTests(unittest.TestCase):
         page=self.client.get('/energy-data/user/buildings',headers=self.auth()).json()['items'][0]
         self.assertIsNone(page['current_summary']);self.assertEqual(page['base_unavailable_reason'],'missing')
         self.assertEqual(self.create(subject='B').status_code,404)
-        patched=self.client.patch(PATH,json={'display_name':'Still mine'},headers=self.auth(**{'If-Match':first.headers['etag']}))
+        patched=self.client.patch(PATH,json={'schema_version': 5, 'display_name':'Still mine'},headers=self.auth(**{'If-Match':first.headers['etag']}))
         self.assertEqual(patched.status_code,200,patched.text);self.assertEqual(patched.json()['overrides']['main_purpose'],'05')
-        invalid=self.client.put(PATH,json={'overrides':{'main_purpose':'05'}},headers=self.auth(**{'If-Match':patched.headers['etag']}))
+        invalid=self.client.put(PATH,json={'schema_version': 5, 'overrides':{'main_purpose':'05'}},headers=self.auth(**{'If-Match':patched.headers['etag']}))
         self.assertEqual(invalid.status_code,422)
         with patch('src.api.user_buildings.resolve_building',side_effect=BuildingSourceUnavailable):
             read=self.read();self.assertEqual(read.json()['base_unavailable_reason'],'source_unavailable')
-            reset=self.client.patch(PATH,json={'unset':['overrides.main_purpose','overrides.floor_area']},headers=self.auth(**{'If-Match':patched.headers['etag']}))
+            reset=self.client.patch(PATH,json={'schema_version': 5, 'unset':['overrides.main_purpose','overrides.floor_area']},headers=self.auth(**{'If-Match':patched.headers['etag']}))
             self.assertEqual(reset.status_code,200,reset.text)
             self.assertEqual(reset.json()['overrides'],{})
             self.assertEqual(self.client.delete(PATH,headers=self.auth(**{'If-Match':reset.headers['etag']})).status_code,204)
@@ -274,21 +274,21 @@ class OwnerDatabaseTests(unittest.TestCase):
             session.execute(text("UPDATE main SET permanent_building_identifier='different' WHERE address_key='b'"))
         self.assertEqual(self.read().json()['base_unavailable_reason'],'ambiguous')
         self.assertEqual(self.create(subject='B').status_code,409)
-        replaced=self.client.put(PATH,json={'display_name':'During ambiguity'},headers=self.auth(**{'If-Match':saved.headers['etag']}))
+        replaced=self.client.put(PATH,json={'schema_version': 5, 'display_name':'During ambiguity'},headers=self.auth(**{'If-Match':saved.headers['etag']}))
         self.assertEqual(replaced.status_code,200,replaced.text)
         self.assertEqual(replaced.json()['last_known_summary'],snapshot)
         with self.Admin.begin() as session:session.execute(text('ALTER TABLE main RENAME TO fixture_unavailable_main'))
         try:
             self.assertEqual(self.read().json()['base_unavailable_reason'],'source_unavailable')
             self.assertEqual(self.create(subject='B').status_code,503)
-            result=self.client.patch(PATH,json={'set':{'overrides':{'floor_area':0}}},headers=self.auth(**{'If-Match':replaced.headers['etag']}))
+            result=self.client.patch(PATH,json={'schema_version': 5, 'set':{'overrides':{'floor_area':0}}},headers=self.auth(**{'If-Match':replaced.headers['etag']}))
             self.assertEqual(result.status_code,200,result.text)
             with self.Admin.begin() as session:session.execute(text('ALTER TABLE code_maps RENAME TO fixture_unavailable_codes'))
             try:
                 before=self.stored()
-                failure=self.client.patch(PATH,json={'set':{'overrides':{'main_purpose':'05'}}},headers=self.auth(**{'If-Match':result.headers['etag']}))
+                failure=self.client.patch(PATH,json={'schema_version': 5, 'set':{'overrides':{'main_purpose':'05'}}},headers=self.auth(**{'If-Match':result.headers['etag']}))
                 self.assertEqual(failure.status_code,503,failure.text);self.assertEqual(self.stored(),before)
-                reset=self.client.patch(PATH,json={'unset':['overrides.floor_area']},headers=self.auth(**{'If-Match':result.headers['etag']}))
+                reset=self.client.patch(PATH,json={'schema_version': 5, 'unset':['overrides.floor_area']},headers=self.auth(**{'If-Match':result.headers['etag']}))
                 self.assertEqual(reset.status_code,200,reset.text)
             finally:
                 with self.Admin.begin() as session:session.execute(text('ALTER TABLE fixture_unavailable_codes RENAME TO code_maps'))
@@ -303,7 +303,7 @@ class OwnerDatabaseTests(unittest.TestCase):
             if statement.startswith(('UPDATE ','DELETE ')):queries.append(statement)
         event.listen(state_engine(),'before_cursor_execute',before)
         try:
-            result=self.client.patch(PATH,json={'display_name':'Long principal'},headers=self.auth(**{'If-Match':saved.headers['etag']}))
+            result=self.client.patch(PATH,json={'schema_version': 5, 'display_name':'Long principal'},headers=self.auth(**{'If-Match':saved.headers['etag']}))
             self.assertEqual(result.status_code,200,result.text)
             self.assertEqual(self.client.delete(PATH,headers=self.auth(**{'If-Match':result.headers['etag']})).status_code,204)
         finally:event.remove(state_engine(),'before_cursor_execute',before)
@@ -320,7 +320,7 @@ class OwnerDatabaseTests(unittest.TestCase):
             if kwargs.get('lock'):barrier.wait(timeout=10)
             return original(*args,**kwargs)
         with patch('src.api.user_buildings.service.load_owned',synchronized),ThreadPoolExecutor(2) as pool:
-            results=list(pool.map(lambda i:self.client.put(PATH,json={'display_name':str(i)},headers=self.auth(**{'If-Match':saved.headers['etag']})),range(2)))
+            results=list(pool.map(lambda i:self.client.put(PATH,json={'schema_version': 5, 'display_name':str(i)},headers=self.auth(**{'If-Match':saved.headers['etag']})),range(2)))
         self.assertEqual(sorted(r.status_code for r in results),[200,412],[r.text for r in results])
         tag=self.read().headers['etag'];barrier=threading.Barrier(2)
         with patch('src.api.user_buildings.service.load_owned',synchronized),ThreadPoolExecutor(2) as pool:
@@ -339,7 +339,7 @@ class OwnerDatabaseTests(unittest.TestCase):
         original_lock=service.locked_owned
         def locked(*args,**kwargs):barrier.wait(timeout=10);return original_lock(*args,**kwargs)
         with patch('src.api.user_buildings.service.locked_owned',locked), ThreadPoolExecutor(2) as pool:
-            results=list(pool.map(lambda i:self.client.patch(PATH,json={'display_name':str(i)},headers=self.auth(**{'If-Match':tag})),range(2)))
+            results=list(pool.map(lambda i:self.client.patch(PATH,json={'schema_version': 5, 'display_name':str(i)},headers=self.auth(**{'If-Match':tag})),range(2)))
         self.assertEqual(sorted(r.status_code for r in results),[200,412],[r.text for r in results])
         self.assertEqual(self.read().json()['revision'],2)
 
@@ -348,7 +348,7 @@ class OwnerDatabaseTests(unittest.TestCase):
         principal=AuthenticatedPrincipal(ISSUER,'A')
         with state_session() as blocker, ThreadPoolExecutor(1) as pool:
             row=service.load_owned(blocker,principal,KEY,lock=True)
-            future=pool.submit(lambda:self.client.patch(PATH,json={'display_name':'waiting'},headers=self.auth(**{'If-Match':tag})))
+            future=pool.submit(lambda:self.client.patch(PATH,json={'schema_version': 5, 'display_name':'waiting'},headers=self.auth(**{'If-Match':tag})))
             time.sleep(.2);self.assertFalse(future.done())
             service.bump_revision(row);blocker.commit()
             result=future.result(timeout=10)
@@ -434,7 +434,7 @@ class OwnerDatabaseTests(unittest.TestCase):
         self.assertEqual(len(remaining['items']),5)
         moved=self.client.get('/energy-data/user/buildings/missing-1',headers=self.auth())
         self.assertEqual(moved.status_code,200,moved.text)
-        changed=self.client.patch('/energy-data/user/buildings/missing-1',json={'display_name':'Moved between pages'},headers=self.auth(**{'If-Match':moved.headers['etag']}))
+        changed=self.client.patch('/energy-data/user/buildings/missing-1',json={'schema_version': 5, 'display_name':'Moved between pages'},headers=self.auth(**{'If-Match':moved.headers['etag']}))
         self.assertEqual(changed.status_code,200,changed.text)
         after=self.client.get('/energy-data/user/buildings',params={'cursor':cursor},headers=self.auth()).json()
         self.assertEqual(len(after['items']),4)

@@ -13,10 +13,8 @@ from alembic.operations import Operations
 
 from src.api.auth import AuthenticatedPrincipal
 from src.api.building_examples import public_example
-from src.building_contract import CanonicalBuildingV1, PersonalBuildingPutV1, personal_document, sparse
-from src.personal_property_contract import PersonalBuildingPutV2
-from src.personal_hvac_contract import PersonalBuildingPutV3
-from src.personal_renovations_contract import PersonalBuildingPutV4
+from src.building_contract import CanonicalBuildingV1, sparse
+from tests.personal_storage_fixture import archive_document
 from src.building_share_contract import shared_projection
 from src.db.state import state_session, state_ready
 from src import user_buildings as owner, building_shares as shares
@@ -37,13 +35,11 @@ PRINCIPAL = AuthenticatedPrincipal('https://synthetic.invalid', 'renovations-own
 
 
 def seed(target, profile):
-    models = (PersonalBuildingPutV1, PersonalBuildingPutV2, PersonalBuildingPutV3, PersonalBuildingPutV4, PersonalBuildingPutV5)
     base = CanonicalBuildingV1.model_validate_json(json.dumps(public_example()))
     tokens = []
     with runtime_environment(target, operations.load_bundle(target)), state_session() as session:
-        selected = models[:PROFILES.index(profile) + 1]
-        if profile == VERSION: selected += (PersonalBuildingPutV5,) * 3
-        for index, model in enumerate(selected, 1):
+        count = 8 if profile == VERSION else PROFILES.index(profile) + 1
+        for index in range(1, count + 1):
             version = min(index, 5)
             scenario = {'resident_count': 2}
             if version >= 2: scenario |= {'apartment_studio_count': 0, 'apartment_two_room_count': None}
@@ -52,7 +48,7 @@ def seed(target, profile):
             if version >= 5:
                 scenario['utilities'] = utilities((12345.5, 0, None, None)[index - 5])
                 if index == 8: scenario['utilities'] = {'water': {}}
-            value = model.model_validate({'schema_version': version, 'overrides': {'floor_area': 0, 'total_area': None}, 'scenario_inputs': scenario})
+            value = archive_document({'schema_version': version, 'overrides': {'floor_area': 0, 'total_area': None}, 'scenario_inputs': scenario})
             key = 'synthetic-v' + str(index)
             row = owner.create_owned(session, PRINCIPAL, key, value, base.model_copy(update={'building_key': key}))
             tokens.append(shares.rotate(session, row))
@@ -121,17 +117,19 @@ class RenovationsStorageTests(unittest.TestCase):
                         for index, token in enumerate(tokens, 1):
                             version = min(index, 5)
                             row = shares.lookup(s, token)
-                            read = owner.detail(row, None, version=5)
-                            shared = shared_projection(row, None, 'source_unavailable', 5)
-                            self.assertEqual(read.document_schema_version, version)
-                            self.assertEqual(shared.scenario_inputs, read.scenario_inputs)
+                            self.assertEqual(row.schema_version, version)
                             if version >= 4:
                                 expected = all_renovations((230.5, 0, None, ...)[(index - 4) % 4])
-                                self.assertEqual(personal_document(owner.stored_document(row))['scenario_inputs']['renovations'], expected)
-                                self.assertEqual(sparse(read.scenario_inputs)['renovations'], expected)
+                                self.assertEqual(row.scenario_inputs['renovations'], expected)
                             if version == 5:
+                                read = owner.detail(row, None)
+                                shared = shared_projection(row, None, 'source_unavailable')
+                                self.assertEqual(shared.scenario_inputs, read.scenario_inputs)
                                 expected_u = {'water': {}} if index == 8 else utilities((12345.5, 0, None)[index - 5])
                                 self.assertEqual(sparse(read.scenario_inputs)['utilities'], expected_u)
+                            else:
+                                with self.assertRaises(owner.OwnerFailure):
+                                    owner.detail(row, None)
                     with state_session() as s:
                         row = shares.lookup(s, tokens[-1]); rotated = shares.rotate(s, row); s.commit()
                     with state_session() as s:

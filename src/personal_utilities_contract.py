@@ -4,23 +4,27 @@ from typing import Annotated, Literal
 
 from pydantic import BeforeValidator, Field, ValidationInfo, field_validator
 
-from src.building_contract import (AvailabilityV1, BuildingOverridesV1, ContractModel,
-    FieldProvenanceV1, PersonalBuildingPatchV1, check_payload_size,
-    fail, personal_document, sparse, validate_new_codes)
-from src.personal_renovations_contract import (ScenarioInputsV4, PersonalBuildingPutV4,
-    PersonalBuildingProjectionV4, EffectiveV4, READ_PATHS as V4_READ_PATHS,
-    UNSET_PATHS_V4, project_v4)
-from src.personal_hvac_contract import validate_systems, transport_number
+from src.building_contract import (
+    AvailabilityV1, BuildingOverridesV1, ContractModel, EffectiveV1, FieldProvenanceV1,
+    PersonalBuildingPatchV1, PersonalBuildingProjectionV1, PersonalBuildingPutV1, UNSET_PATHS,
+    check_payload_size, fail, personal_document, project_building, sparse, validate_new_codes,
+)
+from src.personal_property_contract import NEW_PATHS, PERSONAL_READ_PATHS, property_input_status
+from src.personal_hvac_contract import (
+    DefaultResolutionV3, HeatingSourceProvenanceV3, InputStatusV3, SYSTEMS_PATH, SYSTEMS_PATHS,
+    project_systems, transport_number, validate_systems,
+)
+from src.personal_renovations_contract import RENOVATIONS_PATH, RENOVATIONS_PATHS, ScenarioInputsV4
 
 UTILITIES_PATH = 'scenario_inputs.utilities'
 UTILITIES_PATHS = frozenset({UTILITIES_PATH, UTILITIES_PATH + '.electricity',
     UTILITIES_PATH + '.water', UTILITIES_PATH + '.electricity.grid_import_kwh',
     UTILITIES_PATH + '.electricity.calendar_year', UTILITIES_PATH + '.water.supplied_volume_m3',
     UTILITIES_PATH + '.water.calendar_year'})
-READ_PATHS = V4_READ_PATHS | UTILITIES_PATHS
+READ_PATHS = PERSONAL_READ_PATHS | SYSTEMS_PATHS | RENOVATIONS_PATHS | UTILITIES_PATHS
 ReadPathV5 = Literal[tuple(sorted(READ_PATHS))]
 AvailabilityPathV5 = Literal[tuple(sorted(READ_PATHS | {'geometry', 'source_observed_at'}))]
-UNSET_PATHS_V5 = UNSET_PATHS_V4 | {UTILITIES_PATH}
+UNSET_PATHS_V5 = UNSET_PATHS | NEW_PATHS | {SYSTEMS_PATH, RENOVATIONS_PATH, UTILITIES_PATH}
 
 
 class VersionedV5(ContractModel):
@@ -69,7 +73,7 @@ class ScenarioInputsV5(ScenarioInputsV4):
     utilities: UtilitiesV5 | None = None
 
 
-class PersonalBuildingPutV5(PersonalBuildingPutV4):
+class PersonalBuildingPutV5(PersonalBuildingPutV1):
     schema_version: Literal[5]
     scenario_inputs: ScenarioInputsV5 = Field(default_factory=ScenarioInputsV5)
 
@@ -108,7 +112,6 @@ def patch_v5(existing, patch, catalog):
         validate_systems(patch.set.scenario_inputs.systems, getattr(existing.scenario_inputs, 'systems', None),
                          prefix=('set', 'scenario_inputs', 'systems'))
     document = personal_document(existing)
-    document['schema_version'] = 5
     for namespace in ('overrides', 'scenario_inputs'):
         document[namespace].update(sparse(getattr(patch.set, namespace)))
     for path in patch.unset:
@@ -120,15 +123,18 @@ def patch_v5(existing, patch, catalog):
     return PersonalBuildingPutV5.model_validate(document, context={'stored_document': True})
 
 
-class EffectiveV5(EffectiveV4):
+class EffectiveV5(EffectiveV1):
     scenario_inputs: ScenarioInputsV5
 
 
-class PersonalBuildingProjectionV5(PersonalBuildingProjectionV4):
+class PersonalBuildingProjectionV5(PersonalBuildingProjectionV1):
     schema_version: Literal[5] = 5
-    document_schema_version: Literal[1, 2, 3, 4, 5]
+    document_schema_version: Literal[5]
     scenario_inputs: ScenarioInputsV5
     effective: EffectiveV5
+    input_status: InputStatusV3
+    systems_defaults: DefaultResolutionV3
+    systems_source_provenance: list[HeatingSourceProvenanceV3] = Field(max_length=16)
     field_provenance: dict[ReadPathV5, FieldProvenanceV1]
     source_availability: dict[AvailabilityPathV5, AvailabilityV1]
 
@@ -138,37 +144,41 @@ class PersonalBuildingProjectionV5(PersonalBuildingProjectionV4):
         return VersionedV5.exact_version(value)
 
 
-def project_v5(base, document, **kwargs):
-    # Temporary read projection only: a closed v4 model must never see U.
-    old = personal_document(document)
-    old['schema_version'] = 4
-    old['scenario_inputs'].pop('utilities', None)
-    legacy = PersonalBuildingPutV4.model_validate(old, context={'stored_document': True})
-    projection = project_v4(base, legacy, **kwargs)
-    scenario = ScenarioInputsV5.model_validate(sparse(document.scenario_inputs), context={'stored_document': True})
+def input_provenance(scenario, path):
+    current = scenario
+    parts = path.split('.')[1:]
+    for index, part in enumerate(parts):
+        if part not in current.model_fields_set:
+            return FieldProvenanceV1(origin='unavailable', status='missing', reason='no_personal_default')
+        current = getattr(current, part)
+        if current is None:
+            source = 'scenario_inputs.' + '.'.join(parts[:index + 1])
+            return FieldProvenanceV1(origin='user', source=source, status='user_unknown',
+                is_override=True, dependencies=[source] if source != path else [])
+    return FieldProvenanceV1(origin='user', source=path, status='available', is_override=True)
+
+
+def project_v5(base, document: PersonalBuildingPutV5, **kwargs):
+    scenario = document.scenario_inputs
+    projection = project_building(base, document.overrides, scenario, **kwargs)
     provenance = dict(projection.field_provenance)
-    for path in sorted(UTILITIES_PATHS):
-        current = scenario
-        parts = path.split('.')[1:]
-        value = FieldProvenanceV1(origin='unavailable', status='missing', reason='no_personal_default')
-        for index, part in enumerate(parts):
-            if part not in current.model_fields_set:
-                break
-            current = getattr(current, part)
-            if current is None:
-                ancestor = 'scenario_inputs.' + '.'.join(parts[:index + 1])
-                value = FieldProvenanceV1(origin='user', source=ancestor, status='user_unknown',
-                    is_override=True, dependencies=[ancestor] if ancestor != path else [])
-                break
-        else:
-            value = FieldProvenanceV1(origin='user', source=path, status='available', is_override=True)
-        provenance[path] = value
+    provenance.update({path: input_provenance(scenario, path)
+        for path in sorted(NEW_PATHS | SYSTEMS_PATHS | RENOVATIONS_PATHS | UTILITIES_PATHS)})
+    provenance['display_name'] = (
+        FieldProvenanceV1(origin='user', source='display_name', status='available', is_override=True)
+        if document.display_name is not None else
+        FieldProvenanceV1(origin='unavailable', status='missing', reason='no_personal_default')
+    )
+    statuses, defaults, sources = project_systems(scenario.systems, provenance, property_input_status(projection))
     availability = dict(projection.source_availability)
-    availability.update({p: AvailabilityV1(status=provenance[p].status, reason=provenance[p].reason)
-                         for p in sorted(UTILITIES_PATHS)})
-    values = {k: getattr(projection, k) for k in type(projection).model_fields}
-    values.update(schema_version=5, document_schema_version=document.schema_version,
-        scenario_inputs=scenario, field_provenance=provenance, source_availability=availability,
-        effective=EffectiveV5(**{k: scenario if k == 'scenario_inputs' else getattr(projection.effective, k)
-                                 for k in EffectiveV4.model_fields}))
-    return PersonalBuildingProjectionV5(**values)
+    availability.update({path: AvailabilityV1(status=value.status, reason=value.reason)
+                         for path, value in provenance.items()})
+    return PersonalBuildingProjectionV5(
+        building_key=projection.building_key, base_status=projection.base_status,
+        base_unavailable_reason=projection.base_unavailable_reason, base=projection.base,
+        overrides=projection.overrides, scenario_inputs=scenario, document_schema_version=document.schema_version,
+        effective=EffectiveV5(**{name: getattr(projection.effective, name) for name in EffectiveV1.model_fields}),
+        source_observed_at=projection.source_observed_at, last_known_summary=projection.last_known_summary,
+        field_provenance=provenance, source_availability=availability,
+        input_status=statuses, systems_defaults=defaults, systems_source_provenance=sources,
+    )
